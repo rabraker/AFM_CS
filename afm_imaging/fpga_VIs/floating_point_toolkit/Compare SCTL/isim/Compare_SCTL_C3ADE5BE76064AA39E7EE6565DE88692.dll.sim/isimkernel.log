@@ -1,0 +1,21 @@
+Command line:
+   Compare_SCTL_C3ADE5BE76064AA39E7EE6565DE88692.dll
+     -log  xsiSetupLog
+     -sysgen
+
+Wed Apr 13 18:17:16 2016
+
+
+ Elaboration Time: 0.0156 sec
+
+ Current Memory Usage: 1410.6 Meg
+
+ Total Signals          : 87
+ Total Nets             : 162
+ Total Signal Drivers   : 32
+ Total Blocks           : 26
+ Total Primitive Blocks : 15
+ Total Processes        : 21
+ Total Traceable Variables  : 304
+ Total Scalar Nets and Variables : 1665
+

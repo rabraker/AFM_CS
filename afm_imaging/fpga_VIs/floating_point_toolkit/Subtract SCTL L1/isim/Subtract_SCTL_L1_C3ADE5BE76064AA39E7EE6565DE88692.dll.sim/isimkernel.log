@@ -1,0 +1,21 @@
+Command line:
+   Subtract_SCTL_L1_C3ADE5BE76064AA39E7EE6565DE88692.dll
+     -log  xsiSetupLog
+     -sysgen
+
+Tue Aug 16 18:08:02 2016
+
+
+ Elaboration Time: 0.0156 
+ Current Memory Usage: 1372.4 Meg
+
+ Total Signals          : 88
+ Total Nets             : 193
+ Total Signal Drivers   : 33
+ Total Blocks           : 27
+ Total Primitive Blocks : 16
+ Total Processes        : 21
+ Total Traceable Variables  : 304
+ Total Scalar Nets and Variables : 1696
+1696
+

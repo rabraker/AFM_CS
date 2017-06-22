@@ -1,0 +1,21 @@
+Command line:
+   Multiply_SCTL_L0_C3ADE5BE76064AA39E7EE6565DE88692.dll
+     -log  xsiSetupLog
+     -sysgen
+
+Wed Sep 24 05:36:55 2014
+
+
+ Elaboration Time: 0 sec
+
+ Cu
+ Current Memory Usage: 1567.78 Meg
+
+ Total Signals          : 87
+ Total Nets             : 193
+ Total Signal Drivers   : 33
+ Total Blocks           : 27
+ Total Primitive Blocks : 16
+ Total Processes        : 22
+ Total Traceable Variables  : 304
+ Total Scalar Nets and Variables : 1696
