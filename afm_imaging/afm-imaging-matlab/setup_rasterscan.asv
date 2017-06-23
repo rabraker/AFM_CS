@@ -1,0 +1,48 @@
+% Generate x-y input waveforms.
+%
+% Use 0.2 hz x-dir triangle wave.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+dataroot      = fullfile(getMatPath(), 'AFM_SS',...
+                'System_Identification', 'data', 'data_xaxis'); 
+expName           = ['22-Jun-2016_exp01'];
+modFitName    = [expName, '.mat'];
+modFitPath    = fullfile(dataroot, modFitName);
+load(modFitPath, 'modelFit')
+
+% FitNum    = 'FitNum001';
+PLANT_init_x = ltiFit(modFitPath, 'SS02').sys;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+Ts = 40e-6;
+TsTicks = 1600;
+
+lines_sec = 0.1;
+sec_line = 1/lines_sec;
+raster_amplitude = 15; % micro-meters.
+volts2mu = 5;
+mu2volts = 1/volts2mu;
+
+% Trace is one line at sec_line. The whole period is trace and re-trace.
+x_period = 2*sec_line;  
+x_freq = 1/x_period;
+
+% resolution, ie, how many lines?
+pixel_size = 2;
+
+time_total = pixel_size*x_period;
+
+[rasterdata, truefreq] = raster(x_freq, Ts, time_total, 'coerce', 1);
+
+% we want to start at 0, not -1.
+rasterdata.Data = (rasterdata.Data)*raster_amplitude;
+
+% Convert to voltage;
+dc_gain = 0.65;
+rasterdata.Data = (rasterdata.Data+1)*mu2volts;
+
+[y, t] = lsim(PLANT_init_x, rasterdata.Data/dc_gain, rasterdata.Time);
+
+plot(rasterdata.Time, rasterdata.Data*volts2mu, t, y*volts2mu, '--')
+
