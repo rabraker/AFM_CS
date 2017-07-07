@@ -16,8 +16,9 @@ N = 2500;
 [xr, yr, ind] = CSTraj.meas_entity_static(0, 0, N, 1);   
 MT = CSTraj.entity2vector(xr, yr, ind);
 
-XR = [-.5, .5, 0.25]*0;
-YR = [-.4, .4, 0.15]*0;
+
+XR = [-.5, .5, 0.25];
+YR = [-.4, .4, 0.15];
 
 
 masterTrajster = MT;
