@@ -1,19 +1,15 @@
-classdef CsEntity
+classdef (Abstract) CsEntity
     %CSENTITY Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties (Abstract)
+        xref_vec;
+        yref_vec;
+        index_vec;
     end
     
-    methods
-        
-        function obj = CsEntity()
-            
-        end
-        
-        function asVector(obj)
-            
-        end
+    methods (Abstract)
+        asVector(obj)
     end
     
 end

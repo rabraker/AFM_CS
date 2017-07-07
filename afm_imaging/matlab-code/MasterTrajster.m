@@ -14,14 +14,35 @@ classdef MasterTrajster
         XR;
         YR;
         num_entities;
+        CSP;
     end
     
     methods
-        function obj = MasterTrajster(XR, YR, ME, MVE)
+        function obj = MasterTrajster(XR, YR, CSP)
            check_xryr(XR, YR);
             obj.XR = XR;
             obj.YR = YR;
             obj.num_entities = length(XR);
+            obj.CSP = CSP;
+        end
+        
+        function masterTraj = asVector(self)
+            % INIT: State 2
+            N = 2500;
+            ME_0 = self.CSP.me_factory(0, 0, N, 1);   
+            masterTraj = ME_0.asVector();
+            
+            for i = 1:length(self.XR)
+                % state 4
+                MVE_i = self.CSP.mve_factory(self.XR(i), self.YR(i), N);   
+                
+                masterTraj = [masterTraj; MVE_i.asVector()];
+                % State 2: Define this separatly, instead of just holding at the same 
+                % XR, YR so that in the future this same stuff can define, eg. a
+                % mu-path.
+                ME_i = self.CSP.me_factory(self.XR(i), self.YR(i), N, i+1);   
+                masterTraj = [masterTraj; ME_i.asVector()];
+            end
             
         end
     end
