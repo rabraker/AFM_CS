@@ -11,44 +11,51 @@ classdef MasterTrajster
     
     
     properties
-        XR;
-        YR;
-        num_entities;
-        CSP;
+        XR;           % row vectory of x-points
+        YR;           % row vector of y-points
+        num_entities; % number of 'entities'
+        MoveEntity;   %
+        MeasEntity;   %
     end
     
     methods
-        function obj = MasterTrajster(XR, YR, CSP)
+        function obj = MasterTrajster(XR, YR, MoveEntity, MeasEntity)
            check_xryr(XR, YR);
             obj.XR = XR;
             obj.YR = YR;
             obj.num_entities = length(XR);
-            obj.CSP = CSP;
+            obj.MoveEntity = MoveEntity;
+            obj.MeasEntity = MeasEntity;
+            
         end
         
         function masterTraj = asVector(self)
             % INIT: State 2
-            N = 2500;
-            ME_0 = self.CSP.me_factory(0, 0, N, 1);   
+            ME_0 = self.MeasEntity(0, 0, 1);   
             masterTraj = ME_0.asVector();
             
             for i = 1:length(self.XR)
                 % state 4
-                MVE_i = self.CSP.mve_factory(self.XR(i), self.YR(i), N);   
+                MVE_i = self.MoveEntity(self.XR(i), self.YR(i));   
                 
                 masterTraj = [masterTraj; MVE_i.asVector()];
                 % State 2: Define this separatly, instead of just holding at the same 
                 % XR, YR so that in the future this same stuff can define, eg. a
                 % mu-path.
-                ME_i = self.CSP.me_factory(self.XR(i), self.YR(i), N, i+1);   
+                ME_i = self.MeasEntity(self.XR(i), self.YR(i), i+1);   
                 masterTraj = [masterTraj; ME_i.asVector()];
             end
             
         end
     end
     
-    end
-
+end
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                         %
+%                  LOCAL FUNCTIONS                                        %
+%                                                                         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function check_xryr(XR, YR)
     % We must have the same number of x and y CS points.

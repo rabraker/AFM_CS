@@ -15,18 +15,10 @@ classdef MeasEntityStatic < CsEntity
             obj.yref_vec = ones(N, 1)*y_ref;
             obj.index_vec = ones(N, 1)*index;
         end
-        
-        function mergedTraj = asVector(obj)
-            N = size(obj.xref_vec, 1);
-            mergedTraj = zeros(N*3, 1);
-            for ik=[1:3:3*N; 1:1:N]
-                i=ik(1);
-                k = ik(2);
-                mergedTraj(i) = obj.xref_vec(k);
-                mergedTraj(i+1) = obj.yref_vec(k);
-                mergedTraj(i+2) = obj.index_vec(k);
-           end
-            
+    end
+    methods(Static)
+        function self = factory(N)
+            self = @(x, y, ind)MeasEntityStatic(x,y,N,ind);
         end
     end
     

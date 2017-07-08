@@ -1,0 +1,27 @@
+classdef (Abstract) CsEntity
+    %CSENTITY Summary of this class goes here
+    %   Detailed explanation goes here
+    
+    properties (Abstract)
+        xref_vec;
+        yref_vec;
+        index_vec;
+    end
+    
+    methods 
+%         asVector(obj)
+        function mergedTraj = asVector(obj)
+            N = size(obj.xref_vec, 1);
+            mergedTraj = zeros(N*3, 1);
+            for ik=[1:3:3*N; 1:1:N]
+                i=ik(1);
+                k = ik(2);
+                mergedTraj(i) = obj.xref_vec(k);
+                mergedTraj(i+1) = obj.yref_vec(k);
+                mergedTraj(i+2) = obj.index_vec(k);
+            end
+        end
+    end
+    
+end
+
