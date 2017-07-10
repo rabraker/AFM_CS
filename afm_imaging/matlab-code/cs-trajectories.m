@@ -10,36 +10,46 @@ H = feedback(D*G, 1)
 step(H)
 %%
 clc
-N = 2500;
-
-% State 2
-[xr, yr, ind] = CSTraj.meas_entity_static(0, 0, N, 1);   
-MT = CSTraj.entity2vector(xr, yr, ind);
-
-
+addpath('classes')
+N_mve = 5000;
+N_me = 5000;
 XR = [-.5, .5, 0.25];
 YR = [-.4, .4, 0.15];
 
+MT = MasterTrajster(XR, YR, MoveEntityStatic.factory(N_mve),...
+        MeasEntityStatic.factory(N_me));
 
-masterTrajster = MT;
-for i = 1:length(XR)
-    % state 4
-    [xr, yr, ind] = CSTraj.move_entity_static(XR(i), YR(i), N);   
-    MT = CSTraj.entity2vector(xr, yr, ind);
-    masterTrajster = [masterTrajster; MT];
-    % State 2: Define this separatly, instead of just holding at the same 
-    % XR, YR so that in the future this same stuff can define, eg. a
-    % mu-path.
-    [xr, yr, ind] = CSTraj.meas_entity_static(XR(i), YR(i), N, i+1);   
-    MT = CSTraj.entity2vector(xr, yr, ind);
-    
-    masterTrajster = [masterTrajster; MT];
-end
+master_data_vec = MT.asVector(); 
+
+% State 2
+% [xr, yr, ind] = CSTraj.meas_entity_static(0, 0, N, 1);   
+% MT = CSTraj.entity2vector(xr, yr, ind);
+% 
+% 
+% XR = [-.5, .5, 0.25];
+% YR = [-.4, .4, 0.15];
+% 
+% 
+% masterTrajster = MT;
+% for i = 1:length(XR)
+%     % state 4
+%     [xr, yr, ind] = CSTraj.move_entity_static(XR(i), YR(i), N);   
+%     MT = CSTraj.entity2vector(xr, yr, ind);
+%     masterTrajster = [masterTrajster; MT];
+%     % State 2: Define this separatly, instead of just holding at the same 
+%     % XR, YR so that in the future this same stuff can define, eg. a
+%     % mu-path.
+%     [xr, yr, ind] = CSTraj.meas_entity_static(XR(i), YR(i), N, i+1);   
+%     MT = CSTraj.entity2vector(xr, yr, ind);
+%     
+%     masterTrajster = [masterTrajster; MT];
+% end
 
 
 % masterTrajster
 cs_data_fname = 'C:\Users\arnold\Documents\labview\afm_imaging\data\data-in.csv';
-csvwrite(cs_data_fname, masterTrajster);
+% csvwrite(cs_data_fname, masterTrajster);
+csvwrite(cs_data_fname, master_data_vec);
 
 %%
 dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out.csv');
