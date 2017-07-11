@@ -1,0 +1,17 @@
+*.JPG
+*.lvbitx
+*.fig
+qpPaper/
+quadProg/
+qpFPGA_*
+dsp48e_hdl_mac/
+afm_imaging_sandbox/
+LRC_ptos_tac/
+MAC_project.zip
+Program Files (x86)/
+afm_MPC_compare -optimize/
+afm_MPC_compare/
+afm_MPC_project/
+afm_ss_singlematrix/
+afm_ss_singlematrix_FXP/
+.svn/
