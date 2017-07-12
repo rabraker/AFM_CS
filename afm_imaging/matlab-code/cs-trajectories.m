@@ -27,7 +27,7 @@ MT.visualize;
 cs_data_fname = 'C:\Users\arnold\Documents\labview\afm_imaging\data\data-in.csv';
 % dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out.csv');
 % csvwrite(cs_data_fname, masterTrajster);
-% csvwrite(cs_data_fname, master_data_vec);
+csvwrite(cs_data_fname, master_data_vec);
 
 %%
 % Test out the mu-path generator.
