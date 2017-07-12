@@ -18,8 +18,7 @@ classdef MeasEntityMu < CsEntity
             self.xref_vec = MeasEntityMu.gen_ramp(x0, self.x_rate, N);
             self.yref_vec = MeasEntityMu.gen_ramp(y0, self.y_rate, N);
             self.index_vec = ones(N, 1)*index;
-            
-            
+            self.index_vec(end) = -1;
         end
         
     end

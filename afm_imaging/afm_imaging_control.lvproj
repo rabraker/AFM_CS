@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='UTF-8'?>
-<Project Type="Project" LVVersion="15008000">
+<Project Type="Project" LVVersion="17008000">
 	<Property Name="NI.LV.All.SourceOnly" Type="Bool">true</Property>
 	<Property Name="NI.Project.Description" Type="Str"></Property>
 	<Property Name="varPersistentID:{0C705820-0FD4-46CA-B413-3DD1650FFF34}" Type="Ref">/My Computer/UnitTests/test_pushdata_singleperiod.vi/Accumulate 1/error in</Property>
@@ -271,6 +271,7 @@ DirectoryIndex index.htm
 			<Property Name="crio.ProgrammingMode" Type="Str">fpga</Property>
 			<Property Name="crio.ResourceID" Type="Str">RIO0</Property>
 			<Property Name="crio.Type" Type="Str">cRIO-9082</Property>
+			<Property Name="NI.SortType" Type="Int">3</Property>
 			<Item Name="FPGA Target SPARTAN6 9082" Type="FPGA Target">
 				<Property Name="AutoRun" Type="Bool">false</Property>
 				<Property Name="CCSymbols" Type="Str">SIMULATE_XILINX_IP,FALSE;</Property>
@@ -1335,6 +1336,9 @@ DirectoryIndex index.htm
 						<Property Name="TopLevelVI" Type="Ref">/RT cRIO-9082/Chassis/FPGA Target SPARTAN6 9082/cs-scanning.vi</Property>
 					</Item>
 				</Item>
+			</Item>
+			<Item Name="Real-Time Scan Resources" Type="Module Container">
+				<Property Name="crio.ModuleContainerType" Type="Str">crio.RSIModuleContainer</Property>
 			</Item>
 		</Item>
 		<Item Name="rt-test.vi" Type="VI" URL="../rt-test.vi"/>

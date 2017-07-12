@@ -10,17 +10,17 @@ classdef (Abstract) CsEntity
     
     methods 
 %         asVector(obj)
-        function mergedTraj = asVector(self)
+        function mergedTraj = as_vector(self)
             N = size(self.xref_vec, 1);
             mergedTraj = zeros(N*3, 1);
             
             % 3-row by N-col matrix
-            mergedTraj = self.asMatrix();
+            mergedTraj = self.as_matrix();
             % This does the interleaving.
             mergedTraj = mergedTraj(:);
         end
         
-        function matTraj = asMatrix(self)
+        function matTraj = as_matrix(self)
             % a(:)' ensures we get a row vector. So this will get us a 
             % 3-row by N-col matrix
             matTraj = [self.xref_vec(:)';

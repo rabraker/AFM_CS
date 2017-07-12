@@ -5,7 +5,7 @@ classdef MasterTrajster
     
     % ME and MVE should be classes of measurement entity and move entity.
     % That means that should be able to be initialized with 
-    % scalars (x_ref, y_ref, N, index) and must have a method asVector()
+    % scalars (x_ref, y_ref, N, index) and must have a method as_vector()
     % which returns the inter-leaved column vector.
     
     
@@ -38,7 +38,7 @@ classdef MasterTrajster
             obj.MeasEntity = MeasEntity;
         end
         
-        function masterTraj = asVector(self)
+        function masterTraj = as_vector(self)
             % INIT: State 2
             masterTraj = [];
             for iter = 1:length(self.XR)
@@ -46,18 +46,18 @@ classdef MasterTrajster
                 ith_meta = self.meta_cell{iter};
                 MVE_i = self.MoveEntity(self.XR(iter), self.YR(iter));   
                 
-                masterTraj = [masterTraj; MVE_i.asVector()];
+                masterTraj = [masterTraj; MVE_i.as_vector()];
                 % State 2: Define this separatly, instead of just holding
                 % at the same XR, YR so that in the future this same stuff 
                 % can define, eg. a mu-path.
                 ME_i = self.MeasEntity(self.XR(iter), self.YR(iter),...
                     ith_meta, iter);   
-                masterTraj = [masterTraj; ME_i.asVector()];
+                masterTraj = [masterTraj; ME_i.as_vector()];
             end
         end
 
             
-        function [measCell, moveCell] = asMatrix(self)
+        function [measCell, moveCell] = as_matrix(self)
             moveCell = {};
             measCell = {};
             for iter = 1:length(self.XR)
@@ -65,20 +65,24 @@ classdef MasterTrajster
                 ith_meta = self.meta_cell{iter};
                 MVE_i = self.MoveEntity(self.XR(iter), self.YR(iter));   
 
-                moveCell{iter} = MVE_i.asMatrix();
+                moveCell{iter} = MVE_i.as_matrix();
                 
                 % State 2: Define this separatly, instead of just holding
                 % at the same XR, YR so that in the future this same stuff 
                 % can define, eg. a mu-path.
                 ME_i = self.MeasEntity(self.XR(iter), self.YR(iter),...
                     ith_meta, iter);   
-                measCell{iter} = ME_i.asMatrix();
+                measCell{iter} = ME_i.as_matrix();
             end
 
         end
         
+        function write_csv(self, fname)
+            csvwrite(self.as_vector(), fname);
+        end
+        
         function H = visualize(self)
-            [measCell, moveCell] = self.asMatrix();
+            [measCell, moveCell] = self.as_matrix();
             N = size(measCell, 2);
             
             % Setup the figure.

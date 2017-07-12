@@ -12,12 +12,12 @@ classdef MoveEntityStatic < CsEntity
     end
     
     methods
-        function obj = MoveEntityStatic(x_ref, y_ref, N)
+        function self = MoveEntityStatic(x_ref, y_ref, N)
             index = 0;
             % All measurements have a DIFFERENT index.
-            obj.xref_vec = ones(N, 1)*x_ref;
-            obj.yref_vec = ones(N, 1)*y_ref;
-            obj.index_vec = ones(N, 1)*index;
+            self.xref_vec = ones(N, 1)*x_ref;
+            self.yref_vec = ones(N, 1)*y_ref;
+            self.index_vec = ones(N, 1)*index;
         end
         
     end

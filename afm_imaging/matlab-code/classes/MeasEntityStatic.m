@@ -14,6 +14,7 @@ classdef MeasEntityStatic < CsEntity
             self.xref_vec = ones(N, 1)*x_ref;
             self.yref_vec = ones(N, 1)*y_ref;
             self.index_vec = ones(N, 1)*index;
+            self.index_vec(end) = -1;
         end
     end
     methods(Static)
