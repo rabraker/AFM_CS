@@ -139,9 +139,9 @@
 			<Item Name="boolean_errors.ctl" Type="VI" URL="../controls/boolean_errors.ctl"/>
 			<Item Name="PI-params.ctl" Type="VI" URL="../controls/PI-params.ctl"/>
 			<Item Name="boolean_info.ctl" Type="VI" URL="../controls/boolean_info.ctl"/>
-			<Item Name="afmimagingcontro_FPGATargetSPARTA_pure-cs-scanning_50aLtqPG5pI.lvbitx" Type="Document" URL="../FPGA Bitfiles/afmimagingcontro_FPGATargetSPARTA_pure-cs-scanning_50aLtqPG5pI.lvbitx"/>
 			<Item Name="afmimagingcontro_FPGATargetSPARTA_analyze-z-axis_yYroOCuDKm4.lvbitx" Type="Document" URL="../FPGA Bitfiles/afmimagingcontro_FPGATargetSPARTA_analyze-z-axis_yYroOCuDKm4.lvbitx"/>
 			<Item Name="afmimagingcontro_FPGATargetSPARTA_analyze-z-axis-a_s0ep9mccPBQ.lvbitx" Type="Document" URL="../FPGA Bitfiles/afmimagingcontro_FPGATargetSPARTA_analyze-z-axis-a_s0ep9mccPBQ.lvbitx"/>
+			<Item Name="afmimagingcontro_FPGATargetSPARTA_cs-scanning_gCu814jKz54.lvbitx" Type="Document" URL="../FPGA Bitfiles/afmimagingcontro_FPGATargetSPARTA_cs-scanning_gCu814jKz54.lvbitx"/>
 		</Item>
 		<Item Name="Build Specifications" Type="Build">
 			<Item Name="FPGA Control on CompactRIO UI" Type="EXE">
@@ -1257,42 +1257,6 @@ DirectoryIndex index.htm
 						<Property Name="SupportResourceEstimation" Type="Bool">true</Property>
 						<Property Name="TargetName" Type="Str">FPGA Target SPARTAN6 9082</Property>
 						<Property Name="TopLevelVI" Type="Ref">/RT cRIO-9082/Chassis/FPGA Target SPARTAN6 9082/analyze-z-axis.vi</Property>
-					</Item>
-					<Item Name="self-resetting-iter-TEST" Type="{F4C5E96F-7410-48A5-BB87-3559BC9B167F}">
-						<Property Name="AllowEnableRemoval" Type="Bool">false</Property>
-						<Property Name="BuildSpecDecription" Type="Str"></Property>
-						<Property Name="BuildSpecName" Type="Str">self-resetting-iter-TEST</Property>
-						<Property Name="Comp.BitfileName" Type="Str">afmimagingcontro_FPGATargetSPARTA_self-resetting-i_sSH93kgsc4g.lvbitx</Property>
-						<Property Name="Comp.CustomXilinxParameters" Type="Str"></Property>
-						<Property Name="Comp.MaxFanout" Type="Int">-1</Property>
-						<Property Name="Comp.RandomSeed" Type="Bool">false</Property>
-						<Property Name="Comp.Version.Build" Type="Int">0</Property>
-						<Property Name="Comp.Version.Fix" Type="Int">0</Property>
-						<Property Name="Comp.Version.Major" Type="Int">1</Property>
-						<Property Name="Comp.Version.Minor" Type="Int">0</Property>
-						<Property Name="Comp.VersionAutoIncrement" Type="Bool">false</Property>
-						<Property Name="Comp.Vivado.EnableMultiThreading" Type="Bool">true</Property>
-						<Property Name="Comp.Vivado.OptDirective" Type="Str"></Property>
-						<Property Name="Comp.Vivado.PhysOptDirective" Type="Str"></Property>
-						<Property Name="Comp.Vivado.PlaceDirective" Type="Str"></Property>
-						<Property Name="Comp.Vivado.RouteDirective" Type="Str"></Property>
-						<Property Name="Comp.Vivado.RunPowerOpt" Type="Bool">false</Property>
-						<Property Name="Comp.Vivado.Strategy" Type="Str">Default</Property>
-						<Property Name="Comp.Xilinx.DesignStrategy" Type="Str">balanced</Property>
-						<Property Name="Comp.Xilinx.MapEffort" Type="Str">high(timing)</Property>
-						<Property Name="Comp.Xilinx.ParEffort" Type="Str">standard</Property>
-						<Property Name="Comp.Xilinx.SynthEffort" Type="Str">normal</Property>
-						<Property Name="Comp.Xilinx.SynthGoal" Type="Str">speed</Property>
-						<Property Name="Comp.Xilinx.UseRecommended" Type="Bool">true</Property>
-						<Property Name="DefaultBuildSpec" Type="Bool">true</Property>
-						<Property Name="DestinationDirectory" Type="Path">FPGA Bitfiles</Property>
-						<Property Name="ProjectPath" Type="Path">/C/Users/arnold/Documents/labview/afm_imaging/afm_imaging_control.lvproj</Property>
-						<Property Name="RelativePath" Type="Bool">true</Property>
-						<Property Name="RunWhenLoaded" Type="Bool">false</Property>
-						<Property Name="SupportDownload" Type="Bool">true</Property>
-						<Property Name="SupportResourceEstimation" Type="Bool">true</Property>
-						<Property Name="TargetName" Type="Str">FPGA Target SPARTAN6 9082</Property>
-						<Property Name="TopLevelVI" Type="Ref">/RT cRIO-9082/Chassis/FPGA Target SPARTAN6 9082/SUB_VI_s/Unit Tests/self-resetting-iter-TEST.vi</Property>
 					</Item>
 					<Item Name="analyze-z-axis-agilent" Type="{F4C5E96F-7410-48A5-BB87-3559BC9B167F}">
 						<Property Name="AllowEnableRemoval" Type="Bool">false</Property>
