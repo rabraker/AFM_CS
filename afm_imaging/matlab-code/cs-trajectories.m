@@ -13,9 +13,9 @@ clc
 addpath('classes')
 N_mve = 5000;
 
-XR = [-.5, .5, 0.25];
-YR = [-.4, .4, 0.15];
-meta_cell = {5000, 5000, 5000};
+XR = [-.5, .5, 0.25, 0];
+YR = [-.4, .4, 0.15, 0];
+meta_cell = {5000, 5000, 5000, 5000};
 MT = MasterTrajster(XR, YR, meta_cell, MoveEntityStatic.factory(N_mve),...
         @MeasEntityStatic);
 
@@ -27,7 +27,7 @@ MT.visualize;
 cs_data_fname = 'C:\Users\arnold\Documents\labview\afm_imaging\data\data-in.csv';
 % dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out.csv');
 % csvwrite(cs_data_fname, masterTrajster);
-% csvwrite(cs_data_fname, master_data_vec);
+csvwrite(cs_data_fname, master_data_vec);
 
 %%
 % Test out the mu-path generator.
