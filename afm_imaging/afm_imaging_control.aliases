@@ -1,5 +1,5 @@
 [My Computer]
-My Computer = "192.168.1.120"
+My Computer = "10.0.2.15"
 
 [RT cRIO-9082]
 RT cRIO-9082 = "192.168.1.104"
