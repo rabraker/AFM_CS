@@ -9,6 +9,7 @@ I term these scan patterns *Measurement Entities*(ME). For every CS modality, th
 
 The ME only defines the system behaivior while we are actually taking a measurement. The other crucial aspect is how we move *between*  measurements. I call these Move-Entities (MVE). 
 
+Perhaps the easiest way to see what I'm talking about is to dig into `cs-trajectories.m`. 
 
 The Classes
 ```
