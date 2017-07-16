@@ -1,14 +1,8 @@
 classdef MasterTrajster
-    %MASTERTRAJSTER Summary of this class goes here
-    %   Detailed explanation goes here
-    
-    
-    % ME and MVE should be classes of measurement entity and move entity.
-    % That means that should be able to be initialized with 
-    % scalars (x_ref, y_ref, N, index) and must have a method as_vector()
-    % which returns the inter-leaved column vector.
-    
-    
+
+   % Defines the data structure for building up FIFO data for use in
+   % labview. See the example `cs-trajectories-example.m` in the examples
+   % folder. 
     
     properties
         XR;           % row vectory of x-points
@@ -18,8 +12,8 @@ classdef MasterTrajster
                       % the current measurement for. 
         num_entities; % number of 'entities', ie, total number of 
                       % measurements.
-        MoveEntity;   %
-        MeasEntity;   %
+        MoveEntity;   % A handle to a subclass of CsEntity.
+        MeasEntity;   % A handle to a subclass of CsEntity.
     end
     
     methods
@@ -39,20 +33,21 @@ classdef MasterTrajster
         end
         
         function masterTraj = as_vector(self)
-            % INIT: State 2
+            % Combines the interleaved data from all N ME and MVE into a
+            % single, long vector. This is the data we want to use in
+            % LabView. 
+            
+            % INIT: 
             masterTraj = [];
             for iter = 1:length(self.XR)
-                % state 4
                 ith_meta = self.meta_cell{iter};
+                % get the actual data.
                 MVE_i = self.MoveEntity(self.XR(iter), self.YR(iter));   
-                
-                masterTraj = [masterTraj; MVE_i.as_vector()];
-                % State 2: Define this separatly, instead of just holding
-                % at the same XR, YR so that in the future this same stuff 
-                % can define, eg. a mu-path.
                 ME_i = self.MeasEntity(self.XR(iter), self.YR(iter),...
                     ith_meta, iter);   
-                masterTraj = [masterTraj; ME_i.as_vector()];
+                % Concatenate in the master vector. 
+                masterTraj = [masterTraj; MVE_i.as_vector(); ME_i.as_vector()];
+               
             end
         end
 
@@ -61,7 +56,7 @@ classdef MasterTrajster
             moveCell = {};
             measCell = {};
             for iter = 1:length(self.XR)
-                % state 1
+                % State 1:
                 ith_meta = self.meta_cell{iter};
                 MVE_i = self.MoveEntity(self.XR(iter), self.YR(iter));   
 
@@ -78,10 +73,19 @@ classdef MasterTrajster
         end
         
         function write_csv(self, fname)
-            csvwrite(self.as_vector(), fname);
+            % Write the interleaved vector data into a file. This is the
+            % link to LabView and is exactly the data we want to stuff into
+            % the FIFO buffer.
+            csvwrite(fname, self.as_vector());
         end
         
         function H = visualize(self)
+            % Plots, in the time-domain, the constructed movements and
+            % measurements. I think it would be better to move the actually
+            % plotting into the classes themselves. This way, for example,
+            % the plotting MeasEntitySatic data could result in a dot
+            % instead of nothing, like it currently does (since all the
+            % points are at the same place).
             [measCell, moveCell] = self.as_matrix();
             N = size(measCell, 2);
             
@@ -131,7 +135,6 @@ classdef MasterTrajster
             end
             
         end % end self.visualize()
-            
     end
     
 end
