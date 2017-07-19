@@ -35,7 +35,12 @@ classdef MeasEntityMu < CsEntity
             
             % N-1 because x0 is sample 1.
             x_N = x0 + (N-1)*x_rate;
-            x_vec = [x0:x_rate:x_N];
+            
+            % This will put out a zero length vector if x_rate =0.
+            % x_vec = [x0:x_rate:x_N];
+            
+            x_vec = linspace(x0, x_N, N);
+            
         end
     end
 end
