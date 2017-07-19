@@ -74,6 +74,7 @@
 		<Item Name="play_AFM_TF.vi" Type="VI" URL="../play_AFM_TF.vi"/>
 		<Item Name="play-AFM-raster-imaging-open-loop-singleperiod.vi" Type="VI" URL="../play-AFM-raster-imaging-open-loop-singleperiod.vi"/>
 		<Item Name="play-AFM-CS-imaging.vi" Type="VI" URL="../play-AFM-CS-imaging.vi"/>
+		<Item Name="input-validation.vi" Type="VI" URL="../subVIs/input-validation.vi"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="BuildHelpPath.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/BuildHelpPath.vi"/>
@@ -133,6 +134,7 @@
 				<Item Name="Write Delimited Spreadsheet (I64).vi" Type="VI" URL="/&lt;vilib&gt;/Utility/file.llb/Write Delimited Spreadsheet (I64).vi"/>
 				<Item Name="Write Delimited Spreadsheet (DBL).vi" Type="VI" URL="/&lt;vilib&gt;/Utility/file.llb/Write Delimited Spreadsheet (DBL).vi"/>
 				<Item Name="Write Delimited Spreadsheet.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/file.llb/Write Delimited Spreadsheet.vi"/>
+				<Item Name="Simple Error Handler.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/Simple Error Handler.vi"/>
 			</Item>
 			<Item Name="NiFpgaLv.dll" Type="Document" URL="NiFpgaLv.dll">
 				<Property Name="NI.PreserveRelativePath" Type="Bool">true</Property>
@@ -1391,6 +1393,8 @@ DirectoryIndex index.htm
 						<Property Name="Comp.Xilinx.UseRecommended" Type="Bool">true</Property>
 						<Property Name="DefaultBuildSpec" Type="Bool">true</Property>
 						<Property Name="DestinationDirectory" Type="Path">FPGA Bitfiles</Property>
+						<Property Name="NI.LV.FPGA.LastCompiledBitfilePath" Type="Path">/C/Users/arnold/Documents/labview/afm_imaging/FPGA Bitfiles/afmimagingcontro_FPGATargetSPARTA_cs-scanning_gCu814jKz54.lvbitx</Property>
+						<Property Name="NI.LV.FPGA.LastCompiledBitfilePathRelativeToProject" Type="Path">FPGA Bitfiles/afmimagingcontro_FPGATargetSPARTA_cs-scanning_gCu814jKz54.lvbitx</Property>
 						<Property Name="ProjectPath" Type="Path">/C/Users/arnold/Documents/labview/afm_imaging/afm_imaging_control.lvproj</Property>
 						<Property Name="RelativePath" Type="Bool">true</Property>
 						<Property Name="RunWhenLoaded" Type="Bool">false</Property>
