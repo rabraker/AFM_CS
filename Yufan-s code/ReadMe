@@ -1,8 +1,11 @@
 Folds:
 
-1. continuous_sampling:    For continuous sampling.
+1. continuous_sampling:          For continuous sampling.
 
-2. mupath_sampling:        For mu path pattern sampling.
+2. mupath_sampling:              For mu path pattern sampling.
 
+3. reconstruction methods:       For image reconstruction, inculding:...
 
+                                      Compressive sensing reconstruction methods: BP, CoSaMP, SMP.
+                                      Inpainting reconstruction methods: LCIS, TV.
 
