@@ -17,8 +17,8 @@ PLANT_init_x = ltiFit(modFitPath, 'SS02').sys;
 
 Ts = 40e-6;
 TsTicks = 1600;
-
-lines_sec = 0.2;
+Ki_x = 0.005;
+lines_sec = 01;
 sec_line = 1/lines_sec;
 image_side = 5; % micro-meters.
 raster_amplitude = image_side/2; 
@@ -46,16 +46,11 @@ x_rasterdata.Data = (x_rasterdata.Data +1)*raster_amplitude;
 y_rasterdata = timeseries(linspace(0, y_height, length(x_rasterdata.Time))',...
                 x_rasterdata.Time);
 
-% FeedForward Gains
-dc_gainx = 0.65;
-
-x_ffK = mu2volts/dc_gainx;
-y_ffK = mu2volts/dc_gainx;
 
 
-
-
-[y, t] = lsim(PLANT_init_x, x_rasterdata.Data*x_ffK, x_rasterdata.Time);
+D_x = tf(Ki_x, [1 -1], Ts);
+H_x = feedback(D_x*PLANT_init_x, 1);
+[y, t] = lsim(H_x, x_rasterdata.Data*mu2volts, x_rasterdata.Time);
 
 figure(1); clf; hold on
 plot(x_rasterdata.Time, x_rasterdata.Data, t, y*volts2mu, '--')
@@ -69,8 +64,8 @@ plot(y_rasterdata.Time, y_rasterdata.Data);
 xy_data = zeros(2*length(x_rasterdata.Time), 1);
 j = 1;
 for k=1:2:length(xy_data)
-    xy_data(k) = x_rasterdata.Data(j);
-    xy_data(k+1) = y_rasterdata.Data(j);
+    xy_data(k) = x_rasterdata.Data(j)*mu2volts;
+    xy_data(k+1) = y_rasterdata.Data(j)*mu2volts;
     j = j+1;
 end
 
@@ -81,7 +76,7 @@ data_in_path = 'C:\Users\arnold\Documents\labview\afm_imaging\data\data-in-singl
 csvwrite(data_in_path, xy_data);
 
 
-ln
+
 
 
 
