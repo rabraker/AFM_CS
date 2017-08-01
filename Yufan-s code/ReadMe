@@ -9,7 +9,8 @@ Folds:
                                       Compressive sensing reconstruction methods: BP, CoSaMP, SMP.
                                       Inpainting reconstruction methods: LCIS, TV.
 
-4. support_files:                For my own use. (unnecessary to read, just test files to make sure how Labview & FPGA work)
+4. support_files:                For my own use. (unnecessary to read, just test files to make sure how 
+                                 Labview & FPGA work)
 
 5. trajectory files:             Sampling trajactory data.
 
