@@ -23,11 +23,11 @@ addpath('classes');  % This will fail depending on where you run the script from
 N_mve = 1;
 
 % A X-Y points at which to take measurements. 
-XR = [-.5, .5, 0.25, 0];
-YR = [-.4, .4, 0.15, 0];
+XR = [-.5, .5, 0.25, 0, 0, 0]*0;
+YR = [-.4, .4, 0.15, 0, 0, 0]*0;
 % How long should we sit at eache point? 
-N_me = 5000;  % Probably absurdly long. 
-meta_cell = {N_me, N_me, N_me, N_me};
+N_me = 2000;  % Probably absurdly long. 
+meta_cell = {N_me, N_me, N_me, N_me, N_me, N_me};
 
 % Instantiate. 
 MT = MasterTrajster(XR, YR, meta_cell, MoveEntityStatic.factory(N_mve),...
@@ -41,8 +41,8 @@ master_data_vec = MT.as_vector();
 MT.visualize;
 
 % File name for output of csv.
-% cs_data_fname = 'C:\Users\arnold\Documents\labview\afm_imaging\data\data-in2.csv';
-% MT.write_csv(cs_data_fname);
+cs_data_fname = 'C:\Users\arnold\Documents\labview\afm_imaging\data\data-in2.csv';
+MT.write_csv(cs_data_fname);
 
 %%
 % Example 2. mu-paths. 
@@ -58,14 +58,14 @@ meta_cell = {N_me, N_me, N_me};
 
 % When we generate a paramaterized MeasEntityMu, we provide a vector of
 % scan-rates. This is pretty slow.
-ME = MeasEntityMu.factory([1/4000, 1/4000]);
+ME = MeasEntityMu.factory([1/4000, 0]);
 MT = MasterTrajster(XR, YR, meta_cell, MoveEntityStatic.factory(N_mve),...
         ME);
 
 MT.visualize
 
-% cs_data_fname_mu = 'C:\Users\arnold\Documents\labview\afm_imaging\data\data-in-mu.csv';
-% MT.write_csv(cs_data_fname_mu)
+cs_data_fname_mu = 'C:\Users\arnold\Documents\labview\afm_imaging\data\data-in-mu.csv';
+MT.write_csv(cs_data_fname_mu)
 
 
 %%

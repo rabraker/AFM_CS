@@ -20,7 +20,7 @@ TsTicks = 1600;
 
 lines_sec = 0.2;
 sec_line = 1/lines_sec;
-image_side = 15; % micro-meters.
+image_side = 5; % micro-meters.
 raster_amplitude = image_side/2; 
 volts2mu = 5;
 mu2volts = 1/volts2mu;
