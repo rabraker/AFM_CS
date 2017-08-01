@@ -8,17 +8,17 @@ N_mve = 1;
 mu = 1
 % A X-Y points at which to take measurements. 
 npts = 20;
-XR = rand(npts)*2;
+XR = rand(npts)*1;
 YR = rand(npts)*2;
 % XR = zeros(1, npts);
 % YR = zeros(1, npts);
 % How long should we sit at eache point? 
-N_me = 8000;  % Probably absurdly long. 
+N_me = 5000;  % Probably absurdly long. 
 meta_cell = repmat({N_me}, 1, npts);
 
 % Instantiate. 
 if mu
-    ME = MeasEntityMu.factory([1/5000, 0]);
+    ME = MeasEntityMu.factory([1/8000, 0]);
     MT = MasterTrajster(XR, YR, meta_cell, MoveEntityStatic.factory(N_mve),...
            ME);
 else
@@ -36,8 +36,12 @@ MT.visualize;
 cs_data_fname = 'C:\Users\arnold\Documents\labview\afm_imaging\data\data-in2.csv';
 MT.write_csv(cs_data_fname);
 
+w = 1000*2*pi;
+Gs = tf(w^2, [1 2*.7*w, w^2]);
+G = c2d(Gs, Ts)
+
 %%
-dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out5.csv');
+dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out.csv');
 
 size(dat)
 % [ x(k), y(k), e_z(k),  z(k), u_z(k), FIFO_INDEX(k),  ]
@@ -50,7 +54,7 @@ index_dat = dat(:,6);
 figure(2)
 subplot(2,1,1)
 plot(uz_dat)
-% ylim([-.7, -.2])
+ylim([-1, 1])
 
 subplot(2,1,2)
 plot(err_dat)

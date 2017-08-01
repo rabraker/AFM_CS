@@ -51,6 +51,7 @@
 			<Item Name="nearest_multiple.vi" Type="VI" URL="../nearest_multiple.vi"/>
 			<Item Name="average_line.vi" Type="VI" URL="../average_line.vi"/>
 			<Item Name="getControlData.vi" Type="VI" URL="../subVIs/getControlData.vi"/>
+			<Item Name="UnpackData_fxp16_5.vi" Type="VI" URL="../subVIs/UnpackData_fxp16_5.vi"/>
 		</Item>
 		<Item Name="sandbox" Type="Folder">
 			<Item Name="shared-variable-host.vi" Type="VI" URL="../sandbox/shared-variable-host.vi"/>
@@ -69,7 +70,6 @@
 		<Item Name="play-AFM-raster-imaging-open-loop-singleperiod.vi" Type="VI" URL="../play-AFM-raster-imaging-open-loop-singleperiod.vi"/>
 		<Item Name="play-AFM-CS-imaging.vi" Type="VI" URL="../play-AFM-CS-imaging.vi"/>
 		<Item Name="input-validation.vi" Type="VI" URL="../subVIs/input-validation.vi"/>
-		<Item Name="UnpackData_fxp16_5.vi" Type="VI" URL="../subVIs/UnpackData_fxp16_5.vi"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="BuildHelpPath.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/BuildHelpPath.vi"/>
@@ -1133,6 +1133,12 @@ DirectoryIndex index.htm
 						<Item Name="Clear Errors.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/Clear Errors.vi"/>
 						<Item Name="lvSimController.dll" Type="Document" URL="/&lt;vilib&gt;/rvi/Simulation/lvSimController.dll"/>
 					</Item>
+					<Item Name="Accumulator_53DC2439CD9149F49F85B82DAD68175F.dll" Type="Document" URL="../fpga_VIs/fpga_subVIs/averager/Accumulator/Accumulator_53DC2439CD9149F49F85B82DAD68175F.dll"/>
+					<Item Name="Add_SCTL_L0_C3ADE5BE76064AA39E7EE6565DE88692.dll" Type="Document" URL="../fpga_VIs/floating_point_toolkit/Add SCTL L0/Add_SCTL_L0_C3ADE5BE76064AA39E7EE6565DE88692.dll"/>
+					<Item Name="Add_SCTL_L1_C3ADE5BE76064AA39E7EE6565DE88692.dll" Type="Document" URL="../fpga_VIs/floating_point_toolkit/Add SCTL L1/Add_SCTL_L1_C3ADE5BE76064AA39E7EE6565DE88692.dll"/>
+					<Item Name="Compare_SCTL_C3ADE5BE76064AA39E7EE6565DE88692.dll" Type="Document" URL="../fpga_VIs/floating_point_toolkit/Compare SCTL/Compare_SCTL_C3ADE5BE76064AA39E7EE6565DE88692.dll"/>
+					<Item Name="Multiply_SCTL_L1_C3ADE5BE76064AA39E7EE6565DE88692.dll" Type="Document" URL="../fpga_VIs/floating_point_toolkit/Multiply SCTL L1/Multiply_SCTL_L1_C3ADE5BE76064AA39E7EE6565DE88692.dll"/>
+					<Item Name="Subtract_SCTL_L1_C3ADE5BE76064AA39E7EE6565DE88692.dll" Type="Document" URL="../fpga_VIs/floating_point_toolkit/Subtract SCTL L1/Subtract_SCTL_L1_C3ADE5BE76064AA39E7EE6565DE88692.dll"/>
 				</Item>
 				<Item Name="Build Specifications" Type="Build">
 					<Item Name="explore-z-axis" Type="{F4C5E96F-7410-48A5-BB87-3559BC9B167F}">
