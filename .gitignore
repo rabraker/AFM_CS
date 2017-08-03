@@ -15,3 +15,6 @@ afm_MPC_project/
 afm_ss_singlematrix/
 afm_ss_singlematrix_FXP/
 .svn/
+slprj
+*.autosave
+*~

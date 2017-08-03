@@ -31,7 +31,7 @@ master_data_vec = MT.as_vector();
 
 % Plot. The movement is only a single point, so it doesn't show up. 
 MT.visualize;
-
+%%
 % File name for output of csv.
 cs_data_fname = 'C:\Users\arnold\Documents\labview\afm_imaging\data\data-in2.csv';
 MT.write_csv(cs_data_fname);
