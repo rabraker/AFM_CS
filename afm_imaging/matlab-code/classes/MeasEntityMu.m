@@ -6,7 +6,7 @@ classdef MeasEntityMu < CsEntity
         xref_vec;
         yref_vec;
         index_vec;
-        x_rate;
+        x_rate; % volts per sample
         y_rate;
     end
     
