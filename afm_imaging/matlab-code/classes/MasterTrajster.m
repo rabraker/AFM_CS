@@ -78,6 +78,42 @@ classdef MasterTrajster
             % the FIFO buffer.
             csvwrite(fname, self.as_vector());
         end
+        function H = visualize_sampling(self)
+            % Plots, in the time-domain, the constructed movements and
+            % measurements. I think it would be better to move the actually
+            % plotting into the classes themselves. This way, for example,
+            % the plotting MeasEntitySatic data could result in a dot
+            % instead of nothing, like it currently does (since all the
+            % points are at the same place).
+            [measCell, moveCell] = self.as_matrix();
+            N = size(measCell, 2);
+            
+            % Setup the figure.
+            H = figure(2);clf;
+            hold on
+            axx = gca();
+            xlabel('x')
+            ylabel('y')
+
+            cme = 'k';
+            
+            % Each iteration is a new entity with two parts: the *move*
+            % (MVE_i) and the *measurement* (ME_i).
+            for iter=1:N
+                % step 1: MOVE
+                MVE_i = moveCell{iter};
+                
+                % step 2: measure
+                ME_i = measCell{iter};
+                x_meas = ME_i(1,:);
+                y_meas = ME_i(2,:);
+
+                plot(axx, x_meas, y_meas, cme, 'linewidth', 2)
+
+            end
+            
+        end % end self.visualize_sampling()
+ 
         
         function H = visualize(self)
             % Plots, in the time-domain, the constructed movements and
