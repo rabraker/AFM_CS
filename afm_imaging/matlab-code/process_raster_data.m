@@ -1,6 +1,7 @@
 clc
 close all
-data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data'
+data_root = '/home/arnold/gradschool/afm-cs/afm_imaging/data';
+% data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data'
 datmat = csvread(fullfile(data_root, 'raster_8-1-2017_v3.csv'));
 % datmat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out.csv');
 datmat = datmat(:,2:end)';
