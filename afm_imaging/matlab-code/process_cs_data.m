@@ -52,7 +52,12 @@ for k = 1:max(dat_meas(:,end))
 end
 %%
 close all
-figure; hold on;
+f1 = figure(1);
+ylabel('u_z')
+xlabel('pixel')
+ax1 = gca();
+hold on;
+
 hole_depth = (20/7)*(1/1000)*(20)
 I = zeros(pix, pix);
 pixelifsampled = I;
@@ -61,12 +66,14 @@ for k = 1:length(pix_dat)
     x_pix = pix_dat{k}(:,1);
     y_pix = pix_dat{k}(:,2);
 
+    % Hueristic to determine if a path contained a hole. At the moment,
+    % just use this information to plot the uz data for each path. 
     if abs(max(u_pix) - min(u_pix))> hole_depth*.5
        % Then we have an edge. 
-        have_edge = 1;
+       % have_edge = 1;
         cs = 'r';
     else
-        have_edge = 0;
+        % have_edge = 0;
         cs = 'b';
     end
     
@@ -81,7 +88,7 @@ for k = 1:length(pix_dat)
     u_pix = u_pix - max(u_pix);
     
     % Just to get a feel for things:
-    plot(u_pix, 'color', cs)
+    plot(ax1, u_pix, 'color', cs)
     ylim([-hole_depth, hole_depth])
     
     for jj = 1:length(u_pix)
@@ -96,11 +103,11 @@ for k = 1:length(pix_dat)
     
     
 end
-figure
+%%
+f2 = figure(2); clf
+ax2 = gca();
+imshow_sane(I, ax2, width, width);
 
-lo = min(min(I));
-hi = max(max(I));
-imshow(flipud(I), [lo, hi])
 
 %%
 
@@ -118,15 +125,18 @@ A = @(x) IDCTfun(x,pixelifsampled);
 At = @(x) DCTfun(x,pixelifsampled);
 
 Ir = idct(l1qc_logbarrier(At(I_vector), A, At, I_vector, 0.1));
-
-close all;
-
 Ir = real(Ir);
+%%
+% close all;
+f3 = figure(3)
 subplot(1,2,1)
-imshow(I.*PixelVectorToMatrix(pixelifsampled,[n m]),[lo, hi]);
+ax3 = gca();
+imshow_sane(I.*PixelVectorToMatrix(pixelifsampled,[n m]), ax3, width, width);
 title('sample');
+
 subplot(1,2,2)
-imshow(PixelVectorToMatrix(Ir,[n m]),[min(Ir), max(Ir)]);
+ax4 = gca();
+imshow_sane(PixelVectorToMatrix(Ir,[n m]), ax4, width, width);
 title('BP reconstruction');
 
 
