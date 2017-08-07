@@ -1,10 +1,17 @@
 clc
 clear
 pix = 256;
-width = 5
-pix_per_volt = (pix/width)*5
+width = 5;
+microns_per_volt = 50/10;
+pix_per_volt = (pix/width)*microns_per_volt;
 
-dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/cs-data-out02.csv');
+
+% This path should be set to the root of your github working directory. 
+% root = 'C:\Users\arnold\Documents\labview';  % For windows
+root = '/home/arnold/gradschool/afm-cs';
+addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
+
+dat = csvread(fullfile(root, 'afm_imaging/data/cs-data-out02.csv'));
 
 % Drop all data corresponding to movement between points.
 ind_meas = find(dat(:, 6) ~= 0);  % Index of the movements are all 0.
@@ -15,7 +22,7 @@ dat_meas = dat(ind_meas, :);
 dat_meas(:,5) = detrend(dat_meas(:,5)); % detrend u_z as a long vector
 
 % Split each measurement entities into a cell array.
-%%
+
 % bin all the data into pixels. 
 for k = 1:max(dat_meas(:,end))
    
@@ -33,8 +40,8 @@ for k = 1:max(dat_meas(:,end))
    U_ks = dat_meas(inds, 5);
    
    % Convert the x and y voltage data into bined and averaged pixel coordinates.
-   x_pix = floor(pixelize(X_ks, npix)*pix);
-   y_pix = floor(pixelize(Y_ks, npix)*pix);
+   x_pix = floor(pixelize(X_ks, path_pix)*pix);
+   y_pix = floor(pixelize(Y_ks, path_pix)*pix);
    
    % Bin the height/deflection data into pixels and average. 
    e_pix = pixelize(E_ks, path_pix);
@@ -64,7 +71,7 @@ for k = 1:length(pix_dat)
     end
     
     % The mean doesn't really give us what we want. When a path contains
-    % a hold and the flat area, the mean splits the difference and the
+    % a hole and the flat area, the mean splits the difference and the
     % flat area data is "too high".
     %         u_pix = u_pix - mean(u_pix);
 
@@ -81,7 +88,7 @@ for k = 1:length(pix_dat)
         % Remember how we converted the x and y data into pixel
         % coordinates? Those now act as the indices to fill in the image
         % data.
-            n_row = y_pix(jj)+1;
+            n_row = y_pix(jj)+1;  % pixels start at 0. matlab is 1-based indexing.
             m_col = x_pix(jj)+1;
             I(n_row, m_col) = u_pix(jj);
             pixelifsampled(n_row, m_col) = 1;
@@ -95,11 +102,12 @@ lo = min(min(I));
 hi = max(max(I));
 imshow(flipud(I), [lo, hi])
 
-
 %%
 
-addpath('C:\Users\arnold\Documents\labview\reconstruction\BP\')
-addpath('C:\Users\arnold\Documents\labview\reconstruction\BP\l1magic');
+reconstruct_root = fullfile(root, 'reconstruction/BP');
+reconstruct_path = genpath(reconstruct_root)
+addpath(reconstruct_path)
+
 [n m] = size(I);
 
 I_vector = PixelMatrixToVector(I);
@@ -109,15 +117,9 @@ I_vector = I_vector(find(pixelifsampled>0.5));
 A = @(x) IDCTfun(x,pixelifsampled);
 At = @(x) DCTfun(x,pixelifsampled);
 
-
-close all;
-
-
 Ir = idct(l1qc_logbarrier(At(I_vector), A, At, I_vector, 0.1));
 
-
 close all;
-
 
 Ir = real(Ir);
 subplot(1,2,1)
