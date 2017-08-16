@@ -14,8 +14,8 @@ addpath('classes')
 
 width = 5;  % microns
 pix = 256;  % image resolution.
-minpath = 0.25;  % 250 nm. length of the horizontal mu-path. 
-sub_sample_frac = 0.20;  % Percent of pixels to subsample. 
+minpath = 0.5;  % 250 nm. length of the horizontal mu-path. 
+sub_sample_frac = 0.10;  % Percent of pixels to subsample. 
 
 % Unit conversions.
 pix_per_micron = pix/width;

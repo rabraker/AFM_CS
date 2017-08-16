@@ -4,7 +4,8 @@ pix = 256;
 width = 5
 pix_per_volt = (pix/width)*5
 
-dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/cs-data-out02.csv');
+% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/cs-data-out02.csv');
+dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/data-out_ontable_csimage.csv');
 ind_meas = find(dat(:, 6) ~= 0);
 
 dat_meas = dat(ind_meas, :);
