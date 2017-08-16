@@ -55,14 +55,12 @@ for n=1:256 % down rows
    while m < pix - mu_pix  % accros columns
        if rand(1,1) < sub_sample_frac/mu_pix
           pixifsampled(n, m:m+mu_pix) = 1;
-          XR = [XR; (m /pix_per_micron) * microns2volts];
-          YR = [YR; (n /pix_per_micron) * microns2volts];
+          XR = [XR; ( (m - 1) / pix_per_micron) * microns2volts];
+          YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
           m = m + mu_pix;
        else
            m = m+1;
        end
-       
-       
    end
     
 end
@@ -73,7 +71,7 @@ fprintf('Desired sub sample fraction: %f\n', sub_sample_frac)
 fprintf('Actual  sub sample fraction: %f\n', actual_sub_sample_frac)
 
 
-
+%
 % close all
 I = ones(pix,pix)-pixifsampled;
 I = flipud(I); % why the fuck does it start from the top???
@@ -83,6 +81,10 @@ meta_cell = repmat({mu_Nsamples}, 1, length(XR));
 MT = MasterTrajster(XR, YR, meta_cell, MoveEntityStatic.factory(N_mve), ME);
 
 MT.visualize_sampling;
+
+xlabel('x [v]')
+ylabel('y [v]')
+
 %%
 
 datafile = 'C:\Users\arnold\Documents\labview\afm_imaging/data/cs-traj02.csv';
