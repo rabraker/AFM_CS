@@ -1,6 +1,9 @@
 *.JPG
 *.lvbitx
 *.fig
+*.csv
+*.mat
+
 qpPaper/
 quadProg/
 qpFPGA_*
