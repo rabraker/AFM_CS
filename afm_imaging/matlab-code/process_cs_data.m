@@ -4,31 +4,59 @@ pix = 256;
 width = 5;
 microns_per_volt = 50/10;
 pix_per_volt = (pix/width)*microns_per_volt;
-
-<<<<<<< HEAD
-% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/cs-data-out02.csv');
-dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/data-out_ontable_csimage.csv');
-ind_meas = find(dat(:, 6) ~= 0);
-=======
 Ts = 40e-6;
->>>>>>> 16d6421e775da9ba7ed1d209a5f3b364fe87061c
 
+% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/cs-data-out02.csv');
+% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/data-out_ontable_csimage.csv');
+% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out_ontable_csimage15-250.csv');
+% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out_ontable_csimage10-500.csv');
+% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\cs-data-10-250.csv');
+% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out_cs-traj10-500-02.csv');  %% WORKS
+
+
+data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
+cs_exp_data_name = 'cs-traj10-500_8-22-2017_09.csv';
+cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
+
+cs_data_path = fullfile(data_root, cs_exp_data_name);
+cs_meta_path = fullfile(data_root, cs_exp_meta_name);
+
+dat = csvread(cs_data_path); 
+load(cs_meta_path);  % Provides ExpMetaData
+
+state_ticks = ExpMetaData.state_counts;
+state_times = state_ticks*Ts
+time_total = sum(state_times)
+%
 % This path should be set to the root of your github working directory. 
-% root = 'C:\Users\arnold\Documents\labview';  % For windows
-root = '/home/arnold/gradschool/afm-cs';
-addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
 
-dat = csvread(fullfile(root, 'afm_imaging/data/cs-data-out02.csv'));
+root = 'C:\Users\arnold\Documents\labview';  % For windows
+% root = '/home/arnold/gradschool/afm-cs';
+addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
+% dat = csvread(fullfile(root, 'afm_imaging/data/cs-data-out02.csv'));
 
 % Drop all data corresponding to movement between points.
-ind_meas = find(dat(:, 6) ~= 0);  % Index of the movements are all 0.
+ind_meas = find(dat(:, 6) > 0);  % Index of the movements are all 0.
 dat_meas = dat(ind_meas, :);
 
 % Fit a line to the control data and subtract it. Helps remove some of
 % the piezo drift. 
-dat_meas(:,5) = detrend(dat_meas(:,5)); % detrend u_z as a long vector
+uz = dat_meas(:,5);
+figure(1); clf;
+plot(uz); hold on
+% uz2 = detrend2(uz);
+% plot(uz2)
 
+dat_meas(:,5) = detrend(dat_meas(:,5)); % detrend u_z as a long vector
+plot(dat_meas(:,5))
+%%
 % Split each measurement entities into a cell array.
+
+% Since we want to convert xy-coords to pixels, move all data to the
+% positive orthant:
+dat_meas(:,1) = dat_meas(:,1) - min(dat_meas(:,1));  %x dir
+dat_meas(:,2) = dat_meas(:,2) - min(dat_meas(:,2));  %y dir
+
 
 % bin all the data into pixels. 
 for k = 1:max(dat_meas(:,end))
@@ -62,7 +90,7 @@ for k = 1:max(dat_meas(:,end))
 end
 %
 % close all
-f1 = figure(1);
+f2 = figure(2);
 ylabel('u_z')
 xlabel('pixel')
 ax1 = gca();
@@ -96,21 +124,23 @@ for k = 1:length(pix_dat)
     % Subtracting off the max is a crude way of registering all the path
     % data to the same height. 
     u_pix = u_pix - max(u_pix);
-    
-    % Just to get a feel for things:
-    plot(ax1, u_pix, 'color', cs)
-    ylim([-hole_depth, hole_depth])
-    
-    for jj = 1:length(u_pix)
-        % Remember how we converted the x and y data into pixel
-        % coordinates? Those now act as the indices to fill in the image
-        % data.
-            n_row = y_pix(jj)+1;  % pixels start at 0. matlab is 1-based indexing.
-            m_col = x_pix(jj)+1;
-            I(n_row, m_col) = u_pix(jj);
-            pixelifsampled(n_row, m_col) = 1;
+    if min(u_pix) > -0.1
+        % Just to get a feel for things:
+        plot(ax1, u_pix, 'color', cs)
+        ylim([-hole_depth, hole_depth])
+
+        for jj = 1:length(u_pix)
+            % Remember how we converted the x and y data into pixel
+            % coordinates? Those now act as the indices to fill in the image
+            % data.
+                n_row = y_pix(jj)+1;  % pixels start at 0. matlab is 1-based indexing.
+                m_col = x_pix(jj)+1;
+                I(n_row, m_col) = u_pix(jj);
+                pixelifsampled(n_row, m_col) = 1;
+        end
+    else
+%         keyboard
     end
-    
 
 end
 %%
@@ -121,11 +151,11 @@ I = detrend_plane(I, pixelifsampled);
 % imshow_sane(I, ax2, width, width);
 % 
 
-%%
+
 % Make the image square, to use smp.
-I = I(1:end-1, 19:end);
+% I = I(1:end-1, 19:end);
 size(I)
-pixelifsampled = pixelifsampled(1:end-1, 19:end);
+% pixelifsampled = pixelifsampled(1:end-1, 19:end);
 size(pixelifsampled)
 
 % ********* SMP *************
@@ -154,25 +184,58 @@ At = @(x) DCTfun(x,pixelifsampled);
 
 Ir_bp = idct(l1qc_logbarrier(At(I_vector), A, At, I_vector, 0.1));
 Ir_bp = real(Ir_bp);
-
+%%
 % close all;
-f5 = figure(5)
-subplot(1,3,1)
+f5 = figure(6); clf
+subplot(2,3,1)
 ax3 = gca();
 imshow_sane(I.*PixelVectorToMatrix(pixelifsampled,[n m]), ax3, width, width);
 title('sample');
 
-subplot(1,3,2)
+subplot(2,3,2)
 ax4 = gca();
 imshow_sane(PixelVectorToMatrix(Ir_bp,[n m]), ax4, width, width);
 title('BP reconstruction');
 
-subplot(1,3,3)
+subplot(2,3,3)
 ax5 = gca();
 imshow_sane(Ir_smp, ax5, width, width)
 title('SMP reconstruction');
 
+clc
+% subplot(2,3,[4,5,6])
 
+state_ticks = ExpMetaData.state_counts;
+state_times = state_ticks*Ts;
+time_total = sum(state_times);
 
+s_time = sprintf('xy-move | z-down | z-settle | xy scan | z-up ||| total');
+s_dat  = sprintf('%.2f      %.2f      %.2f      %.2f    %.2f     %.2f    %g',...
+                    state_times,  sum(state_times));
+s= sprintf('%s\n%s', s_time, s_dat);
+s_row = '------------------------------------------------------------------';
+for fld =fields(ExpMetaData)'
+    if strcmp(fld{1},'state_counts')
+        continue
+    end
+   s_i = sprintf('%s: %g', fld{1}, ExpMetaData.(fld{1}));
+   if length(s_row) + length(s_i) < 79-5
+       s_row = sprintf('%s  |  %s',s_row, s_i);
+   else
+       % Row is to long. Tack it onto the whole thing. 
+       s = sprintf('%s\n%s', s, s_row);
+       s_row = sprintf('%s', s_i);
+   end
+
+end
+
+disp(s)
+f5.CurrentAxes = ax3;
+text(0,-1.2, s, 'Units', 'normalized')
+%%
+fig_root = 'C:\Users\arnold\Documents\labview\afm_imaging\matlab-code\figures';
+cs_exp_fig_name = strrep(cs_exp_data_name, '.csv', '-fig');
+fig_path = fullfile(fig_root, cs_exp_fig_name);
+saveas(f5, fig_path)
 
 

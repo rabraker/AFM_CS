@@ -87,7 +87,7 @@ ylabel('y [v]')
 
 %%
 
-datafile = 'C:\Users\arnold\Documents\labview\afm_imaging/data/cs-traj02.csv';
+datafile = 'C:\Users\arnold\Documents\labview\afm_imaging/data/cs-traj10-500.csv';
 if 1
     MT.write_csv(datafile)
 end
