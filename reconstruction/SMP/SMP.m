@@ -15,6 +15,7 @@
 
 function [ Ir ] = SMP( I_sample,pixelifsampled,maxiter)
 
+
     pixelifsampled = PixelMatrixToVector(pixelifsampled);
     I_sample = PixelMatrixToVector(I_sample).*pixelifsampled;
     
@@ -71,8 +72,8 @@ function [ Ir ] = SMP( I_sample,pixelifsampled,maxiter)
 
     Ir = idct2(PixelVectorToMatrix(J_recover, [n n]));
 
-    figure(1);
-    imshow(Ir,[0 255]);
+    %figure(1);
+    %imshow(Ir,[0 255]);
 
 
 

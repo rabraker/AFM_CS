@@ -41,7 +41,7 @@ subplot(1,2,2)
 imshow(Ir,[0 255]);
 title('SMP reconstruction');
 
-
+%%
 
 close all;
 
