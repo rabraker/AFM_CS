@@ -1,3 +1,8 @@
+*.aux
+*.log
+*.synctex.gz
+latex/auto
+
 *.JPG
 *.lvbitx
 *.fig
