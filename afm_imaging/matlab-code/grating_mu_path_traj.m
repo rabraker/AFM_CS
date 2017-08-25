@@ -27,8 +27,8 @@ mu_pix = ceil(minpath*pix_per_micron);
 Ts = 40e-6;  % AFM sample rate. 
 Fs = 1/Ts;
 microns2volts = 1/5;
-raster_rate = 1;  % hz
-raster_period = 1/raster_rate;
+raster_freq = 1;  % hz
+raster_period = 1/raster_freq;
 
 microns_per_second = width/(raster_period/2);
 pixels_per_second = pix_per_micron * microns_per_second;

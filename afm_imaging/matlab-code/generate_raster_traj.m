@@ -4,12 +4,14 @@
 clear
 clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+raster_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data';
 dataroot      = fullfile(getMatPath(), 'AFM_SS',...
                 'System_Identification', 'data', 'data_xaxis'); 
 expName           = ['22-Jun-2016_exp01'];
 modFitName    = [expName, '.mat'];
 modFitPath    = fullfile(dataroot, modFitName);
 load(modFitPath, 'modelFit')
+
 
 % FitNum    = 'FitNum001';
 PLANT_init_x = ltiFit(modFitPath, 'SS02').sys;
@@ -18,14 +20,14 @@ PLANT_init_x = ltiFit(modFitPath, 'SS02').sys;
 
 Ts = 40e-6;
 TsTicks = 1600;
-Ki_x = 0.005;
+Ki_x = 0.01;
 % lines_sec = 01;
 % sec_line = 1/lines_sec;
 % Trace is one line at sec_line. The whole period is trace and re-trace.
 
-x_period = 2*sec_line;  
-x_freq = 1/x_period;
 
+raster_freq = 7; % Hz.
+raster_period = 1/raster_freq;
 
 image_side = 5; % micro-meters.
 raster_amplitude = image_side/2; 
@@ -42,8 +44,8 @@ y_height = (1/square_num_lines)*image_side
 
 
 
-[x_rasterdata, truefreq, points_per_line] = raster(x_freq, Ts, x_period-Ts, 'coerce', 1,...
-                            'shift', -x_period/4);
+[x_rasterdata, truefreq, points_per_line] = raster(raster_freq, Ts, raster_period-Ts, 'coerce', 1,...
+                            'shift', -raster_period/4);
 
 % we want to start at 0, not -1.
 x_rasterdata.Data = (x_rasterdata.Data +1)*raster_amplitude;
@@ -75,7 +77,9 @@ end
 
 % write it to a .csv file
 %%
-data_in_path = 'C:\Users\arnold\Documents\labview\afm_imaging\data\data-in-singleperiod.csv';
+data_name = sprintf('raster_traj_singleperiod_%dHz.csv', raster_freq)
+
+data_in_path = fullfile(raster_root, data_name);
 
 csvwrite(data_in_path, xy_data);
 

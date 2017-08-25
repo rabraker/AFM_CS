@@ -1,44 +1,36 @@
-function [ I_fit ] = detrend_plane(I, pixelifsampled)
-
-
-% Fit a plane to the data
+% [ I_fit ] = detrend_plane(I)
 % 
-% Z = [x1, y1, 1]
-%     |x2, y2, 1|[ mx ]
-%     |x3, y3, 1|| my |
-%     |x4, y4, 1|[ b  ]
-%     |:    :  :|
+% Fits a plane to a (raster) data set and removes it. If the data was CS
+% sub-sampled, use detrend_sampled_plane.m instead. 
+% inputs
+%  -----
+%  I : pix x pix image data.
+function [ I_fit ] = detrend_plane(I)
 
-% Z = zeros(length(find(pixelifsampled == 1)), 1);
-PHI = [];
-Z = [];
-for n_row = 1:size(I, 1)
-    for m_col = 1:size(I, 2)
-        if pixelifsampled(n_row, m_col) == 1
-            Z = [Z; I(n_row, m_col)];
-            PHI  = [PHI; n_row, m_col, 1];
-        end
-    end
-end
 
-mxmyb = PHI\Z;
-mx = mxmyb(1);
-my = mxmyb(2);
-b = mxmyb(3);
+[ypix, xpix] = size(I);
 
-z_fit = - PHI(:,1)*mx - PHI(:,2)*my - PHI(:,3)*b;
-Z = Z -z_fit;
+% Fit a plane to the data and remove. 
+xs = [1:1:xpix];
+X = reshape(repmat(xs, ypix,1),[],1);
+ys = [1:1:ypix]';
+Y = reshape(repmat(ys, xpix,1),[],1);
 
-% Now, rebuild the image
+PHI = [X, Y, X*0 + 1;];
 
-I_fit = I*0;
 
-for k=1:length(Z)
-    x = PHI(k, 1);
-    y = PHI(k, 2);
-    z = Z(k);
-    I_fit(x, y) = z;
-end
+Z = reshape(I, [],1);
+
+coeffs = PHI\Z;
+
+
+mx = coeffs(1)
+my = coeffs(2)
+b = coeffs(3)
+
+z_fit = X*mx + Y*my + b;
+
+I_fit = reshape(Z-z_fit, ypix, xpix);
 
 end
 

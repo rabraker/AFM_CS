@@ -15,7 +15,8 @@ Ts = 40e-6;
 
 
 data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
-cs_exp_data_name = 'cs-traj10-500_8-22-2017_09.csv';
+cs_exp_data_name = 'cs-traj10-500_8-22-2017_06.csv';
+% cs_exp_data_name = 'data-out.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);
@@ -37,6 +38,7 @@ addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
 
 % Drop all data corresponding to movement between points.
 ind_meas = find(dat(:, 6) > 0);  % Index of the movements are all 0.
+meta_ind = dat(:,6);
 dat_meas = dat(ind_meas, :);
 
 % Fit a line to the control data and subtract it. Helps remove some of
@@ -74,7 +76,10 @@ for k = 1:max(dat_meas(:,end))
    E_ks = dat_meas(inds, 3);
    U_ks = dat_meas(inds, 5);
    
-
+   % This gives poor results. Think it destroys step height info.
+%    U_ks = detrend(dat_meas(inds, 5)); 
+   
+    
    % Convert the x and y voltage data into bined and averaged pixel coordinates.
    x_pix = floor(pixelize(X_ks, path_pix)*pix);
    y_pix = floor(pixelize(Y_ks, path_pix)*pix);
@@ -88,13 +93,15 @@ for k = 1:max(dat_meas(:,end))
    % Finally, collect in the kth cell array entry. 
   pix_dat{k} = [x_pix, y_pix, e_pix, u_pix];
 end
-%
+
 % close all
-f2 = figure(2);
+f2 = figure(2); clf
 ylabel('u_z')
 xlabel('pixel')
 ax1 = gca();
 hold on;
+
+figure(100); clf; hold on;
 
 hole_depth = (20/7)*(1/1000)*(20)
 I = zeros(pix, pix);
@@ -115,17 +122,13 @@ for k = 1:length(pix_dat)
         cs = 'b';
     end
     
-    % The mean doesn't really give us what we want. When a path contains
-    % a hole and the flat area, the mean splits the difference and the
-    % flat area data is "too high".
-    %         u_pix = u_pix - mean(u_pix);
-
     % We assume that each path contains data from the flat surface.
     % Subtracting off the max is a crude way of registering all the path
     % data to the same height. 
     u_pix = u_pix - max(u_pix);
-    if min(u_pix) > -0.1
+%     if min(u_pix) > -0.1
         % Just to get a feel for things:
+        figure(2)
         plot(ax1, u_pix, 'color', cs)
         ylim([-hole_depth, hole_depth])
 
@@ -138,20 +141,23 @@ for k = 1:length(pix_dat)
                 I(n_row, m_col) = u_pix(jj);
                 pixelifsampled(n_row, m_col) = 1;
         end
-    else
+%         figure(100);
+%         imshow(I, [min(min(I)), max(max(I))])
 %         keyboard
-    end
+%     else
+%         keyboard
+%     end
 
 end
 %%
-I = detrend_plane(I, pixelifsampled);
+
+
+
+I = detrend_sampled_plane(I, pixelifsampled);
 % f2 = figure(2); clf
 % ax2 = gca();
 % 
 % imshow_sane(I, ax2, width, width);
-% 
-
-
 % Make the image square, to use smp.
 % I = I(1:end-1, 19:end);
 size(I)
@@ -184,7 +190,7 @@ At = @(x) DCTfun(x,pixelifsampled);
 
 Ir_bp = idct(l1qc_logbarrier(At(I_vector), A, At, I_vector, 0.1));
 Ir_bp = real(Ir_bp);
-%%
+
 % close all;
 f5 = figure(6); clf
 subplot(2,3,1)
