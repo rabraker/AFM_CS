@@ -5,7 +5,6 @@ width = 5;
 microns_per_volt = 50/10;
 pix_per_volt = (pix/width)*microns_per_volt;
 Ts = 40e-6;
-hole_depth = (20/7)*(1/1000)*(20);
 
 % dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/cs-data-out02.csv');
 % dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/data-out_ontable_csimage.csv');
@@ -48,101 +47,121 @@ uz = dat_meas(:,5);
 figure(1); clf;
 plot(uz); hold on
 % uz2 = detrend2(uz);
-
+% plot(uz2)
 
 dat_meas(:,5) = detrend(dat_meas(:,5)); % detrend u_z as a long vector
 plot(dat_meas(:,5))
 %%
-f2 = figure(2); clf
-ylabel('u_z')
-xlabel('pixel')
-ax2 = gca();
-hold on;
+% Split each measurement entities into a cell array.
 
 % Since we want to convert xy-coords to pixels, move all data to the
 % positive orthant:
 dat_meas(:,1) = dat_meas(:,1) - min(dat_meas(:,1));  %x dir
 dat_meas(:,2) = dat_meas(:,2) - min(dat_meas(:,2));  %y dir
 
-I = zeros(pix,pix);
-pixelifsampled=zeros(pix, pix);
+
 % bin all the data into pixels. 
 for k = 1:max(dat_meas(:,end))
-
+   
    % Get indexes corresponding to measurement entity k
    inds = find(dat_meas(:,end) == k); 
    
-   % Slice out the data for the current mu-path.
-   U_ks = dat_meas(inds, 5);
-   Y_ks = dat_meas(inds, 2)*pix_per_volt;
-   X_ks = dat_meas(inds, 1)*pix_per_volt;
-
-   % Register the control data to zero. We can do this because we are
-   % scanning long enough that we are always guaranteed to exit a hole.
-   % This lets 
-   U_ks = U_ks - max(U_ks);
-   
-   % Make the assumption that the y-data for each path is constant enough.
-   % Since we start at the (0,0) corner the xplane, we'll take the floor,
-   % and add 1 for 1-based indexing.
-   y_pix = floor(mean(Y_ks));
-   
+   % The x-direction has the most movement. Find the total spread and
+   % approximate calculate the number of pixels that corresponds to. 
+   X_ks = dat_meas(inds, 1);
    x_spread = max(X_ks) - min(X_ks);
-   xpix_start = floor(min(X_ks));
-   npix_path_k = ceil(x_spread); % number of bins for this path.
+   path_pix = ceil(x_spread*pix_per_volt);
    
-   % Now, define a set of bins for the x-direction. Each bin will have a
-   % different number of data points. 
-   % If we include 0, then there are three points for two pixel bins.
-   xbins = linspace(min(X_ks), max(X_ks), npix_path_k+1); 
-   U_k = [];
-   for jj = 1:npix_path_k
-       % Get the indeces correspondiing to the current x-data bin.
-       ind_x = find(X_ks >= xbins(jj) & X_ks < xbins(jj+1));
-       if ~isempty(ind_x) % Avoid errors if it is empty.
-           % Slice out the corresponding height data, and average it
-           % together since this is a single pixel.
-           u_pix_jj = mean(U_ks(ind_x)); 
-           % The image index for the y-direction (rows) is y_pix.
-           % For the x-direction, the start of the path is at xpix_start.
-           % We are inching along the mu-path, so at each iteration of this
-           % loop, increment the pixel index by 1, so just use loop iterator,
-           % jj.
-           I(y_pix+1, xpix_start+jj) = u_pix_jj;
-           pixelifsampled(y_pix+1, xpix_start+jj) = 1;
-           
-           % Collect the uz data just for plotting/visualization
-           U_k = [U_k; u_pix_jj];
-       end
-   end
-   % -------------------
-   % ---- visualize ------
-   if abs(max(U_k) - min(U_k))> hole_depth*.5
+   Y_ks = dat_meas(inds, 2);
+   E_ks = dat_meas(inds, 3);
+   U_ks = dat_meas(inds, 5);
+   
+   % This gives poor results. Think it destroys step height info.
+%    U_ks = detrend(dat_meas(inds, 5)); 
+   
+    
+   % Convert the x and y voltage data into bined and averaged pixel coordinates.
+   x_pix = floor(pixelize(X_ks, path_pix)*pix);
+   y_pix = floor(pixelize(Y_ks, path_pix)*pix);
+   
+   
+%    keyboard
+   % Bin the height/deflection data into pixels and average. 
+   e_pix = pixelize(E_ks, path_pix);
+   u_pix = pixelize(U_ks, path_pix);
+   
+   % Finally, collect in the kth cell array entry. 
+  pix_dat{k} = [x_pix, y_pix, e_pix, u_pix];
+end
+
+% close all
+f2 = figure(2); clf
+ylabel('u_z')
+xlabel('pixel')
+ax1 = gca();
+hold on;
+
+figure(100); clf; hold on;
+
+hole_depth = (20/7)*(1/1000)*(20)
+I = zeros(pix, pix);
+pixelifsampled = I;
+for k = 1:length(pix_dat)
+    u_pix = pix_dat{k}(:,4);
+    x_pix = pix_dat{k}(:,1);
+    y_pix = pix_dat{k}(:,2);
+
+    % Hueristic to determine if a path contained a hole. At the moment,
+    % just use this information to plot the uz data for each path. 
+    if abs(max(u_pix) - min(u_pix))> hole_depth*.5
        % Then we have an edge. 
+       % have_edge = 1;
         cs = 'r';
     else
         % have_edge = 0;
         cs = 'b';
     end
-   plot(ax2, U_k, 'color', cs)
-   
+    
+    % We assume that each path contains data from the flat surface.
+    % Subtracting off the max is a crude way of registering all the path
+    % data to the same height. 
+    u_pix = u_pix - max(u_pix);
+%     if min(u_pix) > -0.1
+        % Just to get a feel for things:
+        figure(2)
+        plot(ax1, u_pix, 'color', cs)
+        ylim([-hole_depth, hole_depth])
+
+        for jj = 1:length(u_pix)
+            % Remember how we converted the x and y data into pixel
+            % coordinates? Those now act as the indices to fill in the image
+            % data.
+                n_row = y_pix(jj)+1;  % pixels start at 0. matlab is 1-based indexing.
+                m_col = x_pix(jj)+1;
+                I(n_row, m_col) = u_pix(jj);
+                pixelifsampled(n_row, m_col) = 1;
+        end
+%         figure(100);
+%         imshow(I, [min(min(I)), max(max(I))])
+%         keyboard
+%     else
+%         keyboard
+%     end
+
 end
-
-figure(100);
-ax = gca();
-imshow(I, [min(min(I)), max(max(I))])
-
-
 %%
 
+
+
 I = detrend_sampled_plane(I, pixelifsampled);
-I = I.*pixelifsampled; 
-
-
+% f2 = figure(2); clf
+% ax2 = gca();
+% 
 % imshow_sane(I, ax2, width, width);
 % Make the image square, to use smp.
-
+% I = I(1:end-1, 19:end);
 size(I)
+% pixelifsampled = pixelifsampled(1:end-1, 19:end);
 size(pixelifsampled)
 
 % ********* SMP *************
@@ -163,20 +182,20 @@ addpath(reconstruct_path)
 
 I_vector = PixelMatrixToVector(I);
 
-pixelifsampled_vec = PixelMatrixToVector(pixelifsampled);
-I_vector = I_vector(find(pixelifsampled_vec>0.5));
+pixelifsampled = PixelMatrixToVector(pixelifsampled);
+I_vector = I_vector(find(pixelifsampled>0.5));
 
-A = @(x) IDCTfun(x,pixelifsampled_vec);
-At = @(x) DCTfun(x,pixelifsampled_vec);
+A = @(x) IDCTfun(x,pixelifsampled);
+At = @(x) DCTfun(x,pixelifsampled);
 
 Ir_bp = idct(l1qc_logbarrier(At(I_vector), A, At, I_vector, 0.1));
 Ir_bp = real(Ir_bp);
-%%
+
 % close all;
 f5 = figure(6); clf
 subplot(2,3,1)
 ax3 = gca();
-imshow_sane(I, ax3, width, width);
+imshow_sane(I.*PixelVectorToMatrix(pixelifsampled,[n m]), ax3, width, width);
 title('sample');
 
 subplot(2,3,2)
@@ -221,8 +240,7 @@ f5.CurrentAxes = ax3;
 text(0,-1.2, s, 'Units', 'normalized')
 %%
 fig_root = 'C:\Users\arnold\Documents\labview\afm_imaging\matlab-code\figures';
-cs_exp_fig_name = strrep(cs_exp_data_name, '.csv', '-fig')
-
+cs_exp_fig_name = strrep(cs_exp_data_name, '.csv', '-fig');
 fig_path = fullfile(fig_root, cs_exp_fig_name);
 saveas(f5, fig_path)
 
