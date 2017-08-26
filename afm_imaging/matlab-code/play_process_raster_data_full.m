@@ -1,3 +1,10 @@
+% This script reads in the full, raw data from a raster scan run. This data
+% will be produced by the vi play-raster-scan.vi. That vi produces two .csv
+% files. One contains the the pre-processed data that labview does in
+% realtime for visualization purposed. For slow scans, using that data is
+% sufficient. The vi also produces a csv file with all of the raw data. For
+% faster scans, we want to use that data, so we can process it better.
+% That's what this script does.
 clc
 close all
 % dat_root = '/home/arnold/gradschool/afm-cs/afm_imaging/data';
