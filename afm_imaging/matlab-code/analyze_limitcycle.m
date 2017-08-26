@@ -9,7 +9,7 @@ data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
 
 % ---------------------------------------------------
 cs_exp_data_name = 'cs-traj10-500_8-22-2017_07.csv';
-cs_exp_data_name = 'cs-traj10-500_out_8-24-2017-04.csv';
+cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-07.csv';
 % cs_exp_data_name = 'data-out.csv';
 
 

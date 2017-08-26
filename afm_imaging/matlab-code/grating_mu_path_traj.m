@@ -15,7 +15,7 @@ addpath('classes')
 width = 5;  % microns
 pix = 256;  % image resolution.
 minpath = 0.5;  % 250 nm. length of the horizontal mu-path. 
-sub_sample_frac = 0.10;  % Percent of pixels to subsample. 
+sub_sample_frac = 0.2;  % Percent of pixels to subsample. 
 
 % Unit conversions.
 pix_per_micron = pix/width;
@@ -76,7 +76,7 @@ fprintf('Actual  sub sample fraction: %f\n', actual_sub_sample_frac)
 I = ones(pix,pix)-pixifsampled;
 I = flipud(I); % why the fuck does it start from the top???
 imshow(I)
-%%
+%
 meta_cell = repmat({mu_Nsamples}, 1, length(XR));
 MT = MasterTrajster(XR, YR, meta_cell, MoveEntityStatic.factory(N_mve), ME);
 
@@ -87,7 +87,7 @@ ylabel('y [v]')
 
 %%
 
-datafile = 'C:\Users\arnold\Documents\labview\afm_imaging/data/cs-traj10-500.csv';
+datafile = 'C:\Users\arnold\Documents\labview\afm_imaging/data/cs-traj20-500-1Hz.csv';
 if 1
     MT.write_csv(datafile)
 end

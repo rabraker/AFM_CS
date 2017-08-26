@@ -16,7 +16,8 @@ hole_depth = (20/7)*(1/1000)*(20);
 
 
 data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
-cs_exp_data_name = 'cs-traj10-500_8-22-2017_06.csv';
+cs_exp_data_name = 'cs-traj10-500_8-22-2017_08.csv'; % BEst
+cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-14.csv';
 % cs_exp_data_name = 'data-out.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
@@ -52,7 +53,7 @@ plot(uz); hold on
 
 dat_meas(:,5) = detrend(dat_meas(:,5)); % detrend u_z as a long vector
 plot(dat_meas(:,5))
-%%
+%
 f2 = figure(2); clf
 ylabel('u_z')
 xlabel('pixel')
@@ -134,10 +135,11 @@ imshow(I, [min(min(I)), max(max(I))])
 
 
 %%
-
-I = detrend_sampled_plane(I, pixelifsampled);
-I = I.*pixelifsampled; 
-
+figure
+% I = detrend_sampled_plane(I, pixelifsampled);
+I = (I - max(max(I))).*pixelifsampled; 
+imshow(I, [min(min(I)), max(max(I))]);
+%%
 
 % imshow_sane(I, ax2, width, width);
 % Make the image square, to use smp.

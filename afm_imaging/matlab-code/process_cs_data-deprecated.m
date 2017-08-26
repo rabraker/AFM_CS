@@ -1,3 +1,4 @@
+% THIS FILE USES THE VERY POOR BINNING METHOD, WHICH YUFAN POINTED OUT. 
 clc
 clear
 pix = 256;
@@ -15,7 +16,7 @@ Ts = 40e-6;
 
 
 data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
-cs_exp_data_name = 'cs-traj10-500_8-22-2017_06.csv';
+cs_exp_data_name = 'cs-traj10-500_8-22-2017_03.csv';
 % cs_exp_data_name = 'data-out.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
@@ -85,6 +86,10 @@ for k = 1:max(dat_meas(:,end))
    y_pix = floor(pixelize(Y_ks, path_pix)*pix);
    
    
+   if k == 11
+      keyboard
+   end
+      
 %    keyboard
    % Bin the height/deflection data into pixels and average. 
    e_pix = pixelize(E_ks, path_pix);
@@ -135,23 +140,38 @@ for k = 1:length(pix_dat)
         for jj = 1:length(u_pix)
             % Remember how we converted the x and y data into pixel
             % coordinates? Those now act as the indices to fill in the image
-            % data.
+            % data.x_
                 n_row = y_pix(jj)+1;  % pixels start at 0. matlab is 1-based indexing.
                 m_col = x_pix(jj)+1;
                 I(n_row, m_col) = u_pix(jj);
                 pixelifsampled(n_row, m_col) = 1;
+                if n_row+1 == 256-169 & m_col+1 == 256-170
+                   keyb = 1
+                else
+                    keyb = 0
+                end
+                if k == 11
+                    imshow(I, [-.1111, 0])
+                    keyboard
+                end
         end
-%         figure(100);
+        figure(100);
 %         imshow(I, [min(min(I)), max(max(I))])
-%         keyboard
+        imshow(I, [-.1111, 0])
+        if 1
+%             keyboard
+        end
 %     else
 %         keyboard
 %     end
 
 end
 %%
+figure(100);
+ax = gca();
+imshow(I, [min(min(I)), max(max(I))])
 
-
+%%
 
 I = detrend_sampled_plane(I, pixelifsampled);
 % f2 = figure(2); clf
@@ -240,7 +260,8 @@ f5.CurrentAxes = ax3;
 text(0,-1.2, s, 'Units', 'normalized')
 %%
 fig_root = 'C:\Users\arnold\Documents\labview\afm_imaging\matlab-code\figures';
-cs_exp_fig_name = strrep(cs_exp_data_name, '.csv', '-fig');
+cs_exp_fig_name = strrep(cs_exp_data_name, '.csv', '-fig')
+%%
 fig_path = fullfile(fig_root, cs_exp_fig_name);
 saveas(f5, fig_path)
 

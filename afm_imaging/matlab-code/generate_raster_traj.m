@@ -26,7 +26,7 @@ Ki_x = 0.01;
 % Trace is one line at sec_line. The whole period is trace and re-trace.
 
 
-raster_freq = 7; % Hz.
+raster_freq = .1; % Hz.
 raster_period = 1/raster_freq;
 
 image_side = 5; % micro-meters.
