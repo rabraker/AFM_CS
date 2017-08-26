@@ -59,6 +59,13 @@
 				<Item Name="fourAxisData2Cluster.vi" Type="VI" URL="../sysID/fourAxisData2Cluster.vi"/>
 				<Item Name="sysID_ControlParams.ctl" Type="VI" URL="../sysID/sysID_ControlParams.ctl"/>
 			</Item>
+			<Item Name="string-sort" Type="Folder">
+				<Item Name="Logical String Array Sort.vi" Type="VI" URL="../subVIs/logicalstringarraysort.llb/Logical String Array Sort.vi"/>
+				<Item Name="LogSort_Partition.vi" Type="VI" URL="../subVIs/logicalstringarraysort.llb/LogSort_Partition.vi"/>
+				<Item Name="LogSort_Stack.vi" Type="VI" URL="../subVIs/logicalstringarraysort.llb/LogSort_Stack.vi"/>
+				<Item Name="LogSort_StackHandler.vi" Type="VI" URL="../subVIs/logicalstringarraysort.llb/LogSort_StackHandler.vi"/>
+			</Item>
+			<Item Name="build_data_save_paths.vi" Type="VI" URL="../subVIs/build_data_save_paths.vi"/>
 			<Item Name="to_String.vi" Type="VI" URL="../subVIs/to_String.vi"/>
 			<Item Name="getClusterNames2.vi" Type="VI" URL="../subVIs/getClusterNames2.vi"/>
 			<Item Name="update-image-data-on-trace.vi" Type="VI" URL="../update-image-data-on-trace.vi"/>
@@ -85,13 +92,13 @@
 		</Item>
 		<Item Name="verify_matrices.vi" Type="VI" URL="../UnitTests/verify_matrices.vi"/>
 		<Item Name="play_AFM_TF.vi" Type="VI" URL="../play_AFM_TF.vi"/>
-		<Item Name="play-AFM-raster-imaging-open-loop-singleperiod.vi" Type="VI" URL="../play-AFM-raster-imaging-open-loop-singleperiod.vi"/>
 		<Item Name="play-AFM-CS-imaging.vi" Type="VI" URL="../play-AFM-CS-imaging.vi"/>
 		<Item Name="play_sysID_Z_Axis.vi" Type="VI" URL="../play_sysID_Z_Axis.vi"/>
 		<Item Name="play_sysID_Z_Axis_simple.vi" Type="VI" URL="../play_sysID_Z_Axis_simple.vi"/>
 		<Item Name="MasterStop.lvlib" Type="Library" URL="../FPGA Bitfiles/MasterStop.lvlib"/>
 		<Item Name="play-simple-force-mapping.vi" Type="VI" URL="../play-simple-force-mapping.vi"/>
 		<Item Name="play-raster-scan.vi" Type="VI" URL="../play-raster-scan.vi"/>
+		<Item Name="int2sortablestring.vi" Type="VI" URL="../subVIs/int2sortablestring.vi"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="BuildHelpPath.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/BuildHelpPath.vi"/>
@@ -207,7 +214,6 @@
 			<Item Name="afmimagingcontro_FPGATargetSPARTA_fpgasysIDZaxis_s1yj2s4zv5w.lvbitx" Type="Document" URL="../FPGA Bitfiles/afmimagingcontro_FPGATargetSPARTA_fpgasysIDZaxis_s1yj2s4zv5w.lvbitx"/>
 			<Item Name="sysID_Z-axis-params.ctl" Type="VI" URL="../sysID_Z-axis-params.ctl"/>
 			<Item Name="afmimagingcontro_FPGATargetSPARTA_fpgasysIDZaxissi_jhd3Wt3fyx0.lvbitx" Type="Document" URL="../FPGA Bitfiles/afmimagingcontro_FPGATargetSPARTA_fpgasysIDZaxissi_jhd3Wt3fyx0.lvbitx"/>
-			<Item Name="afmimagingcontro_FPGATargetSPARTA_raster-scanning_DXF4O8EAjZ4.lvbitx" Type="Document" URL="../FPGA Bitfiles/afmimagingcontro_FPGATargetSPARTA_raster-scanning_DXF4O8EAjZ4.lvbitx"/>
 			<Item Name="afmimagingcontro_FPGATargetSPARTA_simple-force-map_FwCwu-swAI0.lvbitx" Type="Document" URL="../FPGA Bitfiles/afmimagingcontro_FPGATargetSPARTA_simple-force-map_FwCwu-swAI0.lvbitx"/>
 			<Item Name="afmimagingcontro_FPGATargetSPARTA_raster-scannings_nl-9SLc95fw.lvbitx" Type="Document" URL="../FPGA Bitfiles/afmimagingcontro_FPGATargetSPARTA_raster-scannings_nl-9SLc95fw.lvbitx"/>
 		</Item>
