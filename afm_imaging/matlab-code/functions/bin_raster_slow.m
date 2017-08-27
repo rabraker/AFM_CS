@@ -28,7 +28,7 @@ udat_trace = udat_trace/max(udat_trace);
 % ybins = linspace(0, ypix-1, ypix)';
 
 pixelifsampled = zeros(xpix, ypix);
-pixmat = ones(xpix,ypix)*mean(udat_trace);
+pixmat = zeros(xpix,ypix)*mean(udat_trace);
 for j_row = 0:ypix-1
 %     ind_y = find(ydat_trace >= j_row & ydat_trace < j_row+1);
     ind_y = j_row*(samps_per_period/2)+1:(j_row+1)*(samps_per_period/2);
