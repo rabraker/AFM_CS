@@ -1,5 +1,11 @@
 clc
 clear
+
+% This path should be set to the root of your github working directory. 
+% root = 'C:\Users\arnold\Documents\labview';  % For windows
+root = '/home/arnold/gradschool/afm-cs';
+addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
+
 pix = 256;
 width = 5;
 microns_per_volt = 50/10;
@@ -15,9 +21,10 @@ hole_depth = (20/7)*(1/1000)*(20);
 % dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out_cs-traj10-500-02.csv');  %% WORKS
 
 
-data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
+% data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
+data_root = fullfile(getdataroot, 'data', 'cs-data');
 cs_exp_data_name = 'cs-traj10-500_8-22-2017_08.csv'; % BEst
-cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-14.csv';
+% cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-14.csv';
 % cs_exp_data_name = 'data-out.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
@@ -30,13 +37,8 @@ load(cs_meta_path);  % Provides ExpMetaData
 state_ticks = ExpMetaData.state_counts;
 state_times = state_ticks*Ts
 time_total = sum(state_times)
-%
-% This path should be set to the root of your github working directory. 
 
-root = 'C:\Users\arnold\Documents\labview';  % For windows
-% root = '/home/arnold/gradschool/afm-cs';
-addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
-% dat = csvread(fullfile(root, 'afm_imaging/data/cs-data-out02.csv'));
+
 
 % Drop all data corresponding to movement between points.
 ind_meas = find(dat(:, 6) > 0);  % Index of the movements are all 0.
@@ -139,7 +141,7 @@ figure
 % I = detrend_sampled_plane(I, pixelifsampled);
 I = (I - max(max(I))).*pixelifsampled; 
 imshow(I, [min(min(I)), max(max(I))]);
-%%
+
 
 % imshow_sane(I, ax2, width, width);
 % Make the image square, to use smp.
@@ -148,7 +150,7 @@ size(I)
 size(pixelifsampled)
 
 % ********* SMP *************
-reconstruct_root = fullfile(root, 'reconstruction/SMP');
+reconstruct_root = fullfile(root, 'reconstruction', 'SMP');
 reconstruct_path = genpath(reconstruct_root)
 addpath(reconstruct_path)
 
@@ -173,6 +175,7 @@ At = @(x) DCTfun(x,pixelifsampled_vec);
 
 Ir_bp = idct(l1qc_logbarrier(At(I_vector), A, At, I_vector, 0.1));
 Ir_bp = real(Ir_bp);
+bp_im = PixelVectorToMatrix(Ir_bp,[n m]);
 %%
 % close all;
 f5 = figure(6); clf
@@ -183,7 +186,8 @@ title('sample');
 
 subplot(2,3,2)
 ax4 = gca();
-imshow_sane(PixelVectorToMatrix(Ir_bp,[n m]), ax4, width, width);
+% imshow_sane(PixelVectorToMatrix(Ir_bp,[n m]), ax4, width, width);
+imshow_sane(bp_im, ax4, width, width);
 title('BP reconstruction');
 
 subplot(2,3,3)
@@ -192,35 +196,53 @@ imshow_sane(Ir_smp, ax5, width, width)
 title('SMP reconstruction');
 
 clc
+s = metadata2text(ExpMetaData, Ts)
 % subplot(2,3,[4,5,6])
 
-state_ticks = ExpMetaData.state_counts;
-state_times = state_ticks*Ts;
-time_total = sum(state_times);
-
-s_time = sprintf('xy-move | z-down | z-settle | xy scan | z-up ||| total');
-s_dat  = sprintf('%.2f      %.2f      %.2f      %.2f    %.2f     %.2f    %g',...
-                    state_times,  sum(state_times));
-s= sprintf('%s\n%s', s_time, s_dat);
-s_row = '------------------------------------------------------------------';
-for fld =fields(ExpMetaData)'
-    if strcmp(fld{1},'state_counts')
-        continue
-    end
-   s_i = sprintf('%s: %g', fld{1}, ExpMetaData.(fld{1}));
-   if length(s_row) + length(s_i) < 79-5
-       s_row = sprintf('%s  |  %s',s_row, s_i);
-   else
-       % Row is to long. Tack it onto the whole thing. 
-       s = sprintf('%s\n%s', s, s_row);
-       s_row = sprintf('%s', s_i);
-   end
-
-end
+% state_ticks = ExpMetaData.state_counts;
+% state_times = state_ticks*Ts;
+% time_total = sum(state_times);
+% 
+% s_time = sprintf('xy-move | z-down | z-settle | xy scan | z-up ||| total');
+% s_dat  = sprintf('%.2f      %.2f      %.2f      %.2f    %.2f     %.2f    %g',...
+%                     state_times,  sum(state_times));
+% s= sprintf('%s\n%s', s_time, s_dat);
+% s_row = '------------------------------------------------------------------';
+% for fld =fields(ExpMetaData)'
+%     if strcmp(fld{1},'state_counts')
+%         continue
+%     end
+%    s_i = sprintf('%s: %g', fld{1}, ExpMetaData.(fld{1}));
+%    if length(s_row) + length(s_i) < 79-5
+%        s_row = sprintf('%s  |  %s',s_row, s_i);
+%    else
+%        % Row is to long. Tack it onto the whole thing. 
+%        s = sprintf('%s\n%s', s, s_row);
+%        s_row = sprintf('%s', s_i);
+%    end
+% 
+% end
 
 disp(s)
 f5.CurrentAxes = ax3;
 text(0,-1.2, s, 'Units', 'normalized')
+%%
+savedata = 1;
+if savedata
+   img_data.cs_im = I;
+   img_data.bp_im = bp_im;
+   img_data.smp_im = Ir_smp;
+   img_data.pixelifsampled = pixelifsampled;
+   
+   img_data.width = width;
+   img_data.meta = ExpMetaData;
+   img_data.Ts = Ts;
+   img_data_file_name = strrep(cs_exp_data_name, '.csv', '_img-data.mat');
+   img_data_path = fullfile(data_root, img_data_file_name);
+   
+   save(img_data_path, 'img_data')
+    
+end
 %%
 fig_root = 'C:\Users\arnold\Documents\labview\afm_imaging\matlab-code\figures';
 cs_exp_fig_name = strrep(cs_exp_data_name, '.csv', '-fig')
