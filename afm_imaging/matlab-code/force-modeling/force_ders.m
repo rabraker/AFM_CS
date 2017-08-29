@@ -123,7 +123,7 @@ switch flag,
   % Outputs %
   %%%%%%%%%%%
   case 3,
-    sys=mdlOutputs(t,x,u);
+    sys=mdlOutputs(t,x,u, params);
 
   %%%%%%%%%%%%%%%%%%%%%%%
   % GetTimeOfNextVarHit %
@@ -167,8 +167,8 @@ sizes = simsizes;
 
 sizes.NumContStates  = 2;
 sizes.NumDiscStates  = 0;
-sizes.NumOutputs     = 1;
-sizes.NumInputs      = 2;
+sizes.NumOutputs     = 2;
+sizes.NumInputs      = 1;
 sizes.DirFeedthrough = 1;
 sizes.NumSampleTimes = 1;   % at least one sample time is needed
 
@@ -205,18 +205,18 @@ simStateCompliance = 'UnknownSimState';
 %=============================================================================
 %
 function sys=mdlDerivatives(t,x,u, params)
-dx1 = x(2);
+p = x(1);
+dp = x(2);
 
-d1 = x(1);
-z1 = u(2);
+ell = u;
 
-r = d1 - u(1);
+% r =  + u(1);
 
-dx2 = -(params.wo/params.Q)*x(2)...
-     - (params.k/params.m)*(d1 - z1 - u(1))...
-      + (1/params.m)*force(r, params);
+ddp = -(params.wo/params.Q)*dp...
+     - (params.k/params.m)*(p)...
+      + (1/params.m)*force2(p, ell, params);
 
-dx = [dx1;dx2];
+dx = [dp; ddp];
 
 sys = [dx];
 
@@ -241,9 +241,10 @@ sys = [];
 % Return the block outputs.
 %=============================================================================
 %
-function sys=mdlOutputs(t,x,u)
-
-sys = [x(1)-u(1)-u(2)];
+function sys=mdlOutputs(t,x,u, params)
+p = x(1);
+ell = u;
+sys = [x(1),  force2(p, ell, params)];
 
 % end mdlOutputs
 
@@ -275,12 +276,6 @@ sys = [];
 
 % end mdlTerminate
 
-function F_r = force(r, params)
-if r > params.zo
-    F_r = params.fo*(-(params.sigma./r).^2 + (1/30)*(params.sigma./r).^8);
-else
-   F_r = params.go*(params.zo - r)^(2/3); 
-end
            
 
 

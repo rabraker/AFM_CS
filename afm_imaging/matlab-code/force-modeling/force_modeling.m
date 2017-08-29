@@ -45,9 +45,9 @@ x0 = [1*scl; 0]
 f = @(t, x)cantelevar.dyn(t, x, 0)
 [t, x] = ode45(f, t, x0);
 figure(2); clf
-subplot(2,1,1)
+% subplot(2,1,1)
 plot(t, x(:,1))
 
-subplot(2,1,2)
-plot(t, x(:,2))
+% subplot(2,1,2)
+% plot(t, x(:,2))
 
