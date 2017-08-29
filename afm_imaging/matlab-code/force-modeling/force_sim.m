@@ -47,6 +47,21 @@ params.x0 = [1*params.z1;0]
 % cantelevar = Cantelevar(wo, Q, k, m, z1, AF)
 u0 = -0*scl;
 
+
+% Plot the force curve with these parameters.
+close all
+r_s = [0.0001:.000001:.001]'*scl;
+F = r_s*0;
+for k=1:length(r_s)
+    F(k) = force2(r_s(k), params);
+end
+
+plot(r_s, F)
+
+%%
+
+
+
 trun = .05;
 sim('tip_interaction')
 
