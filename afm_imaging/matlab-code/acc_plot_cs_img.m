@@ -1,6 +1,6 @@
 clc
 clear
-
+addpath('functions')
 data_root = fullfile(getdataroot, 'cs-data');
 cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-14.csv';
 cs_exp_data_name = 'cs-traj10-500_8-22-2017_08.csv';
