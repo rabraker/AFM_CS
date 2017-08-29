@@ -1,9 +1,9 @@
 
 % dat2 = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\force-map-04.csv');
 
-dat_s{1} = csvread(fullfile(getdataroot, 'data', 'force-map', 'force-map-short_cant-01.csv'));
-dat_s{2} = csvread(fullfile(getdataroot, 'data', 'force-map', 'force-map-short_cant-02.csv'));
-dat_s{3} = csvread(fullfile(getdataroot, 'data', 'force-map', 'force-map-short_cant-03.csv'));
+dat_s{1} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-01.csv'));
+dat_s{2} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-02.csv'));
+dat_s{3} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-03.csv'));
 %%
 % clf
 k1 = 5000;

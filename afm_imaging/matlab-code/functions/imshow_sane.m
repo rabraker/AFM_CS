@@ -8,9 +8,9 @@ hi = max(max(I));
 
 xdata = [0, width];
 ydata = [0, height];
-imshow(flipud(I), [lo, hi], 'XData', xdata, 'YData', ydata, 'Parent', ax)
+imshow(flipud(I), [lo, hi], 'XData', xdata, 'YData', ydata, 'Parent', ax);
 axis('on')
-ax.YTickLabel = fliplr(yticks)
+ax.YTickLabel = fliplr(yticks);
 
 xlabel('x-dir')
 ylabel('y-dir')
