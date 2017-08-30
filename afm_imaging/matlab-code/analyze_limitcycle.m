@@ -7,12 +7,17 @@ pix_per_volt = (pix/width)*microns_per_volt;
 Ts = 40e-6;
 
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
-data_root = fullfile(getdataroot(), 'data/cs-data');
+data_root = fullfile(getdataroot(), 'cs-data');
 % ---------------------------------------------------
 % cs_exp_data_name = 'cs-traj10-500_8-22-2017_07.csv';
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv';
-cs_exp_data_name = 'cs-traj10-500_out_8-23-2017-06-meta.csv';
 
+% Shows a few large oscillations, not quite limit cycle
+cs_exp_data_name = 'cs-traj10-500_out_8-24-2017-04.csv';
+
+cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv'; % k = 270202, 
+
+% cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-09.csv'; % k =
 
 
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');

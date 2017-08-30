@@ -3,11 +3,12 @@ function [ hp ] = plotbyindex(ax, t, x, ind_vec, indc)
     hp = [];
 
     ind_cur = 1;
-         
-     while 1
+         stop = 1;
+     while stop
          ind_next = find(ind_vec(ind_cur:end) ~= ind_vec(ind_cur), 1, 'first')+ind_cur;
          if isempty(ind_next)
-             break
+               stop = 0;
+               ind_next = length(ind_vec);
          end
          
          t_i = t(ind_cur:ind_next-1);
