@@ -1,9 +1,16 @@
-
+clear
+clc
 % dat2 = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\force-map-04.csv');
+addpath('functions');
+% dat_s{1} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-01.csv'));
+% dat_s{2} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-02.csv'));
+% dat_s{3} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-03.csv'));
 
-dat_s{1} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-01.csv'));
-dat_s{2} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-02.csv'));
-dat_s{3} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-03.csv'));
+% dat_s{1} = csvread(fullfile(getdataroot, 'force-map', 'force-map-01.csv'));
+dat_s{1} = csvread(fullfile(getdataroot, 'force-map', 'force-map-02.csv'));
+% dat_s{2} = csvread(fullfile(getdataroot, 'force-map', 'force-map-03.csv'));
+
+
 %%
 volt2nm = (7/20)*1000;
 figure(3)
@@ -38,7 +45,7 @@ end
 % ylabel('uz')
 
 
-xlabel('uz [\approx nm]')
+xlabel('uz [v]')
 ylabel('p = err - po [v]')
 
 %%

@@ -25,6 +25,11 @@ hole_depth = (20/7)*(1/1000)*(20);
 data_root = fullfile(getdataroot, 'cs-data');
 cs_exp_data_name = 'cs-traj10-500_8-22-2017_08.csv'; % BEst
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-14.csv';
+
+
+cs_exp_data_name = 'cs-traj10-500_8-22-2017_06.csv'; % 68.09, super very good.
+cs_exp_data_name = 'cs-traj10-500_8-22-2017_03.csv'; % 277 sec, fair to poor.
+
 % cs_exp_data_name = 'data-out.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
