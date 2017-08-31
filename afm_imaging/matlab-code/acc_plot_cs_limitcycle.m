@@ -51,9 +51,10 @@ set(F1, 'Units', 'Inches', 'Position', [14,6, figwidth, figheight],...
     'PaperUnits', 'Inches', 'PaperSize', [figwidth, figheight])
 set(F1, 'Color', 'w');
 
-indc = {'k', 'r', [0, .75, .75], 'm', [.93 .69 .13], 'b'};
-lft = .157;
+indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
+       'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
 
+lft = .157;
 ht1 = .34;
 ht2 = .47;
 
@@ -83,7 +84,7 @@ F1.CurrentAxes = ax2;
 
 F1.CurrentAxes = ax1;
 
-h = plotbyindex(ax1, t, uz, met_ind, indc);
+plotbyindex(ax1, t, uz, met_ind, indc);
 
 grid on
 ylabel('$u_z$ [v]', 'interpreter', 'latex', 'FontSize', 12)
@@ -100,13 +101,15 @@ xlim([t(1), t(end)])
 xlabel('time [s]', 'interpreter', 'latex', 'FontSize', 12)
 grid on
 
+ylim([-1, 0.5])
+
 % -------------- legend ---------------
-h = h(1:5);
-h(1).DisplayName = 'xy move';
-h(2).DisplayName = 'tip down';
-h(3).DisplayName = 'tip settle';
-h(4).DisplayName = '$\mu$-path scan';
-h(5).DisplayName = 'tip up';
+h = h(3:7);
+% h(1).DisplayName = 'xy move';
+% h(2).DisplayName = 'tip down';
+% h(3).DisplayName = 'tip settle';
+% h(4).DisplayName = '$\mu$-path scan';
+% h(5).DisplayName = 'tip up';
 L1 = [h(1), h(2), h(3)];
 L2 = [h(4), h(5)];
 

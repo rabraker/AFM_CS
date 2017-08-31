@@ -45,7 +45,9 @@ set(F1, 'Units', 'Inches', 'Position', [0,0, figwidth, figheight],...
     'PaperUnits', 'Inches', 'PaperSize', [figwidth, figheight])
 set(F1, 'Color', 'w');
 
-indc = {'k', 'r', [0, .75, .75], 'm', [.93 .69 .13], 'b'};
+% indc = {'k', 'r', [0, .75, .75], 'm', [.93 .69 .13], 'b'};
+indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
+       'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
 lft = .157;
 
 ht1 = .24;
@@ -58,20 +60,16 @@ bt1 = bt2+ht2+ypad;
 wd = 1-lft - .01;
 
 
-ax1 = axes('Position', [lft, bt1, wd, ht1])
-ax2 = axes('Position', [lft, bt2, wd, ht2])
-ax3 = axes('Position', [lft, bt3, wd, ht1])
+ax1 = axes('Position', [lft, bt1, wd, ht1]);
+ax2 = axes('Position', [lft, bt2, wd, ht2]);
+ax3 = axes('Position', [lft, bt3, wd, ht1]);
 
 
 F1.CurrentAxes = ax1;
 
 h = plotbyindex(ax1, t, x*volts2microns, met_ind, indc);
 h = h(1:5);
-h(1).DisplayName = 'xy move';
-h(2).DisplayName = 'tip down';
-h(3).DisplayName = 'tip settle';
-h(4).DisplayName = '$\mu$-path scan';
-h(5).DisplayName = 'tip up';
+
 
 ylabel('x [$\mu$m]', 'interpreter', 'latex', 'FontSize', 12)
 xlim([t(1), t(end)])
