@@ -34,21 +34,35 @@ end
 purge_list;
 
 job_list; % 28
-%%
-verbose = 2;
+
+verbose = 0;
 
 for job_file_cell = job_list'
-    
+    close all
     cs_job_file = job_file_cell{1};
     cs_exp_meta_name = strrep(cs_job_file, '.csv', '-meta.mat');
-%     cs_exp_meta_name = strrep(cs_data_file, '.csv', '-meta.mat');
     
-    % Process the file:
-    img_data  = csdata2mat(cs_job_file, cs_exp_meta_name, verbose);
+    % This is inefficient because we also load the file inside csdata2mat.
+    % But I don't want to refactor right now.
+    % Catch malformed .mat meta-data files.
+    try
+        load(cs_exp_meta_name)
+        % Process the file:
+        img_data  = csdata2mat(cs_job_file, cs_exp_meta_name, verbose);
+    catch MExcp
+        if strcmp(MExcp.identifier, 'MATLAB:textscan:EmptyFormatString')
+            purge_list{length(purge_list)+1,1} = cs_job_file;
+            fprintf('The file: \n %s \n is malformed. Adding parent to purge list.\n', cs_exp_meta_name)
+            continue
+        else
+            rethrow(MExcp)
+        end
+        
+    end
     
     % Construct the filename for image-data.
     img_data_file_name = strrep(cs_job_file, '.csv', '_img-data.mat');
-%     img_data_path = fullfile(data_root, img_data_file_name);
+
     %Finally, save it.
     save(img_data_file_name, 'img_data')
 

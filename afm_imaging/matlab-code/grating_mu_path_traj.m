@@ -26,7 +26,7 @@ mu_pix = ceil(minpath*pix_per_micron);
 
 Ts = 40e-6;  % AFM sample rate. 
 Fs = 1/Ts;
-microns2volts = 1/5;
+microns2volts = 1/5;  %10/50;
 raster_freq = 1;  % hz
 raster_period = 1/raster_freq;
 
@@ -50,9 +50,10 @@ YR = [];
 
 pixifsampled = zeros(pix, pix);
 
-for n=1:256 % down rows
+for n=1:pix % down rows
     m = 1;
-   while m < pix - mu_pix  % accros columns
+   while m < pix - mu_pix  % accros columns. pix - mu_pix so that the paths
+                           % dont hang off outside the 5-micron square. 
        if rand(1,1) < sub_sample_frac/mu_pix
           pixifsampled(n, m:m+mu_pix) = 1;
           XR = [XR; ( (m - 1) / pix_per_micron) * microns2volts];
@@ -71,12 +72,10 @@ fprintf('Desired sub sample fraction: %f\n', sub_sample_frac)
 fprintf('Actual  sub sample fraction: %f\n', actual_sub_sample_frac)
 
 
-%
-% close all
 I = ones(pix,pix)-pixifsampled;
 I = flipud(I); % why the fuck does it start from the top???
 imshow(I)
-%
+
 meta_cell = repmat({mu_Nsamples}, 1, length(XR));
 MT = MasterTrajster(XR, YR, meta_cell, MoveEntityStatic.factory(N_mve), ME);
 

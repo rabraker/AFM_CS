@@ -32,20 +32,22 @@ dat_meas = dat(ind_meas, :);
 % Fit a line to the control data and subtract it. Helps remove some of
 % the piezo drift. 
 uz = dat_meas(:,5);
-figure(1); clf;
-plot(uz); hold on
-% uz2 = detrend2(uz);
+if verbose > 1
+    figure(1); clf;
+    plot(uz); hold on
+end
 
 
 dat_meas(:,5) = detrend(dat_meas(:,5)); % detrend u_z as a long vector
 plot(dat_meas(:,5))
 %
-f2 = figure(2); clf
-ylabel('u_z')
-xlabel('pixel')
-ax2 = gca();
-hold on;
-
+if verbose >1
+    f2 = figure(2); clf
+    ylabel('u_z')
+    xlabel('pixel')
+    ax2 = gca();
+    hold on;
+end
 % Since we want to convert xy-coords to pixels, move all data to the
 % positive orthant:
 dat_meas(:,1) = dat_meas(:,1) - min(dat_meas(:,1));  %x dir
@@ -110,8 +112,10 @@ for k = 1:max(dat_meas(:,end))
     else
         % have_edge = 0;
         cs = 'b';
+   end
+    if verbose > 1
+       plot(ax2, U_k, 'color', cs)
     end
-   plot(ax2, U_k, 'color', cs)
    
 end
 
