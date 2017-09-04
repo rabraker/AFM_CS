@@ -36,8 +36,13 @@ function [ hp ] = plotbyindex(ax, t, x, ind_vec, indc)
     go = 1;
     while go
          % Find the first spot where the state_index changes.
+         if ind_cur > length(ind_vec)
+             go = 0;
+             continue
+         end
+            
          ind_next_tmp = find(ind_vec(ind_cur:end) ~= ind_vec(ind_cur), 1, 'first');
-         
+
          % At the end, ind_next_tmp this will be empty. 
          if isempty(ind_next_tmp)
                go = 0;

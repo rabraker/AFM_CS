@@ -2,8 +2,8 @@ clc
 clear
 
 % This path should be set to the root of your github working directory. 
-% root = 'C:\Users\arnold\Documents\labview';  % For windows
-root = '/home/arnold/gradschool/afm-cs';
+root = 'C:\Users\arnold\Documents\labview';  % For windows
+% root = '/home/arnold/gradschool/afm-cs';
 addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
 
 pix = 256;
@@ -22,7 +22,9 @@ hole_depth = (20/7)*(1/1000)*(20);
 
 
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
-data_root = fullfile(getdataroot, 'cs-data');
+% data_root = fullfile(getdataroot, 'cs-data');
+data_root = fullfile(getdataroot);
+
 cs_exp_data_name = 'cs-traj10-500_8-22-2017_08.csv'; % BEst
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-14.csv';
 
@@ -30,6 +32,8 @@ cs_exp_data_name = 'cs-traj10-500_8-22-2017_08.csv'; % BEst
 cs_exp_data_name = 'cs-traj10-500_8-22-2017_06.csv'; % 68.09, super very good.
 cs_exp_data_name = 'cs-traj10-500_8-22-2017_03.csv'; % 277 sec, fair to poor.
 
+cs_exp_data_name = 'cs-traj-5perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
+cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
 % cs_exp_data_name = 'data-out.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
@@ -189,7 +193,7 @@ Ir_bp = real(Ir_bp);
 bp_im = PixelVectorToMatrix(Ir_bp,[n m]);
 time_bp = toc;
 fprintf('SMP Time: %f \nBP Time: %f\n', time_smp, time_bp);
-%%
+%
 % close all;
 f5 = figure(6); clf
 subplot(2,3,1)

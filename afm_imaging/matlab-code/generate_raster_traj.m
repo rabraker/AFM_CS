@@ -4,7 +4,10 @@
 clear
 clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-raster_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data';
+% Where to save raster data
+raster_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
+
+%-------------- Location of System Model -------------------------
 dataroot      = fullfile(getMatPath(), 'AFM_SS',...
                 'System_Identification', 'data', 'data_xaxis'); 
 expName           = ['22-Jun-2016_exp01'];
@@ -26,7 +29,7 @@ Ki_x = 0.01;
 % Trace is one line at sec_line. The whole period is trace and re-trace.
 
 
-raster_freq = .1; % Hz.
+raster_freq = 1; % Hz.
 raster_period = 1/raster_freq;
 
 image_side = 5; % micro-meters.
@@ -77,7 +80,7 @@ end
 
 % write it to a .csv file
 %%
-data_name = sprintf('raster_traj_singleperiod_%dHz.csv', raster_freq)
+data_name = sprintf('raster_traj_singleperiod_%dmic_%dHz.csv',image_side, raster_freq)
 
 data_in_path = fullfile(raster_root, data_name);
 

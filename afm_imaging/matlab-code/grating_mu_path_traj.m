@@ -15,7 +15,7 @@ addpath('classes')
 width = 5;  % microns
 pix = 256;  % image resolution.
 minpath = 0.5;  % 250 nm. length of the horizontal mu-path. 
-sub_sample_frac = 0.2;  % Percent of pixels to subsample. 
+sub_sample_frac = 0.18;  % Percent of pixels to subsample. 
 
 % Unit conversions.
 pix_per_micron = pix/width;
@@ -84,10 +84,11 @@ MT.visualize_sampling;
 xlabel('x [v]')
 ylabel('y [v]')
 
-%%
-perc = floor(actual_sub_sample_frac*100);
-fname = sprintf('cs-traj-%dperc-%dnm-%dmic-%dHz.csv', perc, minpath*1000,width, raster_freq)
 
+perc = floor(actual_sub_sample_frac*100)
+
+fname = sprintf('cs-traj-%dperc-%dnm-%dmic-%dHz.csv', perc, minpath*1000,width, raster_freq)
+%%
 datafile = fullfile('C:\Users\arnold\Documents\labview\afm_imaging\data', fname);
 if 1
     MT.write_csv(datafile)

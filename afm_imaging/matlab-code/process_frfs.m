@@ -40,7 +40,8 @@ figure(1); clf
 subplot(2,1,1)
 % semilogx(freqs_hz, magDB)
 % hold on
-% semilogx(freqs_hz, 20*log10(abs(g)))
+semilogx(freqs_hz, 20*log10(abs(g)))
+hold on
 semilogx(freqs_hz, 20*log10(abs(dz_frf.*frf)))
 grid on
 

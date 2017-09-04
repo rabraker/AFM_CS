@@ -7,18 +7,21 @@ pix_per_volt = (pix/width)*microns_per_volt;
 Ts = 40e-6;
 
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
-data_root = fullfile(getdataroot(), 'cs-data');
+% data_root = fullfile(getdataroot(), 'cs-data');
+data_root = fullfile(getdataroot());
 % ---------------------------------------------------
 % cs_exp_data_name = 'cs-traj10-500_8-22-2017_07.csv';
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv';
 
 % Shows a few large oscillations, not quite limit cycle
-cs_exp_data_name = 'cs-traj10-500_out_8-24-2017-04.csv';
+% cs_exp_data_name = 'cs-traj10-500_out_8-24-2017-04.csv';
 
-cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv'; % k = 270202, 
+% cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv'; % k = 270202, 
 
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-09.csv'; % k =
+cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
 
+% cs_exp_data_name = 'data-in_single_out_9-3-2017-08.csv';
 
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
@@ -28,29 +31,39 @@ cs_meta_path = fullfile(data_root, cs_exp_meta_name);
 dat = csvread(cs_data_path); 
 load(cs_meta_path);  % Provides ExpMetaData
 
+indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
+       'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
 
 %
 %
 
 x = dat(:,1);
+t = [0:1:length(x)-1]'*Ts;
+
 z_err = dat(:,3);
 uz = dat(:,5);
 met_ind = dat(:,6);
 
+
+
 figure(10)
-plot(x)
+% plot(x)
 title('x')
 ax1 = gca;
+plotbyindex(ax1, t, x, met_ind, indc);
+
 
 figure(20)
-plot(uz)
+% plot(uz)
 title('uz')
 ax2 = gca
+plotbyindex(ax2, t, uz, met_ind, indc);
 
 figure(30)
-plot(z_err)
+% plot(z_err)
 title('z-err')
 ax3 = gca();
+plotbyindex(ax3, t, z_err, met_ind, indc);
 
 % figure(40)
 % plot(min(met_ind, 3))

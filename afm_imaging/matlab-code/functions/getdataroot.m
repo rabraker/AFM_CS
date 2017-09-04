@@ -1,6 +1,9 @@
 function [dataroot] = getdataroot(  )
-
-dataroot = '/home/arnold/gradschool/afm-cs/afm_imaging/acc2018-data';
+if ispc
+    dataroot = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
+else
+    dataroot = '/home/arnold/gradschool/afm-cs/afm_imaging/acc2018-data';
+end
 
 
 end
