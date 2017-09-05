@@ -16,7 +16,9 @@ micron2pix = npix/width;
 volts2pix = volts2micron * micron2pix;
 
 % ------------------- 1Hz 
-dat_name_s{1} = 'raster_scan_5mic_1Hz_out_8-26-2017-01-full.csv';
+% dat_name_s{1} = 'raster_scan_5mic_1Hz_out_8-26-2017-01-full.csv';
+% parent_name_s{1} = 'raster_scan_5mic_1Hz.csv';
+dat_name_s{1} =  'raster_scan_5mic_1Hz_out_9-4-2017-01-full.csv';
 parent_name_s{1} = 'raster_scan_5mic_1Hz.csv';
 % ------------------- 5Hz 
 dat_name_s{2} = 'raster_scan_5mic_5Hz_out_8-26-2017-01-full.csv';

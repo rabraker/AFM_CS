@@ -23,7 +23,7 @@ hole_depth = (20/7)*(1/1000)*(20);
 
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
 % data_root = fullfile(getdataroot, 'cs-data');
-data_root = fullfile(getdataroot);
+data_root = fullfile(getdataroot, 'cs-data');
 
 cs_exp_data_name = 'cs-traj10-500_8-22-2017_08.csv'; % BEst
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-14.csv';
@@ -31,9 +31,21 @@ cs_exp_data_name = 'cs-traj10-500_8-22-2017_08.csv'; % BEst
 
 cs_exp_data_name = 'cs-traj10-500_8-22-2017_06.csv'; % 68.09, super very good.
 cs_exp_data_name = 'cs-traj10-500_8-22-2017_03.csv'; % 277 sec, fair to poor.
+% cs_exp_data_name = 'cs-traj-10perc-500nm-5mic-1Hz_out_9-4-2017-04.csv';
+if 1
+    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
+    % cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-08.csv'; % GOOD
+    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-11.csv';
+end
+if 0
+    cs_exp_data_name = 'cs-traj-15perc-500nm-5mic-1Hz_out_9-4-2017-03.csv';
+end
 
-cs_exp_data_name = 'cs-traj-5perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
-cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
+if 0
+    cs_exp_data_name = 'cs-traj-5perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
+    cs_exp_data_name = 'cs-traj-5perc-500nm-5mic-1Hz_out_9-4-2017-01.csv';
+end
+
 % cs_exp_data_name = 'data-out.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
@@ -194,6 +206,7 @@ bp_im = PixelVectorToMatrix(Ir_bp,[n m]);
 time_bp = toc;
 fprintf('SMP Time: %f \nBP Time: %f\n', time_smp, time_bp);
 %
+%%
 % close all;
 f5 = figure(6); clf
 subplot(2,3,1)
@@ -214,7 +227,7 @@ title('SMP reconstruction');
 
 clc
 s = metadata2text(ExpMetaData, Ts)
-
+s = sprintf('%s\nperc=%.3f', s, sum(sum(pixelifsampled))/pix/pix);
 
 disp(s)
 f5.CurrentAxes = ax3;

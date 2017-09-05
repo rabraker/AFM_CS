@@ -8,11 +8,12 @@
 clc
 close all
 % dat_root = '/home/arnold/gradschool/afm-cs/afm_imaging/data';
-dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data';
+dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data'
 % datmat = csvread(fullfile(data_root, 'raster_8-1-2017_v3.csv'));
-dat_name = 'raster-scan-8-24-2017_7Hz-full.csv';
-parent_name = 'raster_traj_singleperiod_7Hz.csv';
+
+dat_name = 'raster_scan_5mic_1Hz_out_9-4-2017-01-full.csv';
+parent_name = 'raster_scan_5mic_1Hz.csv';
 
 dat_path = fullfile(dat_root, dat_name);
 parent_path = fullfile(dat_root, parent_name);

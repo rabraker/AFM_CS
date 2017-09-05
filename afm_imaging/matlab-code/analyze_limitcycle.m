@@ -8,7 +8,7 @@ Ts = 40e-6;
 
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
 % data_root = fullfile(getdataroot(), 'cs-data');
-data_root = fullfile(getdataroot());
+data_root = fullfile(getdataroot(), 'cs-data');
 % ---------------------------------------------------
 % cs_exp_data_name = 'cs-traj10-500_8-22-2017_07.csv';
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv';
@@ -20,9 +20,9 @@ data_root = fullfile(getdataroot());
 
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-09.csv'; % k =
 cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
-
-% cs_exp_data_name = 'data-in_single_out_9-3-2017-08.csv';
-
+% cs_exp_data_name = 'data-in_single_out_9-4-2017-01.csv';
+cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-04.csv'
+cs_exp_data_name = 'cs-traj-10perc-500nm-5mic-1Hz_out_9-4-2017-02.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);
@@ -55,15 +55,15 @@ plotbyindex(ax1, t, x, met_ind, indc);
 
 figure(20)
 % plot(uz)
-title('uz')
 ax2 = gca
 plotbyindex(ax2, t, uz, met_ind, indc);
+title('uz')
 
 figure(30)
 % plot(z_err)
-title('z-err')
 ax3 = gca();
 plotbyindex(ax3, t, z_err, met_ind, indc);
+title('z-err')
 
 % figure(40)
 % plot(min(met_ind, 3))

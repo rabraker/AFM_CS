@@ -89,7 +89,7 @@ perc = floor(actual_sub_sample_frac*100)
 
 fname = sprintf('cs-traj-%dperc-%dnm-%dmic-%dHz.csv', perc, minpath*1000,width, raster_freq)
 %%
-datafile = fullfile('C:\Users\arnold\Documents\labview\afm_imaging\data', fname);
+datafile = fullfile('C:\Users\arnold\Documents\labview\afm_imaging\data\cs-data', fname);
 if 1
     MT.write_csv(datafile)
 end
