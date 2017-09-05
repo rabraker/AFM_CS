@@ -1,4 +1,4 @@
-function [ img_data ] = csdata2mat(cs_data_path, cs_meta_path, verbose)
+function [ img_data] = csdata2mat(cs_data_path, cs_meta_path, verbose)
 
 % This path should be set to the root of your github working directory. 
 % root = 'C:\Users\arnold\Documents\labview';  % For windows
@@ -55,7 +55,9 @@ dat_meas(:,2) = dat_meas(:,2) - min(dat_meas(:,2));  %y dir
 
 I = zeros(pix,pix);
 pixelifsampled=zeros(pix, pix);
-% bin all the data into pixels. 
+% bin all the data into pixels.
+line_data = {}
+line_data_avgd = {}
 for k = 1:max(dat_meas(:,end))
 
    % Get indexes corresponding to measurement entity k
@@ -65,7 +67,7 @@ for k = 1:max(dat_meas(:,end))
    U_ks = dat_meas(inds, 5);
    Y_ks = dat_meas(inds, 2)*pix_per_volt;
    X_ks = dat_meas(inds, 1)*pix_per_volt;
-
+   line_data{k} = U_ks;
    % Register the control data to zero. We can do this because we are
    % scanning long enough that we are always guaranteed to exit a hole.
    % This lets 
@@ -104,6 +106,7 @@ for k = 1:max(dat_meas(:,end))
            U_k = [U_k; u_pix_jj];
        end
    end
+   line_data_avgd{k} = U_k;
    % -------------------
    % ---- visualize ------
    if abs(max(U_k) - min(U_k))> hole_depth*.5
