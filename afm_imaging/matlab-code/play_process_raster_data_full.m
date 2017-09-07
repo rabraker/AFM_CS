@@ -6,14 +6,19 @@
 % faster scans, we want to use that data, so we can process it better.
 % That's what this script does.
 clc
+clear
 close all
+addpath('functions')
+
 % dat_root = '/home/arnold/gradschool/afm-cs/afm_imaging/data';
 dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data'
 % datmat = csvread(fullfile(data_root, 'raster_8-1-2017_v3.csv'));
 
 dat_name = 'raster_scan_5mic_1Hz_out_9-4-2017-01-full.csv';
-parent_name = 'raster_scan_5mic_1Hz.csv';
+dat_name = 'raster_scan_5mic_1Hz_out_9-6-2017-01-full.csv'; % Uses Dinv
+dat_name = 'raster_scan_5mic_10Hz_out_9-6-2017-06-full.csv'; %uses Dinv, Ki=.02
+parent_name = 'raster_scan_5mic_10Hz.csv';
 
 dat_path = fullfile(dat_root, dat_name);
 parent_path = fullfile(dat_root, parent_name);
@@ -61,9 +66,9 @@ x_np = x_np - min(x_np);
 figure(200); clf; hold on
 t = [0:1:length(xref)*np-1]'*Ts;
 xref_np = repmat(xref, np, 1);
-p1 = plot(t, xref_np*volts2micron);
+p1 = plot(t, xref_np*volts2microns);
 p1.DisplayName = '$x_{ref}$';
-p2 = plot(t, x_np*volts2micron);
+p2 = plot(t, x_np*volts2microns);
 p2.DisplayName = '$x(k)$';
 
 ylm = ylim;
@@ -76,22 +81,23 @@ leg1.Position=[0.6436    0.8590    0.2611    0.0640];
 
 %% Now try by actually using the x-y measured data;
 
-
+clc
 
 width = 5;
-volts2micron = 50/10;
+% volts2micron = 50/10;
 micron2pix = pix/width;
-volts2pix = volts2micron * micron2pix;
+volts2pix = volts2microns * micron2pix;
 
 
 pixmat2 = bin_raster_slow(datmat(:,[1,2,4]), pix, samps_per_period, volts2pix);
 
+pixmat2=pixmat2(:,19:223);
 
-
-% pixmat2 = detrend_plane(pixmat2);
+pixmat2 = detrend_plane(pixmat2);
 figure(5)
 lo = min(min(pixmat2));
 hi = max(max(pixmat2));
+
 imshow(pixmat2, [lo, hi])
 
 

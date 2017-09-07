@@ -5,7 +5,7 @@ width = 5;
 microns_per_volt = 50/10;
 pix_per_volt = (pix/width)*microns_per_volt;
 Ts = 40e-6;
-
+addpath('functions')
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
 % data_root = fullfile(getdataroot(), 'cs-data');
 data_root = fullfile(getdataroot(), 'cs-data');
@@ -22,7 +22,8 @@ data_root = fullfile(getdataroot(), 'cs-data');
 cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
 % cs_exp_data_name = 'data-in_single_out_9-4-2017-01.csv';
 cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-04.csv'
-cs_exp_data_name = 'cs-traj-10perc-500nm-5mic-1Hz_out_9-4-2017-02.csv';
+cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-6-2017-02.csv';
+cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-6-2017-14.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);
@@ -45,26 +46,28 @@ uz = dat(:,5);
 met_ind = dat(:,6);
 
 
-
-figure(10)
+figbase = 1;
+figure(10+figbase)
 % plot(x)
 title('x')
 ax1 = gca;
 plotbyindex(ax1, t, x, met_ind, indc);
 
 
-figure(20)
+figure(20+figbase)
 % plot(uz)
 ax2 = gca
 plotbyindex(ax2, t, uz, met_ind, indc);
 title('uz')
 
-figure(30)
+figure(30+figbase)
 % plot(z_err)
 ax3 = gca();
 plotbyindex(ax3, t, z_err, met_ind, indc);
 title('z-err')
-
+hold on
+plot([t(1), t(end)], [.05, .05])
+plot([t(1), t(end)], -[.05, .05])
 % figure(40)
 % plot(min(met_ind, 3))
 % title('meta index')

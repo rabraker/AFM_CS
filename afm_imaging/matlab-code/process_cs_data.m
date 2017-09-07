@@ -24,27 +24,51 @@ hole_depth = (20/7)*(1/1000)*(20);
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
 % data_root = fullfile(getdataroot, 'cs-data');
 data_root = fullfile(getdataroot, 'cs-data');
-
-cs_exp_data_name = 'cs-traj10-500_8-22-2017_08.csv'; % BEst
-% cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-14.csv';
-
-
-cs_exp_data_name = 'cs-traj10-500_8-22-2017_06.csv'; % 68.09, super very good.
-cs_exp_data_name = 'cs-traj10-500_8-22-2017_03.csv'; % 277 sec, fair to poor.
-% cs_exp_data_name = 'cs-traj-10perc-500nm-5mic-1Hz_out_9-4-2017-04.csv';
-if 1
-    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
-    % cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-08.csv'; % GOOD
-    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-11.csv';
-end
 if 0
-    cs_exp_data_name = 'cs-traj-15perc-500nm-5mic-1Hz_out_9-4-2017-03.csv';
-end
+    cs_exp_data_name = 'cs-traj10-500_8-22-2017_08.csv'; % BEst
+    % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-14.csv';
 
+
+    cs_exp_data_name = 'cs-traj10-500_8-22-2017_06.csv'; % 68.09, super very good.
+    cs_exp_data_name = 'cs-traj10-500_8-22-2017_03.csv'; % 277 sec, fair to poor.
+    % cs_exp_data_name = 'cs-traj-10perc-500nm-5mic-1Hz_out_9-4-2017-04.csv';
+end
 if 0
     cs_exp_data_name = 'cs-traj-5perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
     cs_exp_data_name = 'cs-traj-5perc-500nm-5mic-1Hz_out_9-4-2017-01.csv';
+    cs_exp_data_name = 'cs-traj-5perc-500nm-5mic-1Hz_out_9-6-2017-01.csv';
 end
+
+if 1
+    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
+    % cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-08.csv'; % GOOD
+    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-15.csv';
+    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-6-2017-03.csv';
+    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-6-2017-07.csv'; %Dinv working
+    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-7-2017-04.csv'; %Dinv GOOD. 34s 
+    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-7-2017-06.csv'; %Dinv  
+end
+
+if 0
+    cs_exp_data_name = 'cs-traj-10perc-500nm-5mic-1Hz_out_9-6-2017-01.csv';
+end
+
+if 0
+    cs_exp_data_name = 'cs-traj-15perc-500nm-5mic-1Hz_out_9-4-2017-03.csv';
+    cs_exp_data_name = 'cs-traj-15perc-500nm-5mic-1Hz_out_9-7-2017-01.csv';
+    
+end
+
+% Fit a TF to the resonance anti-resonance pair by hand.
+wz = 217.*2*pi
+wp = 214.6*2*pi;
+zz = .0071;
+zp = .0072;
+G1 = c2d((wp*wp/wz^2)*tf([1, 2*zz*wz, wz^2], [1, 2*zp*wp, wp^2]), Ts);
+a = 4200*2*pi;
+G2 = c2d(a*tf(1, [1, a]), Ts);
+
+G = zpk(G1*G2*G2*G2*G2);
 
 % cs_exp_data_name = 'data-out.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
@@ -60,7 +84,7 @@ state_times = state_ticks*Ts
 time_total = sum(state_times)
 
 
-
+%%
 % Drop all data corresponding to movement between points.
 ind_meas = find(dat(:, 6) > 0);  % Index of the movements are all 0.
 meta_ind = dat(:,6);
@@ -97,7 +121,7 @@ for k = 1:max(dat_meas(:,end))
    inds = find(dat_meas(:,end) == k); 
    
    % Slice out the data for the current mu-path.
-   U_ks = dat_meas(inds, 5);
+   U_ks = dat_meas(inds, 4);
    Y_ks = dat_meas(inds, 2)*pix_per_volt;
    X_ks = dat_meas(inds, 1)*pix_per_volt;
 
@@ -105,6 +129,18 @@ for k = 1:max(dat_meas(:,end))
    % scanning long enough that we are always guaranteed to exit a hole.
    % This lets 
    U_ks = U_ks - max(U_ks);
+%       w = 215*2*pi;
+%     t = [0:1:length(U_ks)-1]'*Ts;
+%     Phi = [sin(w*t), cos(w*t)];
+%     ab = Phi\U_ks;
+%     U_ks = U_ks - ab(1)*sin(w*t) - ab(2)*cos(w*t);
+    if min(U_ks) < -0.1
+        continue
+    end
+   
+
+%    t = [0:1:length(Uu_ks)-1]'*40e-6;
+%    U_ks = lsim(G, Uu_ks,t );
    
    % Make the assumption that the y-data for each path is constant enough.
    % Since we start at the (0,0) corner the xplane, we'll take the floor,
@@ -163,7 +199,7 @@ figure
 I = (I - max(max(I))).*pixelifsampled; 
 imshow(I, [min(min(I)), max(max(I))]);
 
-
+bp = 1;
 % imshow_sane(I, ax2, width, width);
 % Make the image square, to use smp.
 
@@ -189,37 +225,42 @@ reconstruct_root = fullfile(root, 'reconstruction/BP');
 reconstruct_path = genpath(reconstruct_root)
 addpath(reconstruct_path)
 
-% ********* BP *************
-[n m] = size(I);
-tic
-I_vector = PixelMatrixToVector(I);
+if bp
+    % ********* BP *************
+    [n m] = size(I);
+    tic
+    I_vector = PixelMatrixToVector(I);
 
-pixelifsampled_vec = PixelMatrixToVector(pixelifsampled);
-I_vector = I_vector(find(pixelifsampled_vec>0.5));
+    pixelifsampled_vec = PixelMatrixToVector(pixelifsampled);
+    I_vector = I_vector(find(pixelifsampled_vec>0.5));
 
-A = @(x) IDCTfun(x,pixelifsampled_vec);
-At = @(x) DCTfun(x,pixelifsampled_vec);
+    A = @(x) IDCTfun(x,pixelifsampled_vec);
+    At = @(x) DCTfun(x,pixelifsampled_vec);
 
-Ir_bp = idct(l1qc_logbarrier(At(I_vector), A, At, I_vector, 0.1));
-Ir_bp = real(Ir_bp);
-bp_im = PixelVectorToMatrix(Ir_bp,[n m]);
-time_bp = toc;
-fprintf('SMP Time: %f \nBP Time: %f\n', time_smp, time_bp);
+    Ir_bp = idct(l1qc_logbarrier(At(I_vector), A, At, I_vector, 0.1));
+    Ir_bp = real(Ir_bp);
+    bp_im = PixelVectorToMatrix(Ir_bp,[n m]);
+    time_bp = toc;
+    fprintf('SMP Time: %f \nBP Time: %f\n', time_smp, time_bp);
+end
 %
-%%
 % close all;
+
+%
 f5 = figure(6); clf
 subplot(2,3,1)
 ax3 = gca();
 imshow_sane(I, ax3, width, width);
 title('sample');
 
-subplot(2,3,2)
-ax4 = gca();
-% imshow_sane(PixelVectorToMatrix(Ir_bp,[n m]), ax4, width, width);
-imshow_sane(bp_im, ax4, width, width);
-title('BP reconstruction');
-
+if bp
+    bp_im = detrend_plane(bp_im);
+    subplot(2,3,2)
+    ax4 = gca();
+    % imshow_sane(PixelVectorToMatrix(Ir_bp,[n m]), ax4, width, width);
+    imshow_sane(bp_im, ax4, width, width);
+    title('BP reconstruction');
+end
 subplot(2,3,3)
 ax5 = gca();
 imshow_sane(Ir_smp, ax5, width, width)

@@ -1,5 +1,7 @@
 % Load the z-axis frequency response data.
-load('C:\Users\arnold\Documents\MATLAB\AFM_SS\System_Identification\data\data_ZAxis\z-axis_sines_in_329_out_9-3-2017-01.mat');
+% load('C:\Users\arnold\Documents\MATLAB\AFM_SS\System_Identification\data\data_ZAxis\z-axis_sines_in_329_out_9-3-2017-01.mat');
+clear
+load('C:\Users\arnold\Documents\MATLAB\AFM_SS\System_Identification\data\data_ZAxis\z-axis_sines_in_329_out_9-6-2017-01.mat');
 
 P_frf =squeeze( modelFit.frf.G_frf);
 freq_s = modelFit.frf.freq_s;
@@ -10,13 +12,13 @@ F1 = figure(1); clf
 frfBode(P_frf, freq_s, F1, 'r', 'Hz')
 
 % Fit a TF to the resonance anti-resonance pair by hand.
-wz = 214.5*2*pi
-wp = 212*2*pi;
-zz = .011;
-zp = .008;
+wz = 217.*2*pi
+wp = 214.6*2*pi;
+zz = .0071;
+zp = .0072;
 
-G1 = c2d((wp*wp/wz^2)*tf([1, 2*zz*wz, wz^2], [1, 2*zp*wp, wp^2]), Ts);
-% G1 = abs(P_frf(1))*G1;
+G1 = 2.8*c2d((wp*wp/wz^2)*tf([1, 2*zz*wz, wz^2], [1, 2*zp*wp, wp^2]), Ts);
+
 % This approximates the rolloff, but ignore it.
 a = 4200*2*pi;
 G2 = c2d(a*tf(1, [1, a]), Ts);
@@ -28,29 +30,24 @@ G_frf = squeeze(freqresp(G, w_s));
 % frfBode(G_frf,  freq_s, F1, 'k', 'Hz');
 % The I controller. 
 K = 1000
-Ki = .02;
+Ki = .01;
 
-Di = tf(Ki*[1 0], [1 -1], Ts);
-
-D_inv = tf(zpk((1/G1)));
-% *dcgain(G1))); %make it have unity dc gain.
-G1 =squeeze(freqresp(G1, w_s));
-
-frfBode(G1, freq_s, F1, 'k', 'Hz');
-%%
-
-D = Di*D_inv;
-Dfrf =squeeze(freqresp(D, w_s));
-
+Di = -tf(Ki*[1 0], [1 -1], Ts)
+D_inv = tf(zpk((1/G1)*dcgain(G1))); %make it have unity dc gain.
+G1_frf =squeeze(freqresp(G1, w_s));
+frfBode(G1_frf, freq_s, F1, 'k', 'Hz');
 subplot(2,1,2)
 xlm = xlim;
 plot(xlm, [-180, -180], 'k')
+
+D = D_inv*Di;
+Dfrf =squeeze(freqresp(D, w_s));
 % and plot
-F2 = figure(2); 
-frfBode(P_frf.*Dfrf, freq_s, F1, 'k', 'Hz');
+F2 = figure(2); clf
+frfBode(P_frf.*Dfrf, freq_s, F2, 'k', 'Hz');
 % frfBode(P_frf.*Dfrf*.1, freq_s, F1, '--k', 'Hz');
 % frfBode(P_frf.*Dfrf*.5, freq_s, F1, '--m', 'Hz');
-frfBode(P_frf.*Dfrf./(1+P_frf.*Dfrf), freq_s, F1, 'k', 'Hz');
+frfBode(P_frf.*Dfrf./(1+P_frf.*Dfrf), freq_s, F2, 'r', 'Hz');
 format long
 D_inv.Numerator{1}
 D_inv.Denominator{1}
