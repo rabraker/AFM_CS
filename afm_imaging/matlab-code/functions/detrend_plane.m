@@ -24,9 +24,9 @@ Z = reshape(I, [],1);
 coeffs = PHI\Z;
 
 
-mx = coeffs(1)
-my = coeffs(2)
-b = coeffs(3)
+mx = coeffs(1);
+my = coeffs(2);
+b = coeffs(3);
 
 z_fit = X*mx + Y*my + b;
 

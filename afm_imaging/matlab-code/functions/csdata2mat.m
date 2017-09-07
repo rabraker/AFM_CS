@@ -1,8 +1,11 @@
 function [ img_data] = csdata2mat(cs_data_path, cs_meta_path, verbose)
 
 % This path should be set to the root of your github working directory. 
-% root = 'C:\Users\arnold\Documents\labview';  % For windows
-root = '/home/arnold/gradschool/afm-cs';
+if ispc
+    root = 'C:\Users\arnold\Documents\labview';  % For windows
+else
+    root = '/home/arnold/gradschool/afm-cs';
+end
 addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
 
 % TODO: These magic numbers to become inputs or otherwise dissapear!!
