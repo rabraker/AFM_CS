@@ -51,18 +51,28 @@ job_list; % 28
 
 verbose = 0;
 %%
+
 for job_file_cell = job_list'
     close all
     cs_job_file = job_file_cell{1};
     cs_exp_meta_name = strrep(cs_job_file, '.csv', '-meta.mat');
     
+    k = regexp(cs_job_file, 'Hz_out')
+    
+    meta_in_path = sprintf('%s.mat', cs_job_file(1:k+1));
     % This is inefficient because we also load the file inside csdata2mat.
     % But I don't want to refactor right now.
     % Catch malformed .mat meta-data files.
     try
         load(cs_exp_meta_name)
+        if exist(meta_in_path, 'file') == 2
+            load(meta_in_path)
+        else % all new data has a meta.mat file. all old data had same params we need
+            CsExpMetaIn = struct('npix', 256, 'width', 5)
+            keyboard
+        end
         % Process the file:
-        img_data  = csdata2mat(cs_job_file, cs_exp_meta_name, verbose);
+        img_data  = csdata2mat(cs_job_file, cs_exp_meta_name,CsExpMetaIn, verbose);
     catch MExcp
         if strcmp(MExcp.identifier, 'MATLAB:textscan:EmptyFormatString')
             purge_list{length(purge_list)+1,1} = cs_job_file;
@@ -81,16 +91,21 @@ for job_file_cell = job_list'
     
 end
 
-%%
+
 
 for fl_cell = cs_file_list
     cs_exp_data_path = fl_cell{1};
     
     mat_data_path = strrep(cs_exp_data_path, '.csv', '_img-data.mat');
     
+    
     if exist(mat_data_path, 'file') ~= 2
         continue
     end
+    if exist(meta_in_path, 'file') ~= 2
+        continue
+    end
+    
 %     fig_root = 'C:\Users\arnold\Documents\labview\afm_imaging\matlab-code\figures';
     fig_root = getfigfigroot();
     cs_exp_fig_name = strrep(cs_exp_data_path, '.csv', '-fig.fig');

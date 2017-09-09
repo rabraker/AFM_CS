@@ -1,4 +1,4 @@
-function [ img_data] = csdata2mat(cs_data_path, cs_meta_path, verbose)
+function [ img_data] = csdata2mat(cs_data_path, cs_meta_path, CsExpMetaIn, verbose)
 
 % This path should be set to the root of your github working directory. 
 if ispc
@@ -9,8 +9,8 @@ end
 addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
 
 % TODO: These magic numbers to become inputs or otherwise dissapear!!
-pix = 256;
-width = 5;
+pix = CsExpMetaIn.npix; %256;
+width = CsExpMetaIn.width %5;
 microns_per_volt = 50/10;
 pix_per_volt = (pix/width)*microns_per_volt;
 Ts = 40e-6;
