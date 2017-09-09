@@ -20,6 +20,12 @@ dat_name = 'raster_scan_5mic_1Hz_out_9-6-2017-01-full.csv'; % Uses Dinv
 dat_name = 'raster_scan_5mic_10Hz_out_9-6-2017-06-full.csv'; %uses Dinv, Ki=.02
 parent_name = 'raster_scan_5mic_10Hz.csv';
 
+dat_name = 'raster_scan_10mic_5.00e-01Hz_out_9-8-2017-02-full.csv';
+parent_name = 'raster_scan_10mic_5.00e-01Hz.csv';
+
+dat_name = 'raster_scan_10mic_2.50e+00Hz_out_9-8-2017-02-full.csv';
+parent_name = 'raster_scan_10mic_2.50e+00Hz.csv';
+
 dat_path = fullfile(dat_root, dat_name);
 parent_path = fullfile(dat_root, parent_name);
 datmat = csvread(dat_path);
@@ -42,7 +48,6 @@ xdat = reshape(datmat(trace_inds,1), [], nperiods);
 ydat = reshape(datmat(trace_inds,2), [], nperiods);
 udat = reshape(datmat(trace_inds,4), [], nperiods);
 
-%
 udat = datmat(:,4);
 pixmat = bin_raster_fast(udat, pix, samps_per_period);
 
@@ -83,7 +88,7 @@ leg1.Position=[0.6436    0.8590    0.2611    0.0640];
 
 clc
 
-width = 5;
+width = 10;
 % volts2micron = 50/10;
 micron2pix = pix/width;
 volts2pix = volts2microns * micron2pix;
@@ -91,7 +96,7 @@ volts2pix = volts2microns * micron2pix;
 
 pixmat2 = bin_raster_slow(datmat(:,[1,2,4]), pix, samps_per_period, volts2pix);
 
-pixmat2=pixmat2(:,19:223);
+pixmat2=pixmat2(:,1:end);
 
 pixmat2 = detrend_plane(pixmat2);
 figure(5)
