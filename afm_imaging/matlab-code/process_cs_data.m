@@ -6,12 +6,7 @@ root = 'C:\Users\arnold\Documents\labview';  % For windows
 % root = '/home/arnold/gradschool/afm-cs';
 addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
 
-pix = 256;
-width = 5;
-microns_per_volt = 50/10;
-pix_per_volt = (pix/width)*microns_per_volt;
 Ts = 40e-6;
-hole_depth = (20/7)*(1/1000)*(20);
 
 % dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/cs-data-out02.csv');
 % dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/data-out_ontable_csimage.csv');
@@ -39,7 +34,7 @@ if 0
     cs_exp_data_name = 'cs-traj-5perc-500nm-5mic-1Hz_out_9-6-2017-01.csv';
 end
 
-if 1
+if 0
     cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
     % cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-08.csv'; % GOOD
     cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-15.csv';
@@ -47,10 +42,15 @@ if 1
     cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-6-2017-07.csv'; %Dinv working
     cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-7-2017-04.csv'; %Dinv GOOD. 34s 
     cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-7-2017-06.csv'; %Dinv  
+    
+    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-01Hz_out_9-8-2017-06.csv';
+    
+                        
 end
 
 if 0
     cs_exp_data_name = 'cs-traj-10perc-500nm-5mic-1Hz_out_9-6-2017-01.csv';
+    cs_exp_data_name = 'cs-traj-10perc-500nm-5mic-01Hz_out_9-8-2017-02.csv';
 end
 
 if 0
@@ -59,16 +59,18 @@ if 0
     
 end
 
-% Fit a TF to the resonance anti-resonance pair by hand.
-wz = 217.*2*pi
-wp = 214.6*2*pi;
-zz = .0071;
-zp = .0072;
-G1 = c2d((wp*wp/wz^2)*tf([1, 2*zz*wz, wz^2], [1, 2*zp*wp, wp^2]), Ts);
-a = 4200*2*pi;
-G2 = c2d(a*tf(1, [1, a]), Ts);
-
-G = zpk(G1*G2*G2*G2*G2);
+if 0
+    cs_exp_data_name = 'cs-traj-8perc-1000nm-10mic-5.00e-01Hz_out_9-8-2017-01.csv';
+end
+if 0
+    cs_exp_data_name = 'cs-traj-11perc-1000nm-10mic-5.00e-01Hz_out_9-8-2017-02.csv';
+end
+if 0
+    cs_exp_data_name = 'cs-traj-10perc-1000nm-10mic-01Hz_out_9-8-2017-09.csv';
+end
+if 1
+    cs_exp_data_name ='cs-traj-13perc-1000nm-10mic-01Hz_out_9-8-2017-01.csv'
+end
 
 % cs_exp_data_name = 'data-out.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
@@ -83,6 +85,19 @@ state_ticks = ExpMetaData.state_counts;
 state_times = state_ticks*Ts
 time_total = sum(state_times)
 
+k = regexp(cs_data_path, 'Hz_out');
+meta_in_path = sprintf('%s.mat', cs_data_path(1:k+1));
+if exist(meta_in_path, 'file') ==2
+    load(meta_in_path)
+    width = CsExpMetaIn.width;
+    pix =  CsExpMetaIn.npix;
+else
+    pix = 256;
+    width = 10;
+end
+microns_per_volt = 50/10;
+pix_per_volt = (pix/width)*microns_per_volt;
+hole_depth = (20/7)*(1/1000)*(20);
 
 %%
 % Drop all data corresponding to movement between points.
@@ -129,19 +144,12 @@ for k = 1:max(dat_meas(:,end))
    % scanning long enough that we are always guaranteed to exit a hole.
    % This lets 
    U_ks = U_ks - max(U_ks);
-%       w = 215*2*pi;
-%     t = [0:1:length(U_ks)-1]'*Ts;
-%     Phi = [sin(w*t), cos(w*t)];
-%     ab = Phi\U_ks;
-%     U_ks = U_ks - ab(1)*sin(w*t) - ab(2)*cos(w*t);
+   
     if min(U_ks) < -0.1
         continue
     end
    
-
-%    t = [0:1:length(Uu_ks)-1]'*40e-6;
-%    U_ks = lsim(G, Uu_ks,t );
-   
+ 
    % Make the assumption that the y-data for each path is constant enough.
    % Since we start at the (0,0) corner the xplane, we'll take the floor,
    % and add 1 for 1-based indexing.
@@ -163,6 +171,7 @@ for k = 1:max(dat_meas(:,end))
            % Slice out the corresponding height data, and average it
            % together since this is a single pixel.
            u_pix_jj = mean(U_ks(ind_x)); 
+           
            % The image index for the y-direction (rows) is y_pix.
            % For the x-direction, the start of the path is at xpix_start.
            % We are inching along the mu-path, so at each iteration of this
@@ -175,6 +184,7 @@ for k = 1:max(dat_meas(:,end))
            U_k = [U_k; u_pix_jj];
        end
    end
+   
    % -------------------
    % ---- visualize ------
    if abs(max(U_k) - min(U_k))> hole_depth*.5
@@ -185,7 +195,7 @@ for k = 1:max(dat_meas(:,end))
         cs = 'b';
     end
    plot(ax2, U_k, 'color', cs)
-   
+%    keyboard
 end
 
 figure(100);
@@ -195,7 +205,7 @@ imshow(I, [min(min(I)), max(max(I))])
 
 %%
 figure
-% I = detrend_sampled_plane(I, pixelifsampled);
+I = detrend_sampled_plane(I, pixelifsampled);
 I = (I - max(max(I))).*pixelifsampled; 
 imshow(I, [min(min(I)), max(max(I))]);
 
@@ -269,15 +279,22 @@ title('SMP reconstruction');
 clc
 s = metadata2text(ExpMetaData, Ts)
 s = sprintf('%s\nperc=%.3f', s, sum(sum(pixelifsampled))/pix/pix);
-
+s2 = sprintf('%s', cs_exp_data_name)
 disp(s)
-f5.CurrentAxes = ax3;
-text(0,-1.2, s, 'Units', 'normalized')
-%%
+subplot(2,3,[4,5,6])
+ax4 = gca();
+ax4.Visible = 'off';
+
+t1 = text(0,.5, s, 'Units', 'normalized');
+t2 = text(0, t1.Extent(2)-.1, s2, 'Units', 'normalized', 'interpreter', 'none');
+
+% text(0,-1.2, s, 'Units', 'normalized')
+%
 savedata = 1;
 if savedata
    img_data.cs_im = I;
    img_data.bp_im = bp_im;
+
    img_data.smp_im = Ir_smp;
    img_data.pixelifsampled = pixelifsampled;
    
@@ -290,7 +307,7 @@ if savedata
    save(img_data_path, 'img_data')
     
 end
-%%
+%
 fig_root = 'C:\Users\arnold\Documents\labview\afm_imaging\matlab-code\figures';
 cs_exp_fig_name = strrep(cs_exp_data_name, '.csv', '-fig')
 

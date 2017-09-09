@@ -12,14 +12,21 @@ clear, clc
 close all
 addpath('classes')
 
-width = 5;  % microns
-pix = 256;  % image resolution.
-minpath = 0.5;  % 250 nm. length of the horizontal mu-path. 
-sub_sample_frac = 0.18;  % Percent of pixels to subsample. 
-
+if 0 % original
+    width = 5;  % microns
+    pix = 256;  % image resolution.
+    mu_length = 0.5;  % 500 nm. length of the horizontal mu-path. 
+    sub_sample_frac = 0.1;  % Percent of pixels to subsample. 
+end
+if 1
+    width = 10;  % microns
+    pix = 256;  % image resolution.
+    mu_length = 1;  % 1000 nm. length of the horizontal mu-path. 
+    sub_sample_frac = 0.18;  % Percent of pixels to subsample. 
+end
 % Unit conversions.
 pix_per_micron = pix/width;
-mu_pix = ceil(minpath*pix_per_micron);
+mu_pix = ceil(mu_length*pix_per_micron);
 
 % ************************************************
 % ************************************************
@@ -49,21 +56,50 @@ YR = [];
 
 
 pixifsampled = zeros(pix, pix);
-
+% 
+% for n=1:pix % down rows
+%     m = 1;
+%    while m < pix - mu_pix  % accros columns. pix - mu_pix so that the paths
+%                            % dont hang off outside the 5-micron square. 
+%        if rand(1,1) < sub_sample_frac/mu_pix
+%           pixifsampled(n, m:m+mu_pix) = 1;
+%           XR = [XR; ( (m - 1) / pix_per_micron) * microns2volts];
+%           YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
+%           m = m + mu_pix;
+%        else
+%            m = m+1;
+%        end
+%    end
+% end
+swtch = rand(pix,1);
 for n=1:pix % down rows
-    m = 1;
-   while m < pix - mu_pix  % accros columns. pix - mu_pix so that the paths
-                           % dont hang off outside the 5-micron square. 
-       if rand(1,1) < sub_sample_frac/mu_pix
-          pixifsampled(n, m:m+mu_pix) = 1;
-          XR = [XR; ( (m - 1) / pix_per_micron) * microns2volts];
-          YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
-          m = m + mu_pix;
-       else
-           m = m+1;
-       end
-   end
     
+    if  swtch(n) >0.5;
+        m = 1;
+       while m < pix - mu_pix
+           if rand(1,1) < sub_sample_frac/mu_pix
+              pixifsampled(n, m:m+mu_pix) = 1;
+              XR = [XR; ( (m - 1) / pix_per_micron) * microns2volts];
+              YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
+              m = m + mu_pix;
+           else
+               m = m+1;
+           end
+       end
+    else
+       m = pix; % reverse direction for odd ones. 
+       while m > mu_pix
+           if rand(1,1) < sub_sample_frac/mu_pix
+              pixifsampled(n, m-mu_pix:m) = 1;
+
+              XR = [XR; ( (m - mu_pix) / pix_per_micron) * microns2volts];
+              YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
+              m = m - mu_pix;
+           else
+               m = m-1;
+           end
+       end
+    end
 end
 
 actual_sub_sample_frac = length(find(pixifsampled == 1))/pix^2;
@@ -87,11 +123,29 @@ ylabel('y [v]')
 
 perc = floor(actual_sub_sample_frac*100)
 
-fname = sprintf('cs-traj-%dperc-%dnm-%dmic-%dHz.csv', perc, minpath*1000,width, raster_freq)
+fname = sprintf('cs-traj-%dperc-%dnm-%dmic-%.2dHz.csv', perc, mu_length*1000,width, raster_freq)
 %%
-datafile = fullfile('C:\Users\arnold\Documents\labview\afm_imaging\data\cs-data', fname);
+% create meta file name
+data_root = fullfile(getdataroot, 'cs-data');
+
+meta_in = strrep(fname, '.csv', '.mat');
+meta_data_path = fullfile(data_root, meta_in);
+
+
+tip_velocity = width/(0.5*(1/raster_freq));
+
+CsExpMetaIn.width = width;
+CsExpMetaIn.nom_perc = sub_sample_frac;
+CsExpMetaIn.mu_length = mu_length;
+CsExpMetaIn.tip_velocity = tip_velocity;
+CsExpMetaIn.npix = pix
+
+
+datafile = fullfile(data_root, fname)
+
 if 1
     MT.write_csv(datafile)
+    save(meta_data_path, 'CsExpMetaIn')
 end
    
 
