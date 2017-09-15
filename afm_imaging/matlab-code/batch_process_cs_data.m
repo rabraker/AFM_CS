@@ -71,6 +71,12 @@ for job_file_cell = job_list'
             CsExpMetaIn = struct('npix', 256, 'width', 5)
             keyboard
         end
+        try 
+            npix = CsExpMetaIn.npix;
+        catch
+            CsExpMetaIn.npix = 256;
+            save(cs_exp_meta_name, 'CsExpMetaIn')
+        end
         % Process the file:
         img_data  = csdata2mat(cs_job_file, cs_exp_meta_name,CsExpMetaIn, verbose);
     catch MExcp
@@ -92,7 +98,7 @@ for job_file_cell = job_list'
 end
 
 
-
+%%
 for fl_cell = cs_file_list
     cs_exp_data_path = fl_cell{1};
     

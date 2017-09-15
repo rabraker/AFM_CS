@@ -15,8 +15,9 @@ root = workingRoot;
 xdkFileName = 'z-axis_sines_in_long.csv';
 metaFileName = strrep(xdkFileName, '.csv', '_metaData.csv');
 % xk_FileName = 'z-axis_sines_in_329_out_9-3-2017-01.csv';
-xk_FileName = 'z-axis_sines_in_long_out_9-8-2017-01.csv';
+% xk_FileName = 'z-axis_sines_in_long_out_9-8-2017-01.csv';
 
+xk_FileName = 'z-axis_sines_in_long_out_9-10-2017-01.csv';
 % % For saving results:
 modFitName   = strrep(xk_FileName, '.csv', '.mat');
 modFitPath   = fullfile(root, modFitName);
@@ -84,7 +85,7 @@ Sx_ux_Coherence = frfCoherence(G_xdir, 1, 2);
 S(1,1,:)        = Sx_ux_Coherence;
 
 
-D = tf(-.01*[1 0], [1 -1], Ts)
+D = tf(-.005*[1 0], [1 -1], Ts)
 dfrf = squeeze(freqresp(D, w_s));
 % ==========
 Gx_ux_OL_frd    = frdExt(Px_ux_OL_frf, w_s, Sx_ux_Coherence, Ts); % Method 2?

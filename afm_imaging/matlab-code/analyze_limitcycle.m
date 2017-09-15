@@ -23,7 +23,7 @@ cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
 % cs_exp_data_name = 'data-in_single_out_9-4-2017-01.csv';
 cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-04.csv'
 cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-6-2017-02.csv';
-cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-6-2017-14.csv';
+cs_exp_data_name = 'cs-traj-12perc-750nm-10mic-01Hz_out_9-9-2017-03.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);

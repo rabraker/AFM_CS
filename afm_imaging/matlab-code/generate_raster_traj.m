@@ -29,7 +29,7 @@ Ki_x = 0.01;
 % Trace is one line at sec_line. The whole period is trace and re-trace.
 
 
-raster_freq = 1; % Hz.
+raster_freq = 0.25; % Hz.
 raster_period = 1/raster_freq;
 
 image_side = 5; % micro-meters.
@@ -40,11 +40,12 @@ mu2volts = 1/volts2mu;
 
 % resolution, ie, how many lines?
 %  (eventually, this should be the same as as pixels)
-number_of_lines = 20;
 number_of_pixels = 256;
 square_num_lines = number_of_pixels;
-y_height = (1/square_num_lines)*image_side
+y_height = (1/square_num_lines)*image_side;
 
+meta = struct('raster_freq', raster_freq, 'npix', number_of_pixels,...
+              'width', image_side);
 
 
 [x_rasterdata, truefreq, points_per_line] = raster(raster_freq, Ts, raster_period-Ts, 'coerce', 1,...
@@ -66,7 +67,7 @@ plot(x_rasterdata.Time, x_rasterdata.Data, t, y*volts2mu, '--')
 plot(y_rasterdata.Time, y_rasterdata.Data);
 
 
-%%
+
 % We have to interleave the x & y data like
 % [x(1), y(1), x(2), y(2), ....]
 
@@ -79,13 +80,14 @@ for k=1:2:length(xy_data)
 end
 
 % write it to a .csv file
-%%
-data_name = sprintf('raster_traj_singleperiod_%dmic_%dHz.csv',image_side, raster_freq)
 
+data_name = sprintf('raster_scan_%dmic_%.2dHz.csv',image_side, raster_freq)
+%%
 data_in_path = fullfile(raster_root, data_name);
+meta_path = strrep(data_in_path, '.csv', '.mat');
 
 csvwrite(data_in_path, xy_data);
-
+save(meta_path, 'meta');
 
 
 

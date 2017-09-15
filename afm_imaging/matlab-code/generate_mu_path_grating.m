@@ -22,7 +22,7 @@ if 1
     width = 10;  % microns
     pix = 256;  % image resolution.
     mu_length = .750;  % 1000 nm. length of the horizontal mu-path. 
-    sub_sample_frac = 0.1;  % Percent of pixels to subsample. 
+    sub_sample_frac = 0.15;  % Percent of pixels to subsample. 
 end
 % Unit conversions.
 pix_per_micron = pix/width;
