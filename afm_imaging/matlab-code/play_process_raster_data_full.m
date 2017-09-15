@@ -20,20 +20,32 @@ dat_name = 'raster_scan_5mic_1Hz_out_9-6-2017-01-full.csv'; % Uses Dinv
 dat_name = 'raster_scan_5mic_10Hz_out_9-6-2017-06-full.csv'; %uses Dinv, Ki=.02
 parent_name = 'raster_scan_5mic_10Hz.csv';
 
-dat_name = 'raster_scan_10mic_5.00e-01Hz_out_9-8-2017-02-full.csv';
-parent_name = 'raster_scan_10mic_5.00e-01Hz.csv';
+dat_name = 'raster_scan_5mic_5.00e-01Hz_out_9-14-2017-03.csv'; %k1=0.007
+parent_name = 'raster_scan_5mic_5.00e-01Hz.csv';
+meta_name = strrep(parent_name, '.csv', '.mat')
 
-dat_name = 'raster_scan_10mic_2.50e+00Hz_out_9-8-2017-02-full.csv';
-parent_name = 'raster_scan_10mic_2.50e+00Hz.csv';
+% dat_name = '';
+% parent_name = 'raster_scan__256pix_20mic_1.25e-01Hz.csv';
 
 dat_path = fullfile(dat_root, dat_name);
 parent_path = fullfile(dat_root, parent_name);
+meta_path = fullfile(dat_root, meta_name);
+
 datmat = csvread(dat_path);
 parent_dat = csvread(parent_path);
+load(meta_path);
 
 xyref = reshape(parent_dat', 2, [])';
 xref = xyref(:,1);
-%%
+%
+
+% figure(1); plot(datmat(:,1));
+% ax1 = gca
+% figure(2); plot(datmat(:,3));
+% ax3 = gca;
+% figure(3); plot(datmat(:,4));
+% ax4 = gca;
+% linkaxes([ax1, ax3, ax4])
 Ts = 40e-6;
 samps_per_period = size(parent_dat,1)/2; % twice as many in here for x & y.
 samps_per_line = samps_per_period/2;
@@ -88,7 +100,7 @@ leg1.Position=[0.6436    0.8590    0.2611    0.0640];
 
 clc
 
-width = 10;
+width = 5;
 % volts2micron = 50/10;
 micron2pix = pix/width;
 volts2pix = volts2microns * micron2pix;

@@ -28,10 +28,10 @@ Ki_x = 0.01;
 % Hold the scan rate, in microns per sec constant to what we used before in
 % the 5micron scan, because that seemed good for the z-axis BW.
 
-% scan_velocity = 5/0.5; % 5 microns in 0.5 secs, for 1Hz raster.
-scan_velocity = 5/0.1; % 5 microns in 0.1 secs, for 5Hz (T=.2) raster.
-image_side = 10; % micro-meters.
-raster_period = 2*(image_side/scan_velocity)
+scan_velocity = 5/0.5; % 5 microns in 0.5 secs, for 1Hz raster.
+scan_velocity = 5/.025; % 5 microns in 0.1 secs, for 5Hz (T=.2) raster.
+image_side = 20; % micro-meters.
+raster_period = 2*(image_side/scan_velocity);
 raster_freq = 1/raster_period; % Hz.
 
 
@@ -43,11 +43,12 @@ mu2volts = 1/volts2mu;
 % resolution, ie, how many lines?
 %  (eventually, this should be the same as as pixels)
 
-number_of_pixels = 512;
+number_of_pixels = 256;
 square_num_lines = number_of_pixels;
-y_height = (1/square_num_lines)*image_side
+y_height = (1/square_num_lines)*image_side;
 
-
+meta = struct('raster_freq', raster_freq, 'npix', number_of_pixels,...
+              'width', image_side);
 
 [x_rasterdata, truefreq, points_per_line] = raster(raster_freq, Ts, raster_period-Ts, 'coerce', 1,...
                             'shift', -raster_period/4);
@@ -68,7 +69,7 @@ plot(x_rasterdata.Time, x_rasterdata.Data, t, y*volts2mu, '--')
 plot(y_rasterdata.Time, y_rasterdata.Data);
 
 
-%%
+
 % We have to interleave the x & y data like
 % [x(1), y(1), x(2), y(2), ....]
 
@@ -81,13 +82,18 @@ for k=1:2:length(xy_data)
 end
 
 % write it to a .csv file
-%%
+
 
 data_name = sprintf('raster_scan__%dpix_%dmic_%.2dHz.csv',number_of_pixels,image_side, raster_freq)
+% data_name = sprintf('raster_scan_%dmic_%.2dHz.csv',image_side, raster_freq)
 %%
 data_in_path = fullfile(raster_root, data_name);
+meta_path = strrep(data_in_path, '.csv', '.mat');
 
 csvwrite(data_in_path, xy_data);
+save(meta_path, 'meta');
+
+
 
 
 

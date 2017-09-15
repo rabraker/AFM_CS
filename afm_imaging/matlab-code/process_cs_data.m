@@ -60,17 +60,18 @@ if 0
 end
 
 if 0
-    cs_exp_data_name = 'cs-traj-8perc-1000nm-10mic-5.00e-01Hz_out_9-8-2017-01.csv';
+    cs_exp_data_name = 'cs-traj-10perc-1000nm-10mic-5.00e-01Hz_out_9-8-2017-01.csv';
 end
-if 0
+if 1
     cs_exp_data_name = 'cs-traj-11perc-1000nm-10mic-5.00e-01Hz_out_9-8-2017-02.csv';
 end
 if 0
     cs_exp_data_name = 'cs-traj-10perc-1000nm-10mic-01Hz_out_9-8-2017-09.csv';
 end
-if 1
+if 0
     cs_exp_data_name ='cs-traj-13perc-1000nm-10mic-01Hz_out_9-8-2017-01.csv'
 end
+% cs_exp_data_name = 'cs-traj-12perc-750nm-10mic-01Hz_out_9-9-2017-01.csv';
 
 % cs_exp_data_name = 'data-out.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
@@ -165,6 +166,7 @@ for k = 1:max(dat_meas(:,end))
    xbins = linspace(min(X_ks), max(X_ks), npix_path_k+1); 
    U_k = [];
    for jj = 1:npix_path_k
+       
        % Get the indeces correspondiing to the current x-data bin.
        ind_x = find(X_ks >= xbins(jj) & X_ks < xbins(jj+1));
        if ~isempty(ind_x) % Avoid errors if it is empty.
@@ -183,8 +185,9 @@ for k = 1:max(dat_meas(:,end))
            % Collect the uz data just for plotting/visualization
            U_k = [U_k; u_pix_jj];
        end
+       
    end
-   
+   U_k = U_k - max(U_k);
    % -------------------
    % ---- visualize ------
    if abs(max(U_k) - min(U_k))> hole_depth*.5
@@ -256,8 +259,8 @@ end
 %
 % close all;
 
-%
-f5 = figure(6); clf
+%%
+f5 = figure(7); clf
 subplot(2,3,1)
 ax3 = gca();
 imshow_sane(I, ax3, width, width);
@@ -309,7 +312,7 @@ if savedata
 end
 %
 fig_root = 'C:\Users\arnold\Documents\labview\afm_imaging\matlab-code\figures';
-cs_exp_fig_name = strrep(cs_exp_data_name, '.csv', '-fig')
+cs_exp_fig_name = strrep(cs_exp_data_name, '.csv', '-fig.fig')
 
 fig_path = fullfile(fig_root, cs_exp_fig_name);
 saveas(f5, fig_path)
