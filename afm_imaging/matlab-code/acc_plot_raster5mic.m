@@ -15,22 +15,37 @@ volts2micron = 50/10;
 micron2pix = npix/width;
 volts2pix = volts2micron * micron2pix;
 
-% ------------------- 1Hz 
-% dat_name_s{1} = 'raster_scan_5mic_1Hz_out_8-26-2017-01-full.csv';
-% parent_name_s{1} = 'raster_scan_5mic_1Hz.csv';
-dat_name_s{1} =  'raster_scan_5mic_1Hz_out_9-4-2017-01-full.csv';
-parent_name_s{1} = 'raster_scan_5mic_1Hz.csv';
-% ------------------- 5Hz 
-dat_name_s{2} = 'raster_scan_5mic_5Hz_out_8-26-2017-01-full.csv';
-parent_name_s{2} = 'raster_scan_5mic_5Hz.csv';
-% ------------------- 10Hz 
-dat_name_s{3} = 'raster_scan_5mic_10Hz_out_8-26-2017-01-full.csv';
-parent_name_s{3} = 'raster_scan_5mic_10Hz.csv';
+if 1
+    % ------------------- 1Hz 
+    % dat_name_s{1} = 'raster_scan_5mic_1Hz_out_8-26-2017-01-full.csv';
+    % parent_name_s{1} = 'raster_scan_5mic_1Hz.csv';
+    dat_name_s{1} =  'raster_scan_5mic_1Hz_out_9-6-2017-01-full.csv';
+    parent_name_s{1} = 'raster_scan_5mic_1Hz.csv';
+    % ------------------- 5Hz 
+    dat_name_s{2} = 'raster_scan_5mic_5Hz_out_9-6-2017-01-full.csv';
+    parent_name_s{2} = 'raster_scan_5mic_5Hz.csv';
+    % ------------------- 10Hz 
+    dat_name_s{3} = 'raster_scan_5mic_10Hz_out_9-6-2017-06-full.csv';
+    parent_name_s{3} = 'raster_scan_5mic_10Hz.csv';
+end
 
+if 0  % Original set
+    % ------------------- 1Hz 
+    % dat_name_s{1} = 'raster_scan_5mic_1Hz_out_8-26-2017-01-full.csv';
+    % parent_name_s{1} = 'raster_scan_5mic_1Hz.csv';
+    dat_name_s{1} =  'raster_scan_5mic_1Hz_out_9-4-2017-01-full.csv';
+    parent_name_s{1} = 'raster_scan_5mic_1Hz.csv';
+    % ------------------- 5Hz 
+    dat_name_s{2} = 'raster_scan_5mic_5Hz_out_8-26-2017-01-full.csv';
+    parent_name_s{2} = 'raster_scan_5mic_5Hz.csv';
+    % ------------------- 10Hz 
+    dat_name_s{3} = 'raster_scan_5mic_10Hz_out_8-26-2017-01-full.csv';
+    parent_name_s{3} = 'raster_scan_5mic_10Hz.csv';
+end
 freqs = [1,5, 10];
 for i=1:length(freqs)
-    dat_path_s{i} = fullfile(dat_root,'data/raster', dat_name_s{i});
-    parent_path_s{i} = fullfile(dat_root, 'data/raster', parent_name_s{i});
+    dat_path_s{i} = fullfile(dat_root,'raster', dat_name_s{i});
+    parent_path_s{i} = fullfile(dat_root, 'raster', parent_name_s{i});
 end
 raster_dat_s = [];
 for i=1:length(freqs)
@@ -119,20 +134,28 @@ set(ax9, 'YTickLabel', [])
 %
 % ---------------- Start Plotting -----------------------------
 % ------------------ Col 1: 1Hz -------------------------------
+% pix_starts = [2,10, 22]
+% pix_ends = [4, 16, 40]
+pix_starts = [1,1, 1];
+pix_ends = [0, 0, 0];
+
 axr1 = [ax1, ax2, ax3]';
 for iter = 1:length(axr1)
     ax_iter = axr1(iter);
     F1.CurrentAxes = ax_iter;
     
-    lo = min(min(raster_dat_s(iter).I_fit));
-    hi = max(max(raster_dat_s(iter).I_fit));
+    I_plot = raster_dat_s(iter).I_fit;
+    I_plot = I_plot(:, pix_starts(iter):end-pix_ends(iter));
+    lo = min(min(I_plot));
+    hi = max(max(I_plot));
 
     % ax1.XTick = [0 2 4]
     % ax1.YTick = [0 2 4]
     xdata = [0, width];
     ydata = [0, width];
-
-    imshow(raster_dat_s(iter).I_fit, [lo, hi],...
+    
+    
+    imshow(I_plot, [lo, hi],...
         'XData', xdata, 'YData', ydata, 'Parent', ax_iter)
     % imshow(I_fit, [lo, hi], 'Parent', ax1)
 
@@ -140,15 +163,15 @@ for iter = 1:length(axr1)
     axis('on')
     % ax1.YTickLabel = flipud({ax1.YTickLabel{2:end}})
 
-    xlabel('x-dir [$\mu$m]', 'interpreter', 'latex')
-    ylabel('y-dir [$\mu$m]',  'interpreter', 'latex')
+    xlabel('x-dir [$\mu$m]', 'interpreter', 'latex');
+    ylabel('y-dir [$\mu$m]',  'interpreter', 'latex');
 
-    stit = sprintf('%d~Hz', raster_dat_s(iter).freq)
-    title(stit, 'interpreter', 'latex')
+    stit = sprintf('%d~Hz', raster_dat_s(iter).freq);
+    title(stit, 'interpreter', 'latex');
 end
 %
 % ---------------------------- second row, raster tracking --------------
-axr2 = [ax4, ax5, ax6]
+axr2 = [ax4, ax5, ax6];
 % subplot(4,3,7); hold on
 for iter=1:length(axr2)
     ax_iter = axr2(iter);
@@ -178,17 +201,19 @@ for iter=1:length(axr2)
 
 end
 
+
 axr3 = [ax7, ax8, ax9];
-nn_s = [11,11,21]
+nn_s = [11,11,21];
 for iter = 1:length(axr3)
     ax_iter = axr3(iter);
-    F1.CurrentAxes = ax_iter
+    F1.CurrentAxes = ax_iter;
 
     samps_per_period = raster_dat_s(iter).samps_per_period;
     samps_per_line= raster_dat_s(iter).samps_per_line;
     uz = raster_dat_s(iter).datmat(:,4);
-    t2 = [nn*samps_per_period:nn*samps_per_period+samps_per_line-1]'*Ts;
     nn = nn_s(iter);
+    t2 = [nn*samps_per_period:nn*samps_per_period+samps_per_line-1]'*Ts;
+    
     plot(ax_iter, t2, uz(nn*samps_per_period:nn*samps_per_period+samps_per_line-1))
     xlim([t2(1), t2(end)])
     if iter > 1
@@ -198,6 +223,6 @@ for iter = 1:length(axr3)
 end
 
 %%
-fig_path = fullfile(getfigroot, 'rasterscans.pdf');
-export_fig(F1, fig_path, '-q101')
+% fig_path = fullfile(getfigroot, 'rasterscans.pdf');
+% export_fig(F1, fig_path, '-q101')
 
