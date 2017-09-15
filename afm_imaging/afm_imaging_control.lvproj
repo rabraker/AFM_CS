@@ -4,7 +4,7 @@
 	<Property Name="NI.Project.Description" Type="Str"></Property>
 	<Property Name="varPersistentID:{0C705820-0FD4-46CA-B413-3DD1650FFF34}" Type="Ref">/My Computer/UnitTests/test_pushdata_singleperiod.vi/Accumulate 1/error in</Property>
 	<Property Name="varPersistentID:{187F0DAF-CE88-413D-865F-2B7F9ABF71F2}" Type="Ref">/RT cRIO-9082/sandbox/shared-variable.lvlib/booleen-errors</Property>
-	<Property Name="varPersistentID:{2D255BA1-46AF-4DD4-9A7F-99828659A5DE}" Type="Ref">/My Computer/MasterStop.lvlib/MasterStop</Property>
+	<Property Name="varPersistentID:{2D255BA1-46AF-4DD4-9A7F-99828659A5DE}" Type="Ref">/My Computer/Type Definitions/MasterStop.lvlib/MasterStop</Property>
 	<Property Name="varPersistentID:{64F973B6-4718-45E5-80FD-5310221BEC43}" Type="Ref">/My Computer/UnitTests/test_pushdata_singleperiod.vi/Accumulate 1/reset</Property>
 	<Property Name="varPersistentID:{6D1DFECE-4CD4-46D4-9083-C37449094800}" Type="Ref">/My Computer/UnitTests/test_pushdata_singleperiod.vi/Accumulate 1/enable</Property>
 	<Property Name="varPersistentID:{82EE3C2D-79A9-4C67-BEF4-94CFB5108BA9}" Type="Ref">/My Computer/UnitTests/test_pushdata_singleperiod.vi/Accumulate 1/input</Property>
@@ -27,6 +27,8 @@
 			<Item Name="ControlParams_TF.ctl" Type="VI" URL="../controls/ControlParams_TF.ctl"/>
 			<Item Name="ExperimentParams.ctl" Type="VI" URL="../controls/ExperimentParams.ctl"/>
 			<Item Name="expMetaData.ctl" Type="VI" URL="../controls/expMetaData.ctl"/>
+			<Item Name="MasterStop.lvlib" Type="Library" URL="../FPGA Bitfiles/MasterStop.lvlib"/>
+			<Item Name="rasterMetaData.ctl" Type="VI" URL="../controls/rasterMetaData.ctl"/>
 		</Item>
 		<Item Name="UnitTests" Type="Folder">
 			<Item Name="play_verifyControlLaw.vi" Type="VI" URL="../UnitTests/play_verifyControlLaw.vi"/>
@@ -46,6 +48,7 @@
 			</Item>
 			<Item Name="test_csvBitShift.vi" Type="VI" URL="../UnitTests/test_csvBitShift.vi"/>
 			<Item Name="test_saveMetaData.vi" Type="VI" URL="../UnitTests/test_saveMetaData.vi"/>
+			<Item Name="verify_matrices.vi" Type="VI" URL="../UnitTests/verify_matrices.vi"/>
 		</Item>
 		<Item Name="sub-vis" Type="Folder">
 			<Item Name="sysID" Type="Folder">
@@ -78,6 +81,8 @@
 			<Item Name="getClusterNames.vi" Type="VI" URL="../subVIs/getClusterNames.vi"/>
 			<Item Name="input-validation.vi" Type="VI" URL="../subVIs/input-validation.vi"/>
 			<Item Name="build_data_save_paths_sysID.vi" Type="VI" URL="../subVIs/build_data_save_paths_sysID.vi"/>
+			<Item Name="write_2darray_to_opened_csv.vi" Type="VI" URL="../subVIs/write_2darray_to_opened_csv.vi"/>
+			<Item Name="int2sortablestring.vi" Type="VI" URL="../subVIs/int2sortablestring.vi"/>
 		</Item>
 		<Item Name="sandbox" Type="Folder">
 			<Item Name="shared-variable-host.vi" Type="VI" URL="../sandbox/shared-variable-host.vi"/>
@@ -91,14 +96,11 @@
 		<Item Name="OLD" Type="Folder">
 			<Item Name="play-AFM-CS-imaging-dirty.vi" Type="VI" URL="../play-AFM-CS-imaging-dirty.vi"/>
 		</Item>
-		<Item Name="verify_matrices.vi" Type="VI" URL="../UnitTests/verify_matrices.vi"/>
 		<Item Name="play_AFM_TF.vi" Type="VI" URL="../play_AFM_TF.vi"/>
 		<Item Name="play-AFM-CS-imaging.vi" Type="VI" URL="../play-AFM-CS-imaging.vi"/>
 		<Item Name="play_sysID_Z_Axis.vi" Type="VI" URL="../play_sysID_Z_Axis.vi"/>
-		<Item Name="MasterStop.lvlib" Type="Library" URL="../FPGA Bitfiles/MasterStop.lvlib"/>
 		<Item Name="play-simple-force-mapping.vi" Type="VI" URL="../play-simple-force-mapping.vi"/>
 		<Item Name="play-raster-scan.vi" Type="VI" URL="../play-raster-scan.vi"/>
-		<Item Name="int2sortablestring.vi" Type="VI" URL="../subVIs/int2sortablestring.vi"/>
 		<Item Name="play-z-scope.vi" Type="VI" URL="../play-z-scope.vi"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
