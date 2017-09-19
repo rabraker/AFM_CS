@@ -5,7 +5,7 @@
 % Zhou Wang and A. C. Bovik and H. R. Sheikh and E. P. Simoncelli, IEEE 
 % Trans. Image Processing, 2004
 
-function [ ssim_xy] = ssim(X, Y)
+function [ ssim_xy] = ssim_local(X, Y)
 
 x = PixelMatrixToVector(X);
 y = PixelMatrixToVector(Y);

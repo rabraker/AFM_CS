@@ -16,7 +16,7 @@ for i_row = 1:n1
    end
 end
 
-psnr = (1/n1/n2)*sum_diff;
+psnr = sqrt((1/n1/n2)*sum_diff);
 psnr = max(max(X))/psnr;
 psnr = 20*log10(psnr);
 

@@ -23,7 +23,7 @@ cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
 % cs_exp_data_name = 'data-in_single_out_9-4-2017-01.csv';
 cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-04.csv'
 cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-6-2017-02.csv';
-cs_exp_data_name = 'cs-traj-12perc-750nm-10mic-01Hz_out_9-9-2017-03.csv';
+cs_exp_data_name = 'cs-traj-512pix-8perc-500nm-5mic-5.00e-01Hz_out_9-17-2017-01.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);
@@ -31,7 +31,7 @@ cs_meta_path = fullfile(data_root, cs_exp_meta_name);
 
 dat = csvread(cs_data_path); 
 load(cs_meta_path);  % Provides ExpMetaData
-
+%%
 indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
        'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
 
@@ -39,6 +39,7 @@ indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
 %
 
 x = dat(:,1);
+y=dat(:,2);
 t = [0:1:length(x)-1]'*Ts;
 
 z_err = dat(:,3);
@@ -68,12 +69,17 @@ title('z-err')
 hold on
 plot([t(1), t(end)], [.05, .05])
 plot([t(1), t(end)], -[.05, .05])
+%%
+figure(40+figbase)
+ax4=gca();
+plotbyindex(ax4, t, y, met_ind, indc);
+title('y')
 % figure(40)
 % plot(min(met_ind, 3))
 % title('meta index')
 % ax4 = gca();
 % linkaxes([ax1, ax2, ax3, ax4], 'x')
-linkaxes([ax1, ax2, ax3], 'x')
+linkaxes([ax1, ax2, ax3, ax4], 'x')
 
 %%
 Ki = 0.005;

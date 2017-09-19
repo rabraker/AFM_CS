@@ -8,72 +8,27 @@ addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
 
 Ts = 40e-6;
 
-% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/cs-data-out02.csv');
-% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging/data/data-out_ontable_csimage.csv');
-% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out_ontable_csimage15-250.csv');
-% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out_ontable_csimage10-500.csv');
-% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\cs-data-10-250.csv');
-% dat = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\data-out_cs-traj10-500-02.csv');  %% WORKS
 
 
-% data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
-% data_root = fullfile(getdataroot, 'cs-data');
-data_root = fullfile(getdataroot, 'cs-data');
-if 0
-    cs_exp_data_name = 'cs-traj10-500_8-22-2017_08.csv'; % BEst
-    % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-14.csv';
 
+cs_exp_data_name ='cs-traj-512pix-8perc-500nm-5mic-01Hz_out_9-18-2017-02.csv';
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_9-18-2017-03.csv';
+cs_exp_data_name_s{2} = 'cs-traj-512pix-15perc-500nm-5mic-01Hz_out_9-18-2017-01.csv'
+sub_dir = '5microns'
 
-    cs_exp_data_name = 'cs-traj10-500_8-22-2017_06.csv'; % 68.09, super very good.
-    cs_exp_data_name = 'cs-traj10-500_8-22-2017_03.csv'; % 277 sec, fair to poor.
-    % cs_exp_data_name = 'cs-traj-10perc-500nm-5mic-1Hz_out_9-4-2017-04.csv';
-end
-if 0
-    cs_exp_data_name = 'cs-traj-5perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
-    cs_exp_data_name = 'cs-traj-5perc-500nm-5mic-1Hz_out_9-4-2017-01.csv';
-    cs_exp_data_name = 'cs-traj-5perc-500nm-5mic-1Hz_out_9-6-2017-01.csv';
-end
+cs_exp_data_name_s = {};
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-5.00e-01Hz_out_9-18-2017-02.csv';
+cs_exp_data_name_s{2} = 'cs-traj-512pix-10perc-500nm-5mic-5.00e-01Hz_out_9-18-2017-01.csv';
+cs_exp_data_name_s{3} = 'cs-traj-512pix-15perc-500nm-5mic-01Hz_out_9-18-2017-01.csv';
 
-if 0
-    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
-    % cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-08.csv'; % GOOD
-    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-15.csv';
-    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-6-2017-03.csv';
-    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-6-2017-07.csv'; %Dinv working
-    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-7-2017-04.csv'; %Dinv GOOD. 34s 
-    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-7-2017-06.csv'; %Dinv  
-    
-    cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-01Hz_out_9-8-2017-06.csv';
-    
-                        
-end
+% cs_exp_data_name_s{1} = 'cs-traj-512pix-5perc-2000nm-20mic-01Hz_out_9-18-2017-01.csv';
+% sub_dir = '20microns'
 
-if 0
-    cs_exp_data_name = 'cs-traj-10perc-500nm-5mic-1Hz_out_9-6-2017-01.csv';
-    cs_exp_data_name = 'cs-traj-10perc-500nm-5mic-01Hz_out_9-8-2017-02.csv';
-end
+for i=1:length(cs_exp_data_name_s)
+    cs_exp_data_name = cs_exp_data_name_s{i};
 
-if 0
-    cs_exp_data_name = 'cs-traj-15perc-500nm-5mic-1Hz_out_9-4-2017-03.csv';
-    cs_exp_data_name = 'cs-traj-15perc-500nm-5mic-1Hz_out_9-7-2017-01.csv';
-    
-end
+data_root = fullfile(getdataroot, 'cs-data', sub_dir);
 
-if 0
-    cs_exp_data_name = 'cs-traj-10perc-1000nm-10mic-5.00e-01Hz_out_9-8-2017-01.csv';
-end
-if 1
-    cs_exp_data_name = 'cs-traj-11perc-1000nm-10mic-5.00e-01Hz_out_9-8-2017-02.csv';
-end
-if 0
-    cs_exp_data_name = 'cs-traj-10perc-1000nm-10mic-01Hz_out_9-8-2017-09.csv';
-end
-if 0
-    cs_exp_data_name ='cs-traj-13perc-1000nm-10mic-01Hz_out_9-8-2017-01.csv'
-end
-% cs_exp_data_name = 'cs-traj-12perc-750nm-10mic-01Hz_out_9-9-2017-01.csv';
-
-% cs_exp_data_name = 'data-out.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);
@@ -91,16 +46,16 @@ meta_in_path = sprintf('%s.mat', cs_data_path(1:k+1));
 if exist(meta_in_path, 'file') ==2
     load(meta_in_path)
     width = CsExpMetaIn.width;
-    pix =  CsExpMetaIn.npix;
+    npix =  CsExpMetaIn.npix;
 else
-    pix = 256;
+    npix = 256;
     width = 10;
 end
 microns_per_volt = 50/10;
-pix_per_volt = (pix/width)*microns_per_volt;
+pix_per_volt = (npix/width)*microns_per_volt;
 hole_depth = (20/7)*(1/1000)*(20);
 
-%%
+%
 % Drop all data corresponding to movement between points.
 ind_meas = find(dat(:, 6) > 0);  % Index of the movements are all 0.
 meta_ind = dat(:,6);
@@ -109,7 +64,7 @@ dat_meas = dat(ind_meas, :);
 % Fit a line to the control data and subtract it. Helps remove some of
 % the piezo drift. 
 uz = dat_meas(:,5);
-figure(1); clf;
+figure(1+10*i); clf;
 plot(uz); hold on
 % uz2 = detrend2(uz);
 
@@ -117,7 +72,8 @@ plot(uz); hold on
 dat_meas(:,5) = detrend(dat_meas(:,5)); % detrend u_z as a long vector
 plot(dat_meas(:,5))
 %
-f2 = figure(2); clf
+
+f2 = figure(2+10*i); clf
 ylabel('u_z')
 xlabel('pixel')
 ax2 = gca();
@@ -128,9 +84,11 @@ hold on;
 dat_meas(:,1) = dat_meas(:,1) - min(dat_meas(:,1));  %x dir
 dat_meas(:,2) = dat_meas(:,2) - min(dat_meas(:,2));  %y dir
 
-I = zeros(pix,pix);
-pixelifsampled=zeros(pix, pix);
+I = zeros(npix,npix);
+
+pixelifsampled=zeros(npix, npix);
 % bin all the data into pixels. 
+y_pixs = [];
 for k = 1:max(dat_meas(:,end))
 
    % Get indexes corresponding to measurement entity k
@@ -144,18 +102,34 @@ for k = 1:max(dat_meas(:,end))
    % Register the control data to zero. We can do this because we are
    % scanning long enough that we are always guaranteed to exit a hole.
    % This lets 
+%    figure(f3);clf
+%    plot(U_ks)
+%    plot(detrend(U_ks))
+%    keyboard
+%    U_ks = U_ks - mean(U_ks);
+if abs(min(U_ks)-max(U_ks)) < .5*hole_depth
+   U_ks = detrend(U_ks);
+end
    U_ks = U_ks - max(U_ks);
    
-    if min(U_ks) < -0.1
-        continue
-    end
-   
- 
+%     if min(U_ks) < -0.12
+% %         continue
+%     end
+%     if min(U_ks) < -0.6
+%         continue
+%     end   
+U_ks = max(U_ks, -.11);
+% U_ks = max(U_ks, -0.6);    
+
+    
    % Make the assumption that the y-data for each path is constant enough.
    % Since we start at the (0,0) corner the xplane, we'll take the floor,
    % and add 1 for 1-based indexing.
-   y_pix = floor(mean(Y_ks));
-   
+   y_pix = min(npix-1, floor(mean(Y_ks)));
+   if y_pix >npix-1
+       keyboard
+   end
+   y_pixs = [y_pixs; y_pix];
    x_spread = max(X_ks) - min(X_ks);
    xpix_start = floor(min(X_ks));
    npix_path_k = ceil(x_spread); % number of bins for this path.
@@ -166,7 +140,9 @@ for k = 1:max(dat_meas(:,end))
    xbins = linspace(min(X_ks), max(X_ks), npix_path_k+1); 
    U_k = [];
    for jj = 1:npix_path_k
-       
+       if xpix_start+jj > npix
+           continue
+       end
        % Get the indeces correspondiing to the current x-data bin.
        ind_x = find(X_ks >= xbins(jj) & X_ks < xbins(jj+1));
        if ~isempty(ind_x) % Avoid errors if it is empty.
@@ -184,6 +160,9 @@ for k = 1:max(dat_meas(:,end))
            
            % Collect the uz data just for plotting/visualization
            U_k = [U_k; u_pix_jj];
+           if size(I,2) ==514
+               keyboard
+           end
        end
        
    end
@@ -196,21 +175,22 @@ for k = 1:max(dat_meas(:,end))
     else
         % have_edge = 0;
         cs = 'b';
-    end
+   end
+%     figure(f2)
    plot(ax2, U_k, 'color', cs)
 %    keyboard
 end
 
-figure(100);
+figure(100 + 10*i);
 ax = gca();
 imshow(I, [min(min(I)), max(max(I))])
 
 
 %%
-figure
-I = detrend_sampled_plane(I, pixelifsampled);
-I = (I - max(max(I))).*pixelifsampled; 
-imshow(I, [min(min(I)), max(max(I))]);
+
+% I = detrend_sampled_plane(I, pixelifsampled);
+% I = (I - max(max(I))).*pixelifsampled; 
+% imshow(I, [min(min(I)), max(max(I))]);
 
 bp = 1;
 % imshow_sane(I, ax2, width, width);
@@ -224,7 +204,10 @@ reconstruct_root = fullfile(root, 'reconstruction', 'SMP');
 reconstruct_path = genpath(reconstruct_root)
 addpath(reconstruct_path)
 
+
+
 [n,m] = size(I);
+
 % Ir_smp = SMP(I.*pixelifsampled,pixelifsampled,round(0.02*n*m));
 
 tic
@@ -238,6 +221,18 @@ reconstruct_root = fullfile(root, 'reconstruction/BP');
 reconstruct_path = genpath(reconstruct_root)
 addpath(reconstruct_path)
 
+f5 = figure(7 + 10*i); clf
+subplot(2,3,1)
+ax3 = gca();
+imshow_sane(I, ax3, width, width);
+title('sample');
+
+subplot(2,3,3)
+ax5 = gca();
+imshow_sane(Ir_smp, ax5, width, width)
+title('SMP reconstruction');
+drawnow
+%
 if bp
     % ********* BP *************
     [n m] = size(I);
@@ -255,33 +250,19 @@ if bp
     bp_im = PixelVectorToMatrix(Ir_bp,[n m]);
     time_bp = toc;
     fprintf('SMP Time: %f \nBP Time: %f\n', time_smp, time_bp);
-end
-%
-% close all;
 
-%%
-f5 = figure(7); clf
-subplot(2,3,1)
-ax3 = gca();
-imshow_sane(I, ax3, width, width);
-title('sample');
-
-if bp
     bp_im = detrend_plane(bp_im);
+    
     subplot(2,3,2)
     ax4 = gca();
     % imshow_sane(PixelVectorToMatrix(Ir_bp,[n m]), ax4, width, width);
     imshow_sane(bp_im, ax4, width, width);
     title('BP reconstruction');
 end
-subplot(2,3,3)
-ax5 = gca();
-imshow_sane(Ir_smp, ax5, width, width)
-title('SMP reconstruction');
-
+%
 clc
 s = metadata2text(ExpMetaData, Ts)
-s = sprintf('%s\nperc=%.3f', s, sum(sum(pixelifsampled))/pix/pix);
+s = sprintf('%s\nperc=%.3f', s, sum(sum(pixelifsampled))/npix/npix);
 s2 = sprintf('%s', cs_exp_data_name)
 disp(s)
 subplot(2,3,[4,5,6])
@@ -292,7 +273,7 @@ t1 = text(0,.5, s, 'Units', 'normalized');
 t2 = text(0, t1.Extent(2)-.1, s2, 'Units', 'normalized', 'interpreter', 'none');
 
 % text(0,-1.2, s, 'Units', 'normalized')
-%
+
 savedata = 1;
 if savedata
    img_data.cs_im = I;
@@ -311,10 +292,10 @@ if savedata
     
 end
 %
-fig_root = 'C:\Users\arnold\Documents\labview\afm_imaging\matlab-code\figures';
-cs_exp_fig_name = strrep(cs_exp_data_name, '.csv', '-fig.fig')
+% fig_root = 'C:\Users\arnold\Documents\labview\afm_imaging\matlab-code\figures';
+cs_exp_fig_name = strrep(cs_data_path, '.csv', '-fig.fig')
 
-fig_path = fullfile(fig_root, cs_exp_fig_name);
+fig_path = fullfile(cs_exp_fig_name);
 saveas(f5, fig_path)
 
-
+end % MAIN LOOP

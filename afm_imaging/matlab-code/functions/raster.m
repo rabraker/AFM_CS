@@ -27,7 +27,7 @@ function [rasterdata, truefreq, points_per_line]...
                        = raster(freq, Ts, tend, varargin)
 
 defcoerce = 0;
-defshift = 0
+defshift = 0;
 p = inputParser;
 addParameter(p, 'coerce', defcoerce);
 addParameter(p, 'shift', defshift);

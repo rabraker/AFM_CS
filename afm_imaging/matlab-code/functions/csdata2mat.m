@@ -127,7 +127,9 @@ end
 
 figure(100);
 ax = gca();
-imshow(I, [min(min(I)), max(max(I))])
+if verbose
+    imshow(I, [min(min(I)), max(max(I))])
+end
 
 
 % I = detrend_sampled_plane(I, pixelifsampled);

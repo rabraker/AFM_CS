@@ -127,8 +127,12 @@ for fl_cell = cs_file_list
     pix = 256;
     
     f5 = figure(6); clf
+    if ~verbose
+        set(f5, 'Visible', 'Off')
+    end
     subplot(2,3,1)
     ax3 = gca();
+%     if verbose >1
     imshow_sane(img_data.cs_im, ax3, width, width);
     title('sample');
 

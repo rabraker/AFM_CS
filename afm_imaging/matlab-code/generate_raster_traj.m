@@ -3,6 +3,7 @@
 % Use 0.2 hz x-dir triangle wave.
 clear
 clc
+addpath('functions')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Where to save raster data
 raster_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
@@ -29,10 +30,10 @@ Ki_x = 0.01;
 % Trace is one line at sec_line. The whole period is trace and re-trace.
 
 
-raster_freq = 0.25; % Hz.
+raster_freq = 10; % Hz.
 raster_period = 1/raster_freq;
 
-image_side = 5; % micro-meters.
+image_side = 20; % micro-meters.
 raster_amplitude = image_side/2; 
 volts2mu = 5;
 mu2volts = 1/volts2mu;
@@ -40,11 +41,11 @@ mu2volts = 1/volts2mu;
 
 % resolution, ie, how many lines?
 %  (eventually, this should be the same as as pixels)
-number_of_pixels = 256;
-square_num_lines = number_of_pixels;
+npix = 512;
+square_num_lines = npix;
 y_height = (1/square_num_lines)*image_side;
 
-meta = struct('raster_freq', raster_freq, 'npix', number_of_pixels,...
+meta = struct('raster_freq', raster_freq, 'npix', npix,...
               'width', image_side);
 
 
@@ -81,9 +82,14 @@ end
 
 % write it to a .csv file
 
-data_name = sprintf('raster_scan_%dmic_%.2dHz.csv',image_side, raster_freq)
-%%
-data_in_path = fullfile(raster_root, data_name);
+data_name = sprintf('raster_scan_%dpix_%dmic_%.2dHz.csv',npix,image_side, raster_freq)
+%
+target_dir = sprintf('%dmicrons', image_side);
+data_root = fullfile(getdataroot, 'raster', target_dir);
+if exist(data_root, 'file') ~=2
+    mkdir(fullfile(getdataroot, 'raster'), target_dir)
+end
+data_in_path = fullfile(data_root, data_name);
 meta_path = strrep(data_in_path, '.csv', '.mat');
 
 csvwrite(data_in_path, xy_data);
