@@ -19,6 +19,6 @@
 		<Property Name="type" Type="Str">Network</Property>
 		<Property Name="typedefName1" Type="Str">boolean_info.ctl</Property>
 		<Property Name="typedefPath1" Type="PathRel">../../controls/boolean_info.ctl</Property>
-		<Property Name="typeDesc" Type="Bin">&amp;Q#!!!!!!!)!"1!&amp;!!!-!%!!!@````]!!!!"!!%!!!%(!Q%!!"=!A!!!!!!*!"2!)1^V&lt;H.U97*M:3V[,82S97I!'%!B%WFO=(6U)':J:G]A&gt;'FN:3VP&gt;81!'E!B&amp;'RP:W&gt;J&lt;G=A:GFG&lt;S"U;7VF&lt;X6U!!!71#%2=W.B&lt;GZJ&lt;G=A:GFO;8.I:71!&amp;%!B$X6O=X2B9GRF,8AN&gt;(*B;A!51#%0&gt;7ZT&gt;'&amp;C&lt;'5N?3VU=G&amp;K!!J!)16"1E^36!!;1#%617RM)%VF98.V=G6N:7ZU=S"%&lt;WZF!%-!]1!!!!!!!!!"%'*P&lt;WRF97Z@;7ZG&lt;SZD&gt;'Q!+E"1!!A!!!!"!!)!!Q!%!!5!"A!($G*P&lt;WRF97YA:8*S&lt;X*T!!!"!!A!!!!!!!!!!!!!!!!!!!!!</Property>
+		<Property Name="typeDesc" Type="Bin">&amp;Q#!!!!!!!)!"1!&amp;!!!-!%!!!@````]!!!!"!!%!!!%='!%!!"=!A!!!!!!+!"2!)1^V&lt;H.U97*M:3V[,82S97I!'%!B%WFO=(6U)':J:G]A&gt;'FN:3VP&gt;81!'E!B&amp;'RP:W&gt;J&lt;G=A:GFG&lt;S"U;7VF&lt;X6U!!!71#%2=W.B&lt;GZJ&lt;G=A:GFO;8.I:71!&amp;%!B$X6O=X2B9GRF,8AN&gt;(*B;A!51#%0&gt;7ZT&gt;'&amp;C&lt;'5N?3VU=G&amp;K!!J!)16"1E^36!!;1#%617RM)%VF98.V=G6N:7ZU=S"%&lt;WZF!"*!)1VG='&gt;B8W:J&lt;GFT;'6E!%5!]1!!!!!!!!!"%'*P&lt;WRF97Z@;7ZG&lt;SZD&gt;'Q!,%"1!!E!!!!"!!)!!Q!%!!5!"A!(!!A/9G^P&lt;'6B&lt;C"F=H*P=H-!!!%!#1!!!!!!!!!!!!!!!!!!!!!!</Property>
 	</Item>
 </Library>
