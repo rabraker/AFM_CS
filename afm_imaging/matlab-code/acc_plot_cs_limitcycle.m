@@ -1,18 +1,28 @@
 clc
 clear
+clc
+close all
+saveall = 1;
+
 pix = 256;
 width = 5;
 microns_per_volt = 50/10;
 pix_per_volt = (pix/width)*microns_per_volt;
 Ts = 40e-6;
 
-% data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
+
 data_root = fullfile(getdataroot(), 'cs-data');
 % ---------------------------------------------------
 
-cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv'; % k = 270202, 
+% % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv'; % k = 270202, original version
+% % % Slice indeces
+% % k1 = 270202;
+% % k2 = 290000;
 
-
+cs_exp_data_name = 'cs-traj10-500_8-22-2017_05.csv';
+% Slice indeces
+k1 = 324459;
+k2 = 349268;
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);
@@ -20,14 +30,9 @@ cs_meta_path = fullfile(data_root, cs_exp_meta_name);
 
 dat = csvread(cs_data_path); 
 load(cs_meta_path);  % Provides ExpMetaData
-%%
-% Slice indeces
-clc
-close all
-saveall = 1;
+% plot(dat(:,3))
 
-k1 = 270202, 
-k2 = 290000;
+
 
 dat_slice = dat(k1:k2,:);
 t = [0:1:length(dat_slice)-1]'*Ts;
@@ -55,8 +60,8 @@ indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
        'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
 
 lft = .157;
-ht1 = .34;
-ht2 = .47;
+ht1 = .24;
+ht2 = .57;
 
 ypad = .03;
 bt2 = .14;
@@ -90,7 +95,7 @@ grid on
 ylabel('$u_z$ [v]', 'interpreter', 'latex', 'FontSize', 12)
 set(ax1, 'XTickLabel', []);
 ylm = ylim;
-ylim([-.2, ylm(2)])
+ylim([-.2, ylm(2)+.3])
 text(.5,.5, s_dz, 'units', 'normalized', 'interpreter', 'latex')
 
 
@@ -101,7 +106,7 @@ xlim([t(1), t(end)])
 xlabel('time [s]', 'interpreter', 'latex', 'FontSize', 12)
 grid on
 
-ylim([-1, 0.5])
+ylim([-1.55, 0.35])
 
 % -------------- legend ---------------
 h = h(3:7);
