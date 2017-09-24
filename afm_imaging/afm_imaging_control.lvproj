@@ -105,6 +105,9 @@
 		<Item Name="play-raster-scan.vi" Type="VI" URL="../play-raster-scan.vi"/>
 		<Item Name="play-z-scope.vi" Type="VI" URL="../play-z-scope.vi"/>
 		<Item Name="autoDataPaths.vi" Type="VI" URL="../subVIs/autoDataPaths.vi"/>
+		<Item Name="play-batch-raster-scan.vi" Type="VI" URL="../play-batch-raster-scan.vi"/>
+		<Item Name="detrend_line.vi" Type="VI" URL="../subVIs/detrend_line.vi"/>
+		<Item Name="debugg.vi" Type="VI" URL="../debugg.vi"/>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
 				<Item Name="BuildHelpPath.vi" Type="VI" URL="/&lt;vilib&gt;/Utility/error.llb/BuildHelpPath.vi"/>
@@ -275,6 +278,7 @@
 				<Item Name="WDT Number of Waveform Samples CDB.vi" Type="VI" URL="/&lt;vilib&gt;/Waveform/WDTOps.llb/WDT Number of Waveform Samples CDB.vi"/>
 				<Item Name="Number of Waveform Samples.vi" Type="VI" URL="/&lt;vilib&gt;/Waveform/WDTOps.llb/Number of Waveform Samples.vi"/>
 				<Item Name="Dynamic To Waveform Array.vi" Type="VI" URL="/&lt;vilib&gt;/express/express shared/transition.llb/Dynamic To Waveform Array.vi"/>
+				<Item Name="NI_AALPro.lvlib" Type="Library" URL="/&lt;vilib&gt;/Analysis/NI_AALPro.lvlib"/>
 			</Item>
 			<Item Name="user.lib" Type="Folder">
 				<Item Name="level5.lvlib" Type="Library" URL="/&lt;userlib&gt;/_matio/level5.lvlib"/>
