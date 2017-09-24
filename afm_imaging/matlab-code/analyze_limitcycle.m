@@ -21,9 +21,16 @@ data_root = fullfile(getdataroot(), 'cs-data\20microns\9-23-2017');
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-09.csv'; % k =
 cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
 % cs_exp_data_name = 'data-in_single_out_9-4-2017-01.csv';
+<<<<<<< HEAD
 cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-4-2017-04.csv'
 cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-6-2017-02.csv';
 cs_exp_data_name = 'cs-traj-512pix-15perc-2000nm-20mic-01Hz_out_9-23-2017-05.csv';
+=======
+cs_exp_data_name = 'cs-traj10-500_8-22-2017_05.csv';
+
+% cs_exp_data_name = 'cs-traj10-500_out_8-22-2017-02.csv';
+% cs_exp_data_name = 'cs-traj-512pix-8perc-500nm-5mic-5.00e-01Hz_out_9-17-2017-01.csv';
+>>>>>>> 7dbe6a45f39cb6fd1b1ea36caef70ccf2913b8ff
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);
@@ -31,7 +38,11 @@ cs_meta_path = fullfile(data_root, cs_exp_meta_name);
 
 dat = csvread(cs_data_path); 
 load(cs_meta_path);  % Provides ExpMetaData
+<<<<<<< HEAD
 %
+=======
+
+>>>>>>> 7dbe6a45f39cb6fd1b1ea36caef70ccf2913b8ff
 indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
        'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
 
@@ -82,38 +93,6 @@ title('y')
 % ax4 = gca();
 % linkaxes([ax1, ax2, ax3, ax4], 'x')
 linkaxes([ax1, ax2, ax3, ax4], 'x')
-
-%%
-Ki = 0.005;
-Dz = zpk([0], [1], Ki, 40e-6)
-
-frfdat = csvread('C:\Users\arnold\Desktop\rnoise_z_.csv', 1);
-frfdat = frfdat(2:end,:);
-
-magDB = frfdat(:,2);
-mag = 10.^(magDB/20);
-
-phase_deg = frfdat(:,4);
-phase_rad = phase_deg*pi/180;
-
-freq_hz = frfdat(:,1);
-freq_rad = freq_hz/2/pi;
-g_frf = mag.*exp(j*phase_rad);
-% -----------
-dz_frf = squeeze(freqresp(Dz, freq_rad));
-
-h_frf = dz_frf.*g_frf./(1 + dz_frf.*g_frf);
-
-figure(50); clf
-% subplot(2,1,1)
-semilogx(freq_hz, 20*log10(abs(g_frf)))
-hold on
-semilogx(freq_hz, 20*log10(abs(h_frf)))
-semilogx(freq_hz, 20*log10(abs(dz_frf)));
-% subplot(2,1,2)
-% semilogx(freq_hz, phase_deg)
-
-
 
 
 
