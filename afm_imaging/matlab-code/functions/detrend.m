@@ -1,6 +1,6 @@
 % Fit a line to a set of data and subtract it off.
 
-function x_flat = detrend(x)
+function [x_flat, mb] = detrend(x)
 
     xs = [0:1:length(x)-1]';
     

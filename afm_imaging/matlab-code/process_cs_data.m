@@ -17,12 +17,17 @@ cs_exp_data_name_s{2} = 'cs-traj-512pix-15perc-500nm-5mic-01Hz_out_9-18-2017-01.
 sub_dir = '5microns'
 
 cs_exp_data_name_s = {};
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-5.00e-01Hz_out_9-18-2017-02.csv';
-cs_exp_data_name_s{2} = 'cs-traj-512pix-10perc-500nm-5mic-5.00e-01Hz_out_9-18-2017-01.csv';
-cs_exp_data_name_s{3} = 'cs-traj-512pix-15perc-500nm-5mic-01Hz_out_9-18-2017-01.csv';
+% cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-5.00e-01Hz_out_9-18-2017-02.csv';
+% cs_exp_data_name_s{2} = 'cs-traj-512pix-10perc-500nm-5mic-5.00e-01Hz_out_9-18-2017-01.csv';
+% cs_exp_data_name_s{3} = 'cs-traj-512pix-15perc-500nm-5mic-01Hz_out_9-18-2017-01.csv';
 
-% cs_exp_data_name_s{1} = 'cs-traj-512pix-5perc-2000nm-20mic-01Hz_out_9-18-2017-01.csv';
-% sub_dir = '20microns'
+%%
+% cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-2000nm-20mic-01Hz_out_9-23-2017-01.csv'
+cs_exp_data_name_s{1} = 'cs-traj-512pix-3perc-2000nm-20mic-01Hz_out_9-23-2017-01.csv';
+cs_exp_data_name_s{2} = 'cs-traj-512pix-15perc-2000nm-20mic-01Hz_out_9-23-2017-02.csv';
+
+
+sub_dir = '20microns\9-23-2017';
 
 for i=1:length(cs_exp_data_name_s)
     cs_exp_data_name = cs_exp_data_name_s{i};
@@ -53,7 +58,7 @@ else
 end
 microns_per_volt = 50/10;
 pix_per_volt = (npix/width)*microns_per_volt;
-hole_depth = (20/7)*(1/1000)*(20);
+hole_depth = (20/7)*(1/1000)*(2*120);
 
 %
 % Drop all data corresponding to movement between points.
@@ -108,18 +113,18 @@ for k = 1:max(dat_meas(:,end))
 %    keyboard
 %    U_ks = U_ks - mean(U_ks);
 if abs(min(U_ks)-max(U_ks)) < .5*hole_depth
-   U_ks = detrend(U_ks);
+%    U_ks = detrend(U_ks);
 end
    U_ks = U_ks - max(U_ks);
    
 %     if min(U_ks) < -0.12
 % %         continue
 %     end
-%     if min(U_ks) < -0.6
-%         continue
-%     end   
-U_ks = max(U_ks, -.11);
-% U_ks = max(U_ks, -0.6);    
+    if min(U_ks) < -0.6
+        continue
+    end   
+% U_ks = max(U_ks, -.11);
+% U_ks = max(U_ks, -0.5);    
 
     
    % Make the assumption that the y-data for each path is constant enough.
@@ -186,7 +191,7 @@ ax = gca();
 imshow(I, [min(min(I)), max(max(I))])
 
 
-%%
+
 
 % I = detrend_sampled_plane(I, pixelifsampled);
 % I = (I - max(max(I))).*pixelifsampled; 
@@ -232,7 +237,7 @@ ax5 = gca();
 imshow_sane(Ir_smp, ax5, width, width)
 title('SMP reconstruction');
 drawnow
-%
+
 if bp
     % ********* BP *************
     [n m] = size(I);
@@ -256,7 +261,18 @@ if bp
     subplot(2,3,2)
     ax4 = gca();
     % imshow_sane(PixelVectorToMatrix(Ir_bp,[n m]), ax4, width, width);
+    
     imshow_sane(bp_im, ax4, width, width);
+% %%
+% bpt = bp_im - mean(bp_im(:));
+% bpt = min(bpt, hole_depth*.5);
+% bpt = max(bpt, -hole_depth*.5);
+% bpt = bp_im - mean(bpt(:));
+% imshow(bpt, [-hole_depth*.2, .2*hole_depth]);
+% figure, plot(bpt(23, :))
+%%
+% imshow_sane(bpt, ax4, width, width);
+%%
     title('BP reconstruction');
 end
 %
@@ -273,7 +289,7 @@ t1 = text(0,.5, s, 'Units', 'normalized');
 t2 = text(0, t1.Extent(2)-.1, s2, 'Units', 'normalized', 'interpreter', 'none');
 
 % text(0,-1.2, s, 'Units', 'normalized')
-
+%%
 savedata = 1;
 if savedata
    img_data.cs_im = I;
