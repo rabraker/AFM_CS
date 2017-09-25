@@ -87,7 +87,7 @@ F1 = figure(1); clf
 % box('on'); % Define box around whole figure
 
 
-figwidth = 3.45;
+figwidth = 3.4;
 figheight = 4.5;
 set(F1, 'Units', 'Inches', 'Position', [3,3, figwidth, figheight],...
     'PaperUnits', 'Inches', 'PaperSize', [figwidth, figheight])
@@ -146,7 +146,7 @@ ylabel('$u_z$ [v]', 'interpreter', 'latex')
 xlabel('$x$-direction pixel', 'interpreter', 'latex')
 
 fig1_path = fullfile(getfigroot, '5micron_x_u_data.pdf');
-% export_fig(F1, fig1_path, '-q101')
+export_fig(F1, fig1_path, '-q101')
 % saveEps(F1, fig1_path)
 %%
 clc
@@ -258,125 +258,61 @@ fig_path = fullfile(getfigroot, '5micron_rasterscans.eps');
 % export_fig(F2, fig_path, '-q101')
 saveEps(F2, fig_path)
 %%
-k = 20
-L = 2
-ssim_s = [];
-ind_s = {};
-j = 1;
 
-    REF = raster_dat_s(1).I_fit_normalized(L:end, 1:end-k+1);
-    Y = raster_dat_s(2).I_fit_normalized(1:end-L+1, k:end);
-    DRng = max(REF(:)) - min(REF(:));
-    ssim(Y, REF, 'DynamicRange', DRng)
-    
-figure(5);clf
-plot(REF(41, :))
-hold on
-plot(Y(41,:))
-%%
-% FOR 1HZ
+
+% -----------------------------------------------------------------------%
+% Calculate metrics of ground truth against the faster raster scans.
 clc
-ssim_s = [];
-ind_s = {};
-j = 1;
-for k=1:25
-    for L=1:25
+REF_ind = 1;
+for iter=1:length(raster_dat_s)
+    ssim_s = [];
+    ind_s = {};
+    j = 1;
+    for k=1:25
+        for L=1:25
 
-        REF = raster_dat_s(1).I_fit_normalized(L:end, 1:end-k+1);
-        Y = raster_dat_s(2).I_fit_normalized(1:end-L+1, k:end);
+            REF = raster_dat_s(REF_ind).I_fit_normalized(L:end, 1:end-k+1);
+            Y = raster_dat_s(iter).I_fit_normalized(1:end-L+1, k:end);
 
-        DRng = max(REF(:)) - min(REF(:));
+            DRng = max(REF(:)) - min(REF(:));
 
-        ssim_s = [ssim_s; ssim(Y, REF, 'DynamicRange', DRng)];
+            ssim_s = [ssim_s; ssim(Y, REF, 'DynamicRange', DRng)];
 
-        ind_s{j} = [L, k];
-%         keyboard
-        j = j+1;
+            ind_s{j} = [L, k];
+            j = j+1;
+        end
     end
+
+
+    [ssim_max, ind_max] = max(ssim_s);
+    L = ind_s{ind_max}(1);
+    k = ind_s{ind_max}(2);
+    REF = raster_dat_s(REF_ind).I_fit_normalized(L:end, 1:end-k+1);
+    Y = raster_dat_s(iter).I_fit_normalized(1:end-L+1, k:end);
+
+    psnr_max = psnr(Y, REF, DRng);
+    freq = raster_dat_s(iter).freq;
+    fprintf('Freq: %.2f,  ssim: %.3f,  psnr: %.2f\n', freq, ssim_max, psnr_max)
+
 end
 
 
-[ssim_max, ind_max] = max(ssim_s)
-L = ind_s{ind_max}(1);
-k = ind_s{ind_max}(2);
-REF = raster_dat_s(1).I_fit_normalized(L:end, 1:end-k+1);
-Y = raster_dat_s(2).I_fit_normalized(1:end-L+1, k:end);
-
-psnr(Y, REF, DRng)
+% % figure(5);clf
+% % plot(REF(41, :))
+% % hold on
+% % plot(Y(41,:))
 
 %%
-% FOR 5 HZ
-ssim_s = [];
-ind_s = {};
-j = 1;
-for k=1:25
-    for L=1:25
+% ------------------------------------------------------------------------%
+% Calculate Metrics of ground truth raster image against the CS images. 
 
-        REF = raster_dat_s(1).I_fit_normalized(L:end, 1:end-k+1);
-        Y = raster_dat_s(3).I_fit_normalized(1:end-L+1, k:end);
-
-        DRng = max(REF(:)) - min(REF(:));
-
-
-        ssim_s = [ssim_s; ssim(Y, REF, 'DynamicRange', DRng)];
-
-        ind_s{j} = [L, k];
-        j = j+1;
-    end
-end
-%%
-clc
-[ssim_max, ind_max] = max(ssim_s)
-L = ind_s{ind_max}(1);
-k = ind_s{ind_max}(2);
-REF = raster_dat_s(1).I_fit_normalized(L:end, 1:end-k+1);
-Y = raster_dat_s(3).I_fit_normalized(1:end-L+1, k:end);
-
-psnr(Y, REF, DRng)
-% psnr_s(iter) = psnr(Y, REF, DRng_i);
-
-
-%%
-% FOR 10HZ
-clc
-ssim_s = [];
-ind_s = {};
-j = 1;
-for k=1:25
-    for L=1:25
-
-        REF = raster_dat_s(1).I_fit_normalized(L:end, 1:end-k+1);
-        Y = raster_dat_s(4).I_fit_normalized(1:end-L+1, k:end);
-
-        DRng = max(REF(:)) - min(REF(:));
-
-
-        ssim_s = [ssim_s; ssim(Y, REF, 'DynamicRange', DRng)];
-
-        ind_s{j} = [L, k];
-        j = j+1;
-    end
-end
-
-[ssim_max, ind_max] = max(ssim_s)
-L = ind_s{ind_max}(1);
-k = ind_s{ind_max}(2);
-REF = raster_dat_s(1).I_fit_normalized(L:end, 1:end-k+1);
-Y = raster_dat_s(4).I_fit_normalized(1:end-L+1, k:end);
-
-psnr(Y, REF, DRng)
-% psnr_s(iter) = psnr(Y, REF, DRng_i);
-
-
-
-%%
 cs_root =  fullfile(data_root,'cs-data');
 load(fullfile(cs_root, sub_fold, 'cs_img_data_s.mat'))
 
 figure(200)
 imshow(cs_img_data_s{1}.bp_im_normalized,[minn, maxx] )
 %%
-ref_ind = 2;
+ref_ind = 1;
 for ind = 1:2
 ssim_s = [];
 ind_s = {};

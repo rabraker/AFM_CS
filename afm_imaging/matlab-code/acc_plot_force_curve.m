@@ -47,29 +47,37 @@ params.fo = .5*scl;
 for k=1:length(r_s)
     F(k) = force2(r_s(k), 0, params);
 end
+%%
 % ---------------------- Plotting ----------------------------------
 % --------------------------- Build Figure ------------------------------
+clc
 figwidth = 3.4;
-figheight = 2.5;
+figheight = 1.76;
 F1 = figure(1); clf;
-set(F1, 'Units', 'Inches', 'Position', [0,0, figwidth, figheight],...
+set(F1, 'Units', 'Inches', 'Position', [-10,0, figwidth, figheight],...
     'PaperUnits', 'Inches', 'PaperSize', [figwidth, figheight])
 set(F1, 'Color', 'w');
 
 
 lft = .157;
-ht1 = .78;
-bt1 = .15;
+
+bt1 = .23;
+ht1 = 1-bt1-.02;
 wd = 1-lft - .01;
 
-
+F_nm = F*1e9;
 ax1 = axes('Position', [lft, bt1, wd, ht1]);
-plot(r_s/scl, F)
+plot(r_s/scl, F_nm)
+ylm = ylim;
+ylim([min(F_nm)*1.3, max(F_nm)]);
 xlabel('tip-sample separation [nm]', 'interpreter', 'latex');
-ylabel('interaction force F(r) [N]', 'interpreter', 'latex')
-
+hylab = ylabel('interaction force F(r) [nN]', 'interpreter', 'latex');
+set(hylab, 'Units', 'normalized', 'Position', [-0.0666 0.36 0])
+grid
+%%
 if savefig
-    export_fig(F1, fullfile(getfigroot(), 'force-curve.pdf'), '-q101');
+%     export_fig(F1, fullfile(getfigroot(), 'force-curve.pdf'), '-q101');
+    saveEps(F1, fullfile(getfigroot(), 'force-curve.eps'))
 end
 
 

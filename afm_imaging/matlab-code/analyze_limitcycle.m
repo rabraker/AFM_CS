@@ -25,6 +25,10 @@ cs_exp_data_name = 'cs-traj10-500_8-22-2017_05.csv';
 
 % cs_exp_data_name = 'cs-traj10-500_out_8-22-2017-02.csv';
 % cs_exp_data_name = 'cs-traj-512pix-8perc-500nm-5mic-5.00e-01Hz_out_9-17-2017-01.csv';
+
+data_root = '/media/labserver/acc2018-data/cs-data/5microns/9-22-2017';
+cs_exp_data_name = 'cs-traj-512pix-5perc-500nm-5mic-01Hz_out_9-23-2017-06.csv';
+
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);
@@ -32,7 +36,7 @@ cs_meta_path = fullfile(data_root, cs_exp_meta_name);
 
 dat = csvread(cs_data_path); 
 load(cs_meta_path);  % Provides ExpMetaData
-
+fprintf('loading done...\n')
 indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
        'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
 
@@ -70,6 +74,9 @@ title('z-err')
 hold on
 plot([t(1), t(end)], [.05, .05])
 plot([t(1), t(end)], -[.05, .05])
+linkaxes([ax1, ax2, ax3], 'x')
+
+
 %%
 figure(40+figbase)
 ax4=gca();
