@@ -20,9 +20,9 @@ dat_name = 'raster_scan_5mic_1Hz_out_9-6-2017-01-full.csv'; % Uses Dinv
 dat_name = 'raster_scan_5mic_10Hz_out_9-6-2017-06-full.csv'; %uses Dinv, Ki=.02
 parent_name = 'raster_scan_5mic_10Hz.csv';
 
-dat_name = 'raster_scan_512pix_5mic_1.00e-01Hz_out_9-18-2017-03.csv'; % good
-% dat_name = 'raster_scan_512pix_5mic_2.50e+00Hz_out_9-18-2017-01.csv';
-% 'raster_scan_512pix_5mic_05Hz_out_9-18-2017-01.csv'
+
+dat_name = '9-22-2017\raster_scan_512pix_5mic_10Hz_out_9-23-2017-01.csv';
+
 parent_name = get_parent_name(dat_name, '_out_')
 meta_name = strrep(parent_name, '.csv', '.mat')
 
@@ -32,11 +32,13 @@ sub_dir = '5microns';
 
 dat_path = fullfile(dat_root, sub_dir, dat_name);
 parent_path = fullfile(dat_root, sub_dir, parent_name);
-meta_path = fullfile(dat_root, sub_dir,  meta_name);
+meta_in_path = fullfile(dat_root, sub_dir,  meta_name);
+meta_out_path = strrep(dat_path, '.csv', '-meta.mat');
 
 tic
 
-load(meta_path);
+load(meta_in_path);
+load(meta_out_path);
 
 datmat = csvread(dat_path);
 parent_dat = csvread(parent_path);
@@ -60,27 +62,6 @@ samps_per_line = samps_per_period/2
 nperiods = 512;
 pix = nperiods;
 datmat = datmat([1:nperiods*samps_per_period], :);
-
-% 
-% trace_inds = get_trace_indeces(nperiods, samps_per_period);
-% xdat = reshape(datmat(trace_inds,1), [], nperiods);
-% ydat = reshape(datmat(trace_inds,2), [], nperiods);
-% udat = reshape(datmat(trace_inds,4), [], nperiods);
-% 
-% udat = datmat(:,4);
-% pixmat = bin_raster_fast(udat, pix, samps_per_period);
-% %%
-% lo = min(min(pixmat));
-% hi = max(max(pixmat));
-% figure(1)
-% imshow(pixmat, [lo, hi])
-% 
-% I_fit = detrend_plane(pixmat);
-% 
-% figure(3)
-% lo = min(min(I_fit));
-% hi = max(max(I_fit));
-% imshow(I_fit, [lo, hi])
 
 % visualize tracking error.
 if 0
@@ -114,16 +95,29 @@ micron2pix = pix/width;
 volts2pix = volts2microns * micron2pix;
 
 
-pixmat2 = bin_raster_really_slow(datmat(:,[1,2,4]), pix, samps_per_period, volts2pix);
+[pixmat2, pixelifsampled] = bin_raster_really_slow(datmat(:,[1,2,4]), pix, samps_per_period, volts2pix);
 
-pixmat2=pixmat2(:,1:end);
+% pixmat2=pixmat2(:,1:end);
 
-pixmat2 = detrend_plane(pixmat2);
-figure(5)
+% pixmat2 = detrend_sampled_plane(pixmat2, pixelifsampled)
+thresh = (20/7)*(1/1000)*20;
+pixmat2 = pixmat2 - mean(pixmat2(:));
+% pixmat2 = max(pixmat2, -thresh);
+% pixmat2 = min(pixmat2, thresh);
+F10 = figure(5);
 lo = min(min(pixmat2));
 hi = max(max(pixmat2));
-imshow(pixmat2, [lo, hi])
+imshow(pixmat2, [-thresh, thresh])
+axis('on')
 
+Kiz = Cluster.raster_scan_params.PI_params.Ki;
+freq = meta.raster_freq;
+stit = sprintf('%.2fHz, Kiz = %f', freq, Kiz);
+
+title(stit)
 traster_recon = toc
 fprintf('Total data processing time:%.3f', traster_recon)
 
+%%
+fig_path = strrep(dat_path, '.csv', '-fig.fig');
+saveas(F10, fig_path)

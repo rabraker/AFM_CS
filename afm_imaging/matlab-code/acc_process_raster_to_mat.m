@@ -14,54 +14,6 @@ Ts = 40e-6;
 % npix = nperiods;
 
 
-
-% ------------------- 1Hz 
-% % dat_name_s{1} = 'raster_scan_5mic_1Hz_out_8-26-2017-01-full.csv';
-% dat_name_s{1} = 'raster_scan_5mic_1Hz_out_9-14-2017-01-full.csv';
-% % ------------------- 5Hz 
-% dat_name_s{2} = 'raster_scan_5mic_5Hz_out_9-14-2017-01-full.csv';
-% % ------------------- 10Hz 
-% dat_name_s{3} = 'raster_scan_5mic_10Hz_out_9-14-2017-01-full.csv';
-
-% if 1
-%     % ------------------- 1Hz 
-%     % dat_name_s{1} = 'raster_scan_5mic_1Hz_out_8-26-2017-01-full.csv';
-%     % parent_name_s{1} = 'raster_scan_5mic_1Hz.csv';
-%     dat_name_s{1} =  'raster_scan_5mic_5.00e-01Hz_out_9-14-2017-03.csv';
-%     % ------------------- 1Hz 
-%     dat_name_s{2} = 'raster_scan_5mic_1Hz_out_9-14-2017-04.csv';    
-%     % ------------------- 5Hz 
-%     dat_name_s{3} = 'raster_scan_5mic_5Hz_out_9-14-2017-02.csv';
-%     % ------------------- 10Hz 
-%     dat_name_s{4} = 'raster_scan_5mic_10Hz_out_9-14-2017-02.csv';
-% end
-
-% if 1
-%     % ------------------- 1Hz 
-%     % dat_name_s{1} = 'raster_scan_5mic_1Hz_out_8-26-2017-01-full.csv';
-%     % parent_name_s{1} = 'raster_scan_5mic_1Hz.csv';
-%     dat_name_s{1} = 'raster_scan_5mic_2.50e-01Hz_out_9-16-2017-03.csv';
-%     dat_name_s{2} = 'raster_scan_5mic_2.50e-01Hz_out_9-16-2017-05.csv';
-%     
-% %     dat_name_s{1} = 'raster_scan_5mic_5.00e-01Hz_out_9-15-2017-05.csv';
-% %     dat_name_s{2} = 'raster_scan_5mic_5.00e-01Hz_out_9-15-2017-06.csv';
-%     
-%     dat_name_s{3} =  'raster_scan_5mic_1Hz_out_9-16-2017-06.csv';
-%     dat_name_s{4} =  'raster_scan_5mic_1Hz_out_9-16-2017-07.csv';
-%     dat_name_s{5}= 'raster_scan_5mic_1Hz_out_9-16-2017-08.csv';
-%     
-%     % ------------------- 1Hz 
-%     dat_name_s{6} = 'raster_scan_5mic_2.50e+00Hz_out_9-16-2017-02.csv';
-% %     dat_name_s{6} = 'raster_scan_5mic_2.50e+00Hz_out_9-15-2017-02.csv';
-% 
-%     dat_name_s{7} = 'raster_scan_5mic_5Hz_out_9-16-2017-01.csv';    
-%     % ------------------- 5Hz 
-%     dat_name_s{8} = 'raster_scan_5mic_5Hz_out_9-15-2017-05.csv';
-%     % ------------------- 10Hz 
-% %     dat_name_s{9} = 'raster_scan_5mic_2.50e-01Hz_out_9-16-2017-03.csv';
-% 
-% end
-
 % dat_name_s{1} = 'raster_scan_5mic_2.50e-01Hz_out_9-17-2017-02.csv';
 % dat_name_s{2} = 'raster_scan_5mic_1Hz_out_9-17-2017-02.csv';
 % dat_name_s{3} = 'raster_scan_5mic_2.50e+00Hz_out_9-17-2017-01.csv';
@@ -69,12 +21,14 @@ Ts = 40e-6;
 % dat_name_s{5} = 'raster_scan_5mic_10Hz_out_9-17-2017-01.csv';
 
 % 9-17-2017
+if 0
 dat_name_s{1} = 'raster_scan_512pix_5mic_2.50e-01Hz_out_9-17-2017-01.csv';
 dat_name_s{2} = 'raster_scan_512pix_5mic_01Hz_out_9-17-2017-01.csv';
 dat_name_s{3} = 'raster_scan_512pix_5mic_2.50e+00Hz_out_9-17-2017-01.csv';
 dat_name_s{4} = 'raster_scan_512pix_5mic_05Hz_out_9-17-2017-01.csv';
 dat_name_s{5} = 'raster_scan_512pix_5mic_10Hz_out_9-17-2017-01.csv';
-
+end
+dat_name_s{1} = 'raster_scan_512pix_5mic_01Hz_out_9-17-2017-01.csv';
 % 9-18-2017
 % dat_name_s{1} = 'raster_scan_512pix_5mic_1.00e-01Hz_out_9-18-2017-03.csv';
 % dat_name_s{2} = 'raster_scan_512pix_5mic_2.50e-01Hz_out_9-18-2017-01.csv';
@@ -83,16 +37,24 @@ dat_name_s{5} = 'raster_scan_512pix_5mic_10Hz_out_9-17-2017-01.csv';
 % dat_name_s{5} = 'raster_scan_512pix_5mic_05Hz_out_9-18-2017-01.csv';
 % dat_name_s{6} = 'raster_scan_512pix_5mic_10Hz_out_9-18-2017-01.csv';
 
-sub_fold = '5microns';
+sub_fold = '5microns/9-22-2017';
 
 % % 9-18-2017 20-microns
-% dat_name_s = {};
-% dat_name_s{1} = 'raster_scan_512pix_20mic_1.00e-01Hz_out_9-18-2017-02.csv';
-% dat_name_s{2} = 'raster_scan_512pix_20mic_2.50e-01Hz_out_9-18-2017-01.csv';
-% dat_name_s{3} = 'raster_scan_512pix_20mic_01Hz_out_9-18-2017-01.csv';
-% dat_name_s{4} = 'raster_scan_512pix_20mic_2.50e+00Hz_out_9-18-2017-01.csv';
+dat_name_s = {};
+% dat_name_s{1} = 'raster_scan_512pix_20mic_1.00e-01Hz_out_9-23-2017-03.csv';
+dat_name_s{1} = 'raster_scan_512pix_20mic_05Hz_out_9-23-2017-01.csv';
+% dat_name_s{3} = 'raster_scan_512pix_20mic_2.50e+00Hz_out_9-23-2017-01.csv';
 % % dat_name_s{5} = 'raster_scan_512pix_20mic_1.00e-01Hz_out_9-18-2017-03.csv';
-% sub_fold = '20microns';
+sub_fold = '20microns/9-23-2017';
+
+% dat_name_s = {};
+% dat_name_s{1} = 'raster_scan_512pix_5mic_2.50e-01Hz_out_9-23-2017-02.csv';
+% dat_name_s{2} = 'raster_scan_512pix_5mic_01Hz_out_9-23-2017-04.csv';
+% dat_name_s{3} = 'raster_scan_512pix_5mic_05Hz_out_9-23-2017-03.csv';
+% dat_name_s{4} = 'raster_scan_512pix_5mic_10Hz_out_9-23-2017-01.csv';
+
+
+
 
 freqs = zeros(1,length(dat_name_s));
 
@@ -110,7 +72,7 @@ for i=1:length(dat_name_s)
 %     load(meta_path)
 %     keyboard
     mat_path = strrep(dat_path, '.csv', '.mat');
-    if exist(mat_path, 'file') ~=2  
+    if exist(mat_path, 'file') ~=2 
 %         keyboard
         fprintf('Reading in raw data file...\n');
         rdat.datmat = csvread(dat_path);
@@ -133,9 +95,10 @@ for i=1:length(dat_name_s)
         fprintf('Processing raster data...\n')
         rdat.datmat = rdat.datmat([1:rdat.npix*rdat.samps_per_period], :);
 
-        [pixmat, pixelifsampled] = bin_raster_really_slow(rdat.datmat(:,[1,2,4]),...
+        [pixmat, pixelifsampled, m_s] = bin_raster_really_slow(rdat.datmat(:,[1,2,4]),...
                                     rdat.npix, rdat.samps_per_period, rdat.volts2pix);
-        I_fit = detrend_sampled_plane(pixmat, pixelifsampled);
+        I_fit = detrend_plane(pixmat);
+%         I_fit = detrend_sampled_plane(pixmat, pixelifsampled);
 %         I_fit = (I_fit - min(min(I_fit))).*pixelifsampled;
         rdat.pixmat = pixmat;
         rdat.I_fit = I_fit;
@@ -150,7 +113,7 @@ for i=1:length(dat_name_s)
         raster_dat_s = [raster_dat_s, rdat];
         fprintf('saving raster data...\n');
         rdat.datmat=[];
-        save(mat_path, 'rdat')
+         save(mat_path, 'rdat')
     else
         load(mat_path);
         fprintf('File already processed. Skipping...\n')
@@ -162,7 +125,7 @@ end
 
 
 
-%
+%%
 % close all
 master = raster_dat_s(1);
 max_s = zeros(1,4);

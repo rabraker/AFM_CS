@@ -1,5 +1,5 @@
 
-function [ pixmat, pixelifsampled] = bin_raster_really_slow(xyu_dat, nperiods, samps_per_period, volt2pix)
+function [ pixmat, pixelifsampled, m_s] = bin_raster_really_slow(xyu_dat, nperiods, samps_per_period, volt2pix)
 if size(xyu_dat, 1) ~= nperiods*samps_per_period
    s = sprintf('Expected length(xyu_dat) == nperiods*samps_per_period')
    s = sprintf('%s \n but have length(xyu_dat)=%d, nperiods*samps_per_period = %d',...
@@ -11,7 +11,7 @@ ypix = nperiods; % TODO: make this work with rectangular image.
 
 
 % detrend the drift from the height data.
-xyu_dat(:,3) = detrend(xyu_dat(:,3));
+% xyu_dat(:,3) = detrend(xyu_dat(:,3));
 % Get the indeces corresponding to trace data only.
 trace_inds = get_trace_indeces(nperiods, samps_per_period);                        
                         
@@ -31,6 +31,7 @@ ydat_trace = (ydat_trace - min(ydat_trace))*volt2pix;
 
 pixelifsampled = zeros(xpix, ypix);
 pixmat = zeros(xpix,ypix)*mean(udat_trace);
+m_s = zeros(ypix,1);
 for j_row = 0:ypix-1
 %     ind_y = find(ydat_trace >= j_row & ydat_trace < j_row+1);
     ind_y = j_row*(samps_per_period/2)+1:(j_row+1)*(samps_per_period/2);
@@ -38,8 +39,10 @@ for j_row = 0:ypix-1
     U_dat_j = udat_trace(ind_y)';
     
     % detrend each row
-    U_dat_j = detrend(U_dat_j')';
-    
+%     keyboard
+    [U_dat_j, mb] = detrend(U_dat_j');
+    U_dat_j = U_dat_j';
+    m_s(j_row+1) = mb(1);
     for i_col = 0:xpix-1
         ind_x = find(x_dat_j >= i_col & x_dat_j < i_col+1);
         
@@ -52,6 +55,7 @@ for j_row = 0:ypix-1
         end
        
     end
+    
 end
 
 end
