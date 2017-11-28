@@ -8,11 +8,13 @@ Ts = 40e-6;
 
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
 data_root = fullfile(getdataroot(), 'cs-data');
-data_root =
+data_root = '/media/labserver/acc2018-data/cs-data/5microns/9-22-2017';
+cs_exp_data_name = 'cs-traj-512pix-5perc-500nm-5mic-01Hz_out_9-23-2017-04.csv';
+
 % ---------------------------------------------------
 % cs_exp_data_name = 'cs-traj10-500_8-22-2017_07.csv';
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv';
-cs_exp_data_name = 'cs-traj10-500_out_8-23-2017-06-meta.csv';
+% cs_exp_data_name = 'cs-traj10-500_out_8-23-2017-06-meta.csv';
 
 
 
@@ -21,14 +23,19 @@ cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 cs_data_path = fullfile(data_root, cs_exp_data_name);
 cs_meta_path = fullfile(data_root, cs_exp_meta_name);
 
-dat = csvread(cs_data_path);
+dat = csvread(cs_data_path); 
 load(cs_meta_path);  % Provides ExpMetaData
 %%
 % Slice indeces
 clc
-k1 = 245210 + 5510;
+% k1 = 245210 + 5510;
+k1 = 1.9787e+05-200;
+k2 =  2.0772e+05;
+   
+   
 % k1 = 250100;
-k2 = 267446;
+% k2 = 267446;
+
 dat_slice = dat(k1:k2,:);
 t = [0:1:length(dat_slice)-1]'*Ts;
 
@@ -42,7 +49,7 @@ met_ind = dat_slice(:,6);
 figwidth = 3.4;
 figheight = 5.5;
 F1 = figure(1); clf;
-set(F1, 'Units', 'Inches', 'Position', [0,0, figwidth, figheight],...
+set(F1, 'Units', 'Inches', 'Position', [-10,0, figwidth, figheight],...
     'PaperUnits', 'Inches', 'PaperSize', [figwidth, figheight])
 set(F1, 'Color', 'w');
 
@@ -76,11 +83,11 @@ ylabel('x [$\mu$m]', 'interpreter', 'latex', 'FontSize', 12)
 xlim([t(1), t(end)])
 
 set(ax1, 'XTickLabel', [])
-L1 = [h(1), h(2), h(3)];
-L2 = [h(4), h(5)];
+h(4).DisplayName = 'tip engage';
+L1 = [h(2), h(3),h(4), h(1)];
 % leg1 = legend([h(1), h(2), h(3), h(4), h(5)]);
-leg1 = legend([L1, L2]);
-leg1.Position = [0.5646 0.8072 0.3690 0.1828];
+leg1 = legend(L1);
+leg1.Position = [0.6525    0.7795    0.3158    0.1195];
 leg1.Interpreter = 'latex';
 grid on;
 
@@ -107,7 +114,8 @@ linkaxes([ax1, ax2, ax3], 'x')
 
 
 %%
-figname = 'three_CS_cycle.pdf'
+figname = 'three_CS_cycle.eps'
 figpath = fullfile(getfigroot(), figname);
 
-export_fig(F1, figpath, '-q101');
+% export_fig(F1, figpath, '-q101');
+saveEps(F1, figpath)

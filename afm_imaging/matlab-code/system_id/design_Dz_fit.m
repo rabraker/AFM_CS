@@ -1,8 +1,13 @@
 % Load the z-axis frequency response data.
 % load('C:\Users\arnold\Documents\MATLAB\AFM_SS\System_Identification\data\data_ZAxis\z-axis_sines_in_329_out_9-3-2017-01.mat');
 clear
+if ispc
+    dataroot = 'C:\Users\arnold\Documents\labview\afm_imaging\data\sys_id';
+else
+    dataroot = '/home/arnold/gradschool/afm-cs/afm_imaging/data/sys_id';
+end
 % load('C:\Users\arnold\Documents\MATLAB\AFM_SS\System_Identification\data\data_ZAxis\z-axis_sines_in_329_out_9-6-2017-01.mat');
-load('C:\Users\arnold\Documents\labview\afm_imaging\data\sys_id\z-axis_sines_in_long_out_9-8-2017-01.mat')
+load(fullfile(dataroot, 'z-axis_sines_in_long_out_9-8-2017-01.mat'));
 
 P_frf =squeeze( modelFit.frf.G_frf);
 w_s = modelFit.frf.w_s;
@@ -68,7 +73,7 @@ G = 2.5*zpk(G1*G2*G2*G2*G2);
 G_frf = squeeze(freqresp(G, w_s));
 
 % frfBode(G_frf,  freq_s, F1, 'k', 'Hz');
-% The I controller. 
+% The I controller.
 K = 1000
 Ki = .01;
 
@@ -113,5 +118,3 @@ plot(t, u)
 
 y = lsim(D_inv, u, t);
 plot(t, y)
-
-

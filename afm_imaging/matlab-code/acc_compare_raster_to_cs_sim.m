@@ -18,15 +18,14 @@ raster_root = '/media/labserver/data/raster';
 % raster_parent_name = 'raster_scan_5mic_1Hz.csv';
 
 
-raster_parent_name = 'raster_scan_10mic_5.00e-01Hz.csv';
-% raster_parent_meta = 'raster_scan__256pix_20mic_1.25e-01Hz.csv';
+raster_parent_name = 'raster_scan__256pix_10mic_5.00e-01Hz.mat';
+raster_parent_meta = 'raster_scan__256pix_10mic_5.00e-01Hz.csv';
 
-raster_name = 'raster_scan_10mic_5.00e-01Hz_out_9-8-2017-03-full.csv';
+raster_name = 'raster_scan__256pix_10mic_5.00e-02Hz_out_9-10-2017-02-full.csv'
 
-
-csin_data_name1 = 'cs-traj-8perc-1000nm-10mic-01Hz.csv';
-csin_data_name2 = 'cs-traj-10perc-1000nm-10mic-01Hz.csv';
-csin_data_name3 = 'cs-traj-15perc-1000nm-10mic-01Hz.csv';
+csin_data_name1 = 'cs-traj-7perc-500nm-5mic-01Hz.csv';
+csin_data_name2 = 'cs-traj-10perc-500nm-5mic-01Hz.csv';
+csin_data_name3 = 'cs-traj-15perc-500nm-5mic-01Hz.csv';
 
 
 % raster_name = 'raster_scan_5mic_1Hz_out_8-26-2017-01-full.csv';
@@ -38,12 +37,6 @@ csin_data_path_s{1} = fullfile(csin_data_root, csin_data_name1);
 csin_data_path_s{2} = fullfile(csin_data_root, csin_data_name2);
 csin_data_path_s{3} = fullfile(csin_data_root, csin_data_name3);
 
-
-for i=1:length(csin_data_path_s)
-   if ~exist(csin_data_path_s{i}, 'file')==2
-       fprintf('%s does not exist', csin_data_path_s{i})
-   end
-end
 
 
 raster_path = fullfile(raster_root, raster_name);
@@ -88,49 +81,37 @@ cs_sim_data.pixelifsampled_s = {};
 cs_sim_data.rdat = rdat;
 
 for k=1:length(csin_data_path_s)
-    
-    
+
+
     csin_data_path_s{k}
-    
+
     [bp_im, pixelifsampled] = cs_sim(rdat, csin_data_path_s{k});
-    
-    
-    
-    
+
+
+
+
     perc = sum(sum(pixelifsampled))/rdat.npix^2;
     figure(2)
     subplot(2,2,k+1)
     imshow(bp_im, [min(min(bp_im)), max(max(bp_im))]);
-    
+
     stit = sprintf('%.2d %%', perc);
     title(stit)
-    
-    
+
+
     figure(100+k)
     imshow_sane(pixelifsampled, gca, rdat.width, rdat.width);
     title(stit)
-    
-    
+
+
     cs_sim_data.bp_im_s{k} = bp_im
     cs_sim_data.pixelifsampled_s{k} = pixelifsampled;
-    
+
 end
 
 
 
 
-cs_sim_name = strrep(raster_name, '-full.csv', 'CS-SIM-10mic_1000nmmu.mat')
+cs_sim_name = strrep(raster_name, '-full.csv', 'CS-SIM-01.mat')
 %%
 save(fullfile(cs_sim_root, cs_sim_name), 'cs_sim_data');
-
-
-
-
-
-
-
-
-
-
-
-

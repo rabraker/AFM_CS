@@ -34,9 +34,9 @@ for i=1:length(dat_name_s)
     parent_meta_path = strrep(parent_path, '.csv', '.mat');
     meta_path = strrep(data_path, '.csv', '-meta.mat');
     mat_path = strrep(data_path, '.csv', '.mat');
-    
-    fprintf('File: %s\n', dat_name_s{i}); 
-    
+
+    fprintf('File: %s\n', dat_name_s{i});
+
     load(mat_path);
 
     % ------- Do some more processing so we get even color distribution----
@@ -51,21 +51,21 @@ for i=1:length(dat_name_s)
     I_temp = I_fit(:,kmin:kmax);
     [min_s(i), ind_min] = min(min(I_temp));
      max_s(i) = max(max(I_fit));
-    
+
     rdat.I_fit_normalized = I_fit;
     % ------ Pull out a couple cycles of the x-direction data -------
-    
+
     xsamps = rdat.samps_per_period*3;
-    
+
     x_data = csvread(data_path, 0,0, [0, 0, xsamps, 0]);
     rdat.x_data = x_data(end-rdat.samps_per_period*2+1:end);
-    
+
     xy_ref = reshape(csvread(parent_path), 2, [])';
     rdat.x_ref = [xy_ref(:,1);xy_ref(:,1)];
-    
+
     raster_dat_s = [raster_dat_s, rdat];
     figure(i+100)
-    
+
     imshow(raster_dat_s(i).I_fit_normalized, [min_s(i), max_s(i)])
 end
 
@@ -80,7 +80,7 @@ F1 = figure(1); clf
 % box('on'); % Define box around whole figure
 
 
-figwidth = 3.45;
+figwidth = 3.4;
 figheight = 4.5;
 set(F1, 'Units', 'Inches', 'Position', [3,3, figwidth, figheight],...
     'PaperUnits', 'Inches', 'PaperSize', [figwidth, figheight])
@@ -126,7 +126,7 @@ kk = 100;
 for i=1:length(dat_name_s)
     udat = raster_dat_s(i).I_fit_normalized(kk,:);
     xs = [0:1:raster_dat_s(i).npix-1]';
-    
+
     plot(xs, udat)
 
 end
@@ -197,7 +197,7 @@ maxx = thresh
 for iter = 1:length(axr1)
     ax_iter = axr1(iter);
     F2.CurrentAxes = ax_iter;
-    
+
     I_plot = raster_dat_s(iter).I_fit_normalized;
     I_plot = I_plot(:, pix_starts(iter):end-pix_ends(iter));
     lo = min(min(I_plot));
@@ -207,8 +207,8 @@ for iter = 1:length(axr1)
     % ax1.YTick = [0 2 4]
     xdata = [0, raster_dat_s(iter).meta.width];
     ydata = [0, raster_dat_s(iter).meta.width];
-    
-    
+
+
     imshow(I_plot, [minn, maxx],...
         'XData', xdata, 'YData', ydata, 'Parent', ax_iter)
     % imshow(I_fit, [lo, hi], 'Parent', ax1)
@@ -221,7 +221,7 @@ for iter = 1:length(axr1)
     if iter ==1
 %         ylabel('y-dir [$\mu$m]',  'interpreter', 'latex');
     else
-       set(ax_iter, 'YTickLabel', []); 
+       set(ax_iter, 'YTickLabel', []);
     end
 
     stit = sprintf('%.2f~Hz', raster_dat_s(iter).freq);
@@ -245,4 +245,3 @@ caxis([-thresh_color, thresh_color])
 
 fig_path = fullfile(getfigroot, '20micron_rasterscans.pdf');
 export_fig(F2, fig_path, '-q101')
-
