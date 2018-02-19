@@ -4,7 +4,7 @@
 % dat_s{1} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-01.csv'));
 % dat_s{2} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-02.csv'));
 % dat_s{3} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-03.csv'));
-
+addpath('functions')
 dat = csvread(fullfile(getdataroot, 'force-map', 'force-map-02.csv'));
 %
 % clf
@@ -73,7 +73,7 @@ ylim([1.1*min(p_full), 1.1*max(p_full)]);
 xlabel('$u_z$ [$\approx$ nm]', 'interpreter', 'latex')
 ylabel('p = err - po [v]', 'interpreter', 'latex')
 
-
+%%
 if savefig
     export_fig(F1, fullfile(getfigroot(), 'deflection-distance.pdf'), '-q101')
 end
