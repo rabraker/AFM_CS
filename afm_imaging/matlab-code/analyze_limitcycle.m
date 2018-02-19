@@ -28,7 +28,7 @@ cs_exp_data_name = 'cs-traj10-500_8-22-2017_05.csv';
 
 data_root = '/media/labserver/acc2018-data/cs-data/5microns/9-22-2017';
 cs_exp_data_name = 'cs-traj-512pix-5perc-500nm-5mic-01Hz_out_9-23-2017-06.csv';
-
+cs_exp_data_name = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_9-23-2017-04.csv'; % the 10% I used
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);
