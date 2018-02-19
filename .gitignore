@@ -2,13 +2,14 @@
 *.log
 *.synctex.gz
 latex/auto
-
+*.zip
+*.rar
 *.JPG
 *.lvbitx
 *.fig
 *.csv
 *.mat
-
+acc2018-data
 qpPaper/
 quadProg/
 qpFPGA_*
@@ -26,3 +27,4 @@ afm_ss_singlematrix_FXP/
 slprj
 *.autosave
 *~
+afm_imaging/matlab-code/figures/RESULTS/
