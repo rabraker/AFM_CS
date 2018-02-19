@@ -5,7 +5,7 @@ width = 5;
 microns_per_volt = 50/10;
 pix_per_volt = (pix/width)*microns_per_volt;
 Ts = 40e-6;
-
+addpath('functions')
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
 data_root = fullfile(getdataroot(), 'cs-data');
 data_root = '/media/labserver/acc2018-data/cs-data/5microns/9-22-2017';
