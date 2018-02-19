@@ -65,7 +65,7 @@ ypad = .03;
 bt3 = .08;
 bt2 = bt3+ht1+ypad;
 bt1 = bt2+ht2+ypad;
-wd = 1-lft - .01;
+wd = 1-lft - .025;
 
 
 ax1 = axes('Position', [lft, bt1, wd, ht1]);
