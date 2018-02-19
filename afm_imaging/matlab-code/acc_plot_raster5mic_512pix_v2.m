@@ -169,7 +169,7 @@ F2 = figure(1); clf
 % box('on'); % Define box around whole figure
 
 
-figwidth = 7.0;
+figwidth = 7.4;
 figheight = 1.9;
 set(F2, 'Units', 'Inches', 'Position', [-10,3, figwidth, figheight],...
     'PaperUnits', 'Inches', 'PaperSize', [figwidth, figheight])
@@ -177,10 +177,10 @@ set(F2, 'Color', 'w');
 
 
 % subplot(4,3,[1,4])
-xpad = .02;
-wd = .2071;
+xpad = .015;
+wd = .21;
 
-lft1 = .035; % start of first col;
+lft1 = .024; % start of first col;
 
 lft2 = lft1+wd+xpad;
 lft3 = lft2+wd+xpad;
@@ -191,25 +191,20 @@ bt_im = 0.105;
 
 
 % subplot(1,3,1)
-% ax1 = gca();
 ax1 = axes('Position', [lft1, bt_im, wd, ht_im]);
 
 % subplot(1,3,2)
-% ax2 = gca();
 ax2 = axes('Position', [lft2, bt_im, wd, ht_im]);
 
 % subplot(1,3,3)
-% ax3=gca();
 ax3 = axes('Position', [lft3, bt_im, wd, ht_im]);
 
 ax4 = axes('Position', [lft4, bt_im, wd, ht_im]);
-% row 2
+
 
 %
 % ---------------- Start Plotting -----------------------------
 % ------------------ Col 1: 1Hz -------------------------------
-% pix_starts = [2,10, 22]
-% pix_ends = [4, 16, 40]
 pix_starts = [1,1, 1, 1];
 pix_ends = [0, 0, 0, 0];
 
@@ -266,10 +261,10 @@ colormap gray
 thresh_color = thresh*(7/20)*(1000/1); % should give 22
 caxis([-thresh_color, thresh_color])
 % set(h, 'ylim', [-thresh_color, thresh_color])
-
+text(9.7, .3, '$z$ [nm]', 'rot', 90, 'interpreter', 'latex',...
+    'Units', 'normalized', 'FontSize', 14)
 
 fig_path = fullfile(getfigroot, '5micron_rasterscans_v2.eps');
-% export_fig(F2, fig_path, '-q101')
 saveEps(F2, fig_path)
 %%
 
@@ -285,7 +280,7 @@ for iter=1:length(raster_dat_s)
     for k=1:25
         for L=1:25
 
-        REF = raster_dat_s(ref_ind).I_fit_normalized(1:end-L+1, k:end);
+        REF = raster_dat_s(REF_ind).I_fit_normalized(1:end-L+1, k:end);
         Y = raster_dat_s(iter).I_fit_normalized(L:end, 1:end-k+1);
         
             DRng = max(REF(:)) - min(REF(:));
@@ -303,7 +298,7 @@ for iter=1:length(raster_dat_s)
     k = ind_s{ind_max}(2);
 %     REF = raster_dat_s(REF_ind).I_fit_normalized(L:end, 1:end-k+1);
 %     Y = raster_dat_s(iter).I_fit_normalized(1:end-L+1, k:end);
-    REF = raster_dat_s(ref_ind).I_fit_normalized(1:end-L+1, k:end);
+    REF = raster_dat_s(REF_ind).I_fit_normalized(1:end-L+1, k:end);
     Y = raster_dat_s(iter).I_fit_normalized(L:end, 1:end-k+1);
     psnr_max = psnr(Y, REF, DRng);
     freq = raster_dat_s(iter).freq;
