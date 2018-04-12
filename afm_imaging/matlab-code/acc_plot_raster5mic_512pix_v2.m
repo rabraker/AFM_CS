@@ -169,7 +169,11 @@ F2 = figure(1); clf
 % box('on'); % Define box around whole figure
 
 
+<<<<<<< HEAD
 figwidth = 7.0;
+=======
+figwidth = 7.4;
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 figheight = 1.9;
 set(F2, 'Units', 'Inches', 'Position', [-10,3, figwidth, figheight],...
     'PaperUnits', 'Inches', 'PaperSize', [figwidth, figheight])
@@ -177,10 +181,17 @@ set(F2, 'Color', 'w');
 
 
 % subplot(4,3,[1,4])
+<<<<<<< HEAD
 xpad = .02;
 wd = .2071;
 
 lft1 = .035; % start of first col;
+=======
+xpad = .015;
+wd = .21;
+
+lft1 = .024; % start of first col;
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 
 lft2 = lft1+wd+xpad;
 lft3 = lft2+wd+xpad;
@@ -191,6 +202,7 @@ bt_im = 0.105;
 
 
 % subplot(1,3,1)
+<<<<<<< HEAD
 % ax1 = gca();
 ax1 = axes('Position', [lft1, bt_im, wd, ht_im]);
 
@@ -204,12 +216,27 @@ ax3 = axes('Position', [lft3, bt_im, wd, ht_im]);
 
 ax4 = axes('Position', [lft4, bt_im, wd, ht_im]);
 % row 2
+=======
+ax1 = axes('Position', [lft1, bt_im, wd, ht_im]);
+
+% subplot(1,3,2)
+ax2 = axes('Position', [lft2, bt_im, wd, ht_im]);
+
+% subplot(1,3,3)
+ax3 = axes('Position', [lft3, bt_im, wd, ht_im]);
+
+ax4 = axes('Position', [lft4, bt_im, wd, ht_im]);
+
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 
 %
 % ---------------- Start Plotting -----------------------------
 % ------------------ Col 1: 1Hz -------------------------------
+<<<<<<< HEAD
 % pix_starts = [2,10, 22]
 % pix_ends = [4, 16, 40]
+=======
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 pix_starts = [1,1, 1, 1];
 pix_ends = [0, 0, 0, 0];
 
@@ -266,10 +293,17 @@ colormap gray
 thresh_color = thresh*(7/20)*(1000/1); % should give 22
 caxis([-thresh_color, thresh_color])
 % set(h, 'ylim', [-thresh_color, thresh_color])
+<<<<<<< HEAD
 
 
 fig_path = fullfile(getfigroot, '5micron_rasterscans_v2.eps');
 % export_fig(F2, fig_path, '-q101')
+=======
+text(9.7, .3, '$z$ [nm]', 'rot', 90, 'interpreter', 'latex',...
+    'Units', 'normalized', 'FontSize', 14)
+
+fig_path = fullfile(getfigroot, '5micron_rasterscans_v2.eps');
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 saveEps(F2, fig_path)
 %%
 
@@ -285,7 +319,11 @@ for iter=1:length(raster_dat_s)
     for k=1:25
         for L=1:25
 
+<<<<<<< HEAD
         REF = raster_dat_s(ref_ind).I_fit_normalized(1:end-L+1, k:end);
+=======
+        REF = raster_dat_s(REF_ind).I_fit_normalized(1:end-L+1, k:end);
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
         Y = raster_dat_s(iter).I_fit_normalized(L:end, 1:end-k+1);
         
             DRng = max(REF(:)) - min(REF(:));
@@ -303,7 +341,11 @@ for iter=1:length(raster_dat_s)
     k = ind_s{ind_max}(2);
 %     REF = raster_dat_s(REF_ind).I_fit_normalized(L:end, 1:end-k+1);
 %     Y = raster_dat_s(iter).I_fit_normalized(1:end-L+1, k:end);
+<<<<<<< HEAD
     REF = raster_dat_s(ref_ind).I_fit_normalized(1:end-L+1, k:end);
+=======
+    REF = raster_dat_s(REF_ind).I_fit_normalized(1:end-L+1, k:end);
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
     Y = raster_dat_s(iter).I_fit_normalized(L:end, 1:end-k+1);
     psnr_max = psnr(Y, REF, DRng);
     freq = raster_dat_s(iter).freq;

@@ -5,7 +5,11 @@ width = 5;
 microns_per_volt = 50/10;
 pix_per_volt = (pix/width)*microns_per_volt;
 Ts = 40e-6;
+<<<<<<< HEAD
 
+=======
+addpath('functions')
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
 data_root = fullfile(getdataroot(), 'cs-data');
 data_root = '/media/labserver/acc2018-data/cs-data/5microns/9-22-2017';
@@ -65,7 +69,11 @@ ypad = .03;
 bt3 = .08;
 bt2 = bt3+ht1+ypad;
 bt1 = bt2+ht2+ypad;
+<<<<<<< HEAD
 wd = 1-lft - .01;
+=======
+wd = 1-lft - .025;
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 
 
 ax1 = axes('Position', [lft, bt1, wd, ht1]);

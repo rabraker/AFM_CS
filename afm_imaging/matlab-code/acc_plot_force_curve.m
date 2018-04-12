@@ -79,3 +79,9 @@ if savefig
 %     export_fig(F1, fullfile(getfigroot(), 'force-curve.pdf'), '-q101');
     saveEps(F1, fullfile(getfigroot(), 'force-curve.eps'))
 end
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9

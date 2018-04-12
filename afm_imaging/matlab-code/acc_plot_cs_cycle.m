@@ -8,7 +8,11 @@ Ts = 40e-6;
 
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
 data_root = fullfile(getdataroot(), 'cs-data');
+<<<<<<< HEAD
 data_root =
+=======
+data_root = 
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 % ---------------------------------------------------
 % cs_exp_data_name = 'cs-traj10-500_8-22-2017_07.csv';
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv';
@@ -21,7 +25,11 @@ cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 cs_data_path = fullfile(data_root, cs_exp_data_name);
 cs_meta_path = fullfile(data_root, cs_exp_meta_name);
 
+<<<<<<< HEAD
 dat = csvread(cs_data_path);
+=======
+dat = csvread(cs_data_path); 
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 load(cs_meta_path);  % Provides ExpMetaData
 %%
 % Slice indeces
@@ -110,4 +118,8 @@ linkaxes([ax1, ax2, ax3], 'x')
 figname = 'three_CS_cycle.pdf'
 figpath = fullfile(getfigroot(), figname);
 
+<<<<<<< HEAD
 export_fig(F1, figpath, '-q101');
+=======
+export_fig(F1, figpath, '-q101');
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9

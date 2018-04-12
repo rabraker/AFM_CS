@@ -10,7 +10,11 @@ microns_per_volt = 50/10;
 pix_per_volt = (pix/width)*microns_per_volt;
 Ts = 40e-6;
 
+<<<<<<< HEAD
 
+=======
+addpath('functions')
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 data_root = fullfile(getdataroot(), 'cs-data');
 % ---------------------------------------------------
 

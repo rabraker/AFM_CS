@@ -73,7 +73,11 @@ G = 2.5*zpk(G1*G2*G2*G2*G2);
 G_frf = squeeze(freqresp(G, w_s));
 
 % frfBode(G_frf,  freq_s, F1, 'k', 'Hz');
+<<<<<<< HEAD
 % The I controller.
+=======
+% The I controller. 
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 K = 1000
 Ki = .01;
 
@@ -118,3 +122,8 @@ plot(t, u)
 
 y = lsim(D_inv, u, t);
 plot(t, y)
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
