@@ -1,24 +1,19 @@
 clear
 clc
 
-
 workingRoot = 'C:\Users\arnold\Documents\labview\afm_imaging\data\sys_id\';
 % fullfile(getMatPath(), 'AFM_SS', 'System_Identification');
 addpath(fullfile(workingRoot, 'scripts'));
 axis = 0;
 
 root = workingRoot;
-% fullfile(workingRoot,'data', 'data_ZAxis');
-
 
 % xdkFileName = 'z-axis_sines_in_329.csv';
 xdkFileName = 'z-axis_sines_in_long.csv';
 metaFileName = strrep(xdkFileName, '.csv', '_metaData.csv');
-% xk_FileName = 'z-axis_sines_in_329_out_9-3-2017-01.csv';
-% xk_FileName = 'z-axis_sines_in_long_out_9-8-2017-01.csv';
 
 xk_FileName = 'z-axis_sines_in_long_out_9-10-2017-01.csv';
-% % For saving results:
+% For saving results:
 modFitName   = strrep(xk_FileName, '.csv', '.mat');
 modFitPath   = fullfile(root, modFitName);
 % xk_xdir_FileName  = [expName, '_x_dir_dataOut.csv'];
