@@ -81,6 +81,17 @@ cs_sim_data.pixelifsampled_s = {};
 cs_sim_data.rdat = rdat;
 
 for k=1:length(csin_data_path_s)
+<<<<<<< HEAD
+
+
+    csin_data_path_s{k}
+
+    [bp_im, pixelifsampled] = cs_sim(rdat, csin_data_path_s{k});
+
+
+
+
+=======
     
     
     csin_data_path_s{k}
@@ -90,10 +101,26 @@ for k=1:length(csin_data_path_s)
     
     
     
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
     perc = sum(sum(pixelifsampled))/rdat.npix^2;
     figure(2)
     subplot(2,2,k+1)
     imshow(bp_im, [min(min(bp_im)), max(max(bp_im))]);
+<<<<<<< HEAD
+
+    stit = sprintf('%.2d %%', perc);
+    title(stit)
+
+
+    figure(100+k)
+    imshow_sane(pixelifsampled, gca, rdat.width, rdat.width);
+    title(stit)
+
+
+    cs_sim_data.bp_im_s{k} = bp_im
+    cs_sim_data.pixelifsampled_s{k} = pixelifsampled;
+
+=======
     
     stit = sprintf('%.2d %%', perc);
     title(stit)
@@ -107,6 +134,7 @@ for k=1:length(csin_data_path_s)
     cs_sim_data.bp_im_s{k} = bp_im
     cs_sim_data.pixelifsampled_s{k} = pixelifsampled;
     
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 end
 
 
@@ -115,6 +143,8 @@ end
 cs_sim_name = strrep(raster_name, '-full.csv', 'CS-SIM-01.mat')
 %%
 save(fullfile(cs_sim_root, cs_sim_name), 'cs_sim_data');
+<<<<<<< HEAD
+=======
 
 
 
@@ -127,3 +157,4 @@ save(fullfile(cs_sim_root, cs_sim_name), 'cs_sim_data');
 
 
 
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9

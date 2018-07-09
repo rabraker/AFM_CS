@@ -16,7 +16,11 @@ data_root = fullfile(getdataroot(), 'cs-data\20microns\9-23-2017');
 % Shows a few large oscillations, not quite limit cycle
 % cs_exp_data_name = 'cs-traj10-500_out_8-24-2017-04.csv';
 
+<<<<<<< HEAD
+% cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv'; % k = 270202,
+=======
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv'; % k = 270202, 
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 
 % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-09.csv'; % k =
 cs_exp_data_name = 'cs-traj-8perc-500nm-5mic-1Hz_out_9-3-2017-02.csv';
@@ -28,13 +32,21 @@ cs_exp_data_name = 'cs-traj10-500_8-22-2017_05.csv';
 
 data_root = '/media/labserver/acc2018-data/cs-data/5microns/9-22-2017';
 cs_exp_data_name = 'cs-traj-512pix-5perc-500nm-5mic-01Hz_out_9-23-2017-06.csv';
+<<<<<<< HEAD
+
+=======
 cs_exp_data_name = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_9-23-2017-04.csv'; % the 10% I used
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);
 cs_meta_path = fullfile(data_root, cs_exp_meta_name);
 
+<<<<<<< HEAD
+dat = csvread(cs_data_path);
+=======
 dat = csvread(cs_data_path); 
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 load(cs_meta_path);  % Provides ExpMetaData
 
 fprintf('loading done...\n')
@@ -93,6 +105,8 @@ title('y')
 % ax4 = gca();
 % linkaxes([ax1, ax2, ax3, ax4], 'x')
 linkaxes([ax1, ax2, ax3, ax4], 'x')
+<<<<<<< HEAD
+=======
 
 
 
@@ -103,3 +117,4 @@ linkaxes([ax1, ax2, ax3, ax4], 'x')
 
 
 
+>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
