@@ -108,7 +108,7 @@ classdef MasterTrajster
                 x_meas = ME_i(1,:);
                 y_meas = ME_i(2,:);
 
-                plot(axx, x_meas, y_meas, cme, 'linewidth', 2)
+                plot(axx, x_meas, y_meas, cme, 'linewidth', 2, 'Marker', 'x')
 
             end
             

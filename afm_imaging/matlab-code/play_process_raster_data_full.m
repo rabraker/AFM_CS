@@ -20,13 +20,21 @@ dat_name = 'raster_scan_5mic_1Hz_out_9-6-2017-01-full.csv'; % Uses Dinv
 dat_name = 'raster_scan_5mic_10Hz_out_9-6-2017-06-full.csv'; %uses Dinv, Ki=.02
 parent_name = 'raster_scan_5mic_10Hz.csv';
 
-
 dat_name = '9-22-2017\raster_scan_512pix_5mic_10Hz_out_9-23-2017-01.csv';
+sub_dir = '5microns';
+
+
+dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
+dat_name = 'raster_scan_512pix_20mic_5.00e-01Hz_out_7-10-2018-02.csv';
+parent_name = 'raster_scan_512pix_20mic_5.00e-01Hz.csv';
+sub_dir = '20microns';
+
+
 
 parent_name = get_parent_name(dat_name, '_out_')
 meta_name = strrep(parent_name, '.csv', '.mat')
 
-sub_dir = '5microns';
+
 % dat_name = '';
 % parent_name = 'raster_scan__256pix_20mic_1.25e-01Hz.csv';
 
@@ -64,7 +72,7 @@ pix = nperiods;
 datmat = datmat([1:nperiods*samps_per_period], :);
 
 % visualize tracking error.
-if 0
+if 1
     np = 3;
     xx = datmat(:,1);
     x_np = xx(1:np*length(xref));
@@ -86,7 +94,7 @@ if 0
     leg1.Position=[0.6436    0.8590    0.2611    0.0640];
 end
 %  Now try by actually using the x-y measured data;
-
+%%
 clc
 
 width = 5;

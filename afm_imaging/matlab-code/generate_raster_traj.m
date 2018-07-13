@@ -30,10 +30,10 @@ Ki_x = 0.01;
 % Trace is one line at sec_line. The whole period is trace and re-trace.
 
 
-raster_freq = 10; % Hz.
+raster_freq = .4; % Hz.
 raster_period = 1/raster_freq;
 
-image_side = 20; % micro-meters.
+image_side = 40; % micro-meters.
 raster_amplitude = image_side/2; 
 volts2mu = 5;
 mu2volts = 1/volts2mu;
@@ -53,7 +53,7 @@ meta = struct('raster_freq', raster_freq, 'npix', npix,...
                             'shift', -raster_period/4);
 
 % we want to start at 0, not -1.
-x_rasterdata.Data = (x_rasterdata.Data +1)*raster_amplitude;
+x_rasterdata.Data = (x_rasterdata.Data+1)*raster_amplitude;
 y_rasterdata = timeseries(linspace(0, y_height, length(x_rasterdata.Time))',...
                 x_rasterdata.Time);
 
@@ -84,12 +84,13 @@ end
 
 data_name = sprintf('raster_scan_%dpix_%dmic_%.2dHz.csv',npix,image_side, raster_freq)
 %
-target_dir = sprintf('%dmicrons', image_side);
+target_dir = sprintf('%dmicrons', image_side)
+%%
 data_root = fullfile(getdataroot, 'raster', target_dir);
 if exist(data_root, 'file') ~=2
     mkdir(fullfile(getdataroot, 'raster'), target_dir)
 end
-data_in_path = fullfile(data_root, data_name);
+data_in_path = fullfile(data_root, data_name)
 meta_path = strrep(data_in_path, '.csv', '.mat');
 
 csvwrite(data_in_path, xy_data);
