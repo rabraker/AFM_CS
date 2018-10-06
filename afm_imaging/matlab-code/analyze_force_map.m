@@ -7,11 +7,17 @@ addpath('functions');
 % dat_s{3} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-03.csv'));
 
 % dat_s{1} = csvread(fullfile(getdataroot, 'force-map', 'force-map-01.csv'));
-dat_s{1} = csvread(fullfile(getdataroot, 'force-map', 'force-map-02.csv'));
+
+
+% % dat_s{1} = csvread(fullfile(getdataroot, 'force-map', 'force-map-02.csv'));
+
+dat_s{1} = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\forcemap_data-out02.csv')
+dat_s{2} = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\forcemap_data-out03.csv')
 % dat_s{2} = csvread(fullfile(getdataroot, 'force-map', 'force-map-03.csv'));
 
 
-%%
+%
+clf
 volt2nm = (7/20)*1000;
 figure(3)
 hold on
@@ -19,10 +25,10 @@ for datt = dat_s
     dat = datt{1};
 err = dat(:,1);
 uz = dat(:,2);
-uz = uz - uz(1);
+uz = uz; % - uz(1);
 
 po = err(1);
-p = err - po;
+p = err; % - po;
 
 plot(uz, p)
 
@@ -47,7 +53,7 @@ end
 
 xlabel('uz [v]')
 ylabel('p = err - po [v]')
-
+grid on
 %%
 k1 = 11599;
 k2 = 18546;

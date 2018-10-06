@@ -1,0 +1,8 @@
+MAC01\ 1/
+dual-axis/
+
+*.wdb
+*.dll
+isim/
+mults_acums
+dspAccumulators

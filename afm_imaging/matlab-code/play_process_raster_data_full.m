@@ -10,24 +10,24 @@ clear
 close all
 addpath('functions')
 
-% dat_root = '/home/arnold/gradschool/afm-cs/afm_imaging/data';
-dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
-% data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data'
+if ispc
+dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster\'
+  % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data'
+  % dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
+else
+  dat_root = '/home/arnold/gradschool/afm-cs/afm_imaging/data';
+end
 % datmat = csvread(fullfile(data_root, 'raster_8-1-2017_v3.csv'));
 
 dat_name = 'raster_scan_5mic_1Hz_out_9-4-2017-01-full.csv';
 dat_name = 'raster_scan_5mic_1Hz_out_9-6-2017-01-full.csv'; % Uses Dinv
 dat_name = 'raster_scan_5mic_10Hz_out_9-6-2017-06-full.csv'; %uses Dinv, Ki=.02
-parent_name = 'raster_scan_5mic_10Hz.csv';
+dat_name = 'raster_scan_512pix_5mic_01Hz_out_10-4-2018-03.csv'; % Ki=0.01;
+parent_name = 'raster_scan_5mic_01Hz.csv';
 
-dat_name = '9-22-2017\raster_scan_512pix_5mic_10Hz_out_9-23-2017-01.csv';
+
 sub_dir = '5microns';
 
-
-dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
-dat_name = 'raster_scan_512pix_20mic_5.00e-01Hz_out_7-10-2018-02.csv';
-parent_name = 'raster_scan_512pix_20mic_5.00e-01Hz.csv';
-sub_dir = '20microns';
 
 
 
