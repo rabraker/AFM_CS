@@ -1,3 +1,5 @@
+FPGA\ Bitfiles
+*.lvlps
 *.aux
 *.log
 *.synctex.gz
