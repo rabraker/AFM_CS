@@ -13,12 +13,6 @@ cs_name_s{1} = 'cs-traj-512pix-5perc-500nm-5mic-01Hz_out_9-23-2017-04.csv';
 cs_name_s{2} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_9-23-2017-04.csv';
 cs_name_s{3} = 'cs-traj-512pix-15perc-500nm-5mic-01Hz_out_9-23-2017-03.csv';
 
-<<<<<<< HEAD
-% cs_name_s{1} = 'cs-traj-512pix-10perc-2000nm-20mic-01Hz_out_9-18-2017-01.csv';
-% cs_name_s{2} = 'cs-traj-512pix-3perc-2000nm-20mic-01Hz_out_9-18-2017-01.csv';
-
-=======
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 sub_fold = '5microns/9-22-2017';
 width = 20;
 
@@ -76,17 +70,11 @@ save(fullfile(cs_root, sub_fold, 'cs_img_data_s.mat'), 'cs_img_data_s')
 minn = min(min_s);
 maxx = max(max_s);
 
-<<<<<<< HEAD
-%%
-F3 = figure(3+100); clf
-figwidth = 6;
-=======
 
 %%
 
 F3 = figure(3+100); clf
 figwidth = 7.5;
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 figheight = 2.1;
 set(F3, 'Units', 'Inches', 'Position', [-10,3, figwidth, figheight],...
     'PaperUnits', 'Inches', 'PaperSize', [figwidth, figheight])
@@ -94,40 +82,6 @@ set(F3, 'Color', 'w');
 
 
 % subplot(4,3,[1,4])
-<<<<<<< HEAD
-xpad = .03;
-wd = .27071;
-wd2 = wd/4;
-lft1 = .035; % start of first col;
-
-lft2 = lft1+wd+xpad;
-lft3 = lft2+wd+xpad;
-lft4 = lft3+wd+-0.02;
-
-ht_im = .7879; % image heights
-bt_im = 0.13;
-
-
-% subplot(1,3,1)
-% ax1 = gca();
-ax1 = axes('Position', [lft1, bt_im, wd, ht_im]);
-
-% subplot(1,3,2)
-% ax2 = gca();
-ax2 = axes('Position', [lft2, bt_im, wd, ht_im]);
-
-% subplot(1,3,3)
-% ax3=gca();
-ax3 = axes('Position', [lft3, bt_im, wd, ht_im]);
-
-% ax4 = axes('Position', [lft4, bt_im, wd, ht_im]);
-% row 2
-
-pix_starts = [1,1, 1, 1];
-pix_ends = [0, 0, 0, 0];
-
-axr1 = [ax1, ax2, ax3]';
-=======
 xpad = -.04;
 wd = .27071;
 wd2 = wd/4;
@@ -156,27 +110,16 @@ pix_starts = [1,1, 1, 1];
 pix_ends = [0, 0, 0, 0];
 
 axr1 = [ax3, ax2, ax1]';
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 
 % plot a sampling pattern
 F3.CurrentAxes = ax1;
 xdata = [0, cs_img_data_s{1}.width];
 ydata = [0, cs_img_data_s{1}.width];
 
-<<<<<<< HEAD
-imshow(1-cs_img_data_s{2}.pixelifsampled, [0, 1],...
-    'XData', xdata, 'YData', ydata, 'Parent', ax1)
-title('10\% $\mu$-path mask', 'interpreter', 'latex')
-% ylabel('y-dir [$\mu$m]',  'interpreter', 'latex');
-axis('on')
-thresh = (20/7)*(1/1000)*22;
-
-=======
 
 % axis('on')
 thresh = (20/7)*(1/1000)*22;
 %
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 % cs_img_data_s{3} = cs_img_data_s{2};
 for iter = 1:length(axr1)
     ax_iter = axr1(iter);
@@ -194,25 +137,16 @@ for iter = 1:length(axr1)
         'XData', xdata, 'YData', ydata, 'Parent', ax_iter)
 
     axis('on')
-<<<<<<< HEAD
-
-
-   set(ax_iter, 'YTickLabel', []); 
-=======
    if iter ~=3
        set(ax_iter, 'YTickLabel', []); 
    end
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
     stit = sprintf('$\\mu$-path: %.2f\\%%', cs_img_data_s{iter}.img_data.perc);
     title(stit, 'interpreter', 'latex');
 
 end
-<<<<<<< HEAD
-=======
 F3.CurrentAxes = ax1;
 set(ax1, 'YTick', [0, 2, 4])
 
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 ax4 = axes('Position', [lft4, bt_im+0.02, wd2, ht_im - 0.05]);
 
 axis('off')
@@ -222,8 +156,6 @@ colormap gray
 % (20/7)*(1/1000)*120*2;
 thresh_color = thresh*(7/20)*(1000/1); %should give 22
 caxis([-thresh_color, thresh_color])
-<<<<<<< HEAD
-=======
 text(10.5, .3, '$z$ [nm]', 'rot', 90, 'interpreter', 'latex',...
     'Units', 'normalized', 'FontSize', 14)
 
@@ -309,7 +241,6 @@ saveEps(F3, fig_path)
 % % % (20/7)*(1/1000)*120*2;
 % % thresh_color = thresh*(7/20)*(1000/1); %should give 22
 % % caxis([-thresh_color, thresh_color])
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 
 %%
 fig_path = fullfile(getfigroot, '5micron_csscans_v2.eps');
