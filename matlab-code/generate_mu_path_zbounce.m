@@ -83,15 +83,15 @@ grid on
 
 
 
-fname = 'cs-traj-z-bounce.csv';
+fname = 'cs-traj-z-bounce2.csv';
 %
 % create meta file name
 
-target_dir = sprintf('%dmicrons/parents', width)
-data_root = fullfile(getdataroot, 'cs-data', target_dir)
-if exist(data_root, 'file') ~=2
-    mkdir(fullfile(getdataroot, 'cs-data'), target_dir)
-end
+% target_dir = sprintf('%dmicrons/parents', width)
+data_root = '/media/labserver/afm-cs';
+% if exist(data_root, 'file') ~=2
+%     mkdir(fullfile(getdataroot, 'cs-data'), target_dir)
+% end
 meta_in = strrep(fname, '.csv', '.mat');
 meta_data_path = fullfile(data_root, meta_in);
 
