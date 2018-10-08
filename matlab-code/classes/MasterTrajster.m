@@ -76,6 +76,9 @@ classdef MasterTrajster
             % Write the interleaved vector data into a file. This is the
             % link to LabView and is exactly the data we want to stuff into
             % the FIFO buffer.
+            if exist(fname, 'file') == 2
+              delete(fname)
+            end
             csvwrite(fname, self.as_vector());
         end
         function H = visualize_sampling(self)
