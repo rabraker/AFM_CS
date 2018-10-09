@@ -19,7 +19,8 @@ data_root = '/media/labserver/afm-cs'
 
 
 
-cs_exp_data_name = 'cs-traj-z-bounce_out_10-5-2018-49.csv';
+cs_exp_data_name = 'cs-traj-z-bounce_out_10-8-2018-13.csv'; % illustrates problem
+% cs_exp_data_name = 'cs-traj-z-bounce_out_10-8-2018-22.csv';
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);
@@ -35,9 +36,8 @@ fprintf('loading done...\n')
 indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
        'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
 
-%
-%%
-% close all
+xy = false;
+figbase = 100;
 
 x = dat(:,1);
 y=dat(:,2);
@@ -48,21 +48,14 @@ uz = dat(:,4);
 met_ind = dat(:,5);
 
 
-figbase = 1;
-figure(10+figbase), clf
-% plot(x)
-title('x')
-ax1 = gca;
-plotbyindex(ax1, t, x, met_ind, indc);
 
-
-figure(20+figbase), clf
+Fig_uz = figure(20+figbase); clf
 % plot(uz)
 ax2 = gca
 plotbyindex(ax2, t, uz, met_ind, indc);
 title('uz')
 
-figure(30+figbase), clf
+Fig_ze = figure(30+figbase); clf
 % plot(z_err)
 ax3 = gca();
 hp = plotbyindex(ax3, t, z_err, met_ind, indc);
@@ -70,22 +63,33 @@ title('z-err')
 hold on
 plot([t(1), t(end)], [.05, .05])
 plot([t(1), t(end)], -[.05, .05])
-legend(hp(1:5))
-linkaxes([ax1, ax2, ax3], 'x')
+legend(hp(2:6))
+
+if xy
+ 
+  figure(10+figbase), clf
+  % plot(x)
+  title('x')
+  ax1 = gca;
+  plotbyindex(ax1, t, x, met_ind, indc);
+  
+  figure(40+figbase), clf
+  ax4=gca();
+  plotbyindex(ax4, t, y, met_ind, indc);
+  title('y')
+  linkaxes([ax1, ax2, ax3, ax4], 'x')
+else
+  linkaxes([ax2, ax3], 'x')
+end
 
 
 
-
-figure(40+figbase), clf
-ax4=gca();
-plotbyindex(ax4, t, y, met_ind, indc);
-title('y')
 % figure(40)
 % plot(min(met_ind, 3))
 % title('meta index')
 % ax4 = gca();
 % linkaxes([ax1, ax2, ax3, ax4], 'x')
-linkaxes([ax1, ax2, ax3, ax4], 'x')
+
 
 
 clc
@@ -157,42 +161,98 @@ for k=1:50
   
 end
 
-%%
-clc
-ze_idx = idx_state_s.tup{1};
+%
+% ---------------- Visualize uz engagement point. -------------------------
 
-t_ = t(ze_idx);
-ze = z_err(ze_idx);
-figure(33); clf, hold on, grid on
-
-plot(t_, ze)
-plot(t_(end-100), ze(end-100), 'x')
-var_std = var(ze(end-100:end))*2
-TOL = .01^2;
-
-N = 20;
-
-for k = N:length(t_)
+for k=1:length(idx_state_s.tdown)
   
-  ze_k = ze(k-20+1:k);
+  ze_idx = idx_state_s.tdown{k};
+  t_ = t(ze_idx);
+  ze = z_err(ze_idx);
+  uz_ = uz(ze_idx);
   
-  std_k = sqrt(var(ze_k));
+  [~, idx_min] = min(ze);
+  figure(Fig_ze);
+  plot(t_(idx_min), ze(idx_min), 'x')
   
-  std_s(k-N+1) = std_k;
+  figure(Fig_uz);
+  plot(t_(idx_min), uz_(idx_min), 'x')
   
-  if std_k^2 < TOL
-    
-    mu = mean(ze_k);
-    plot([t_(k-N+1), t_(k)], [mu, mu], 'b')
-    
-    errorbar(t_(k-N+1), mu, std_k)
-    errorbar(t_(k), mu, std_k)
-    break
-  end
+  
   
 end
 
 
+legend(hp(2:6))
+
+
+
+%%
+% ---------------------------- Test out variance detector -----------------
+figure(300), clf
+hold on, grid on
+
+ax3 = gca();
+hp = plotbyindex(ax3, t, z_err, met_ind, indc);
+title('z-err')
+hold on
+plot([t(1), t(end)], [.05, .05])
+plot([t(1), t(end)], -[.05, .05])
+
+ze_idx = idx_state_s.tup{1};
+
+t_ = t(ze_idx);
+ze = z_err(ze_idx);
+var_std = sqrt(var(ze(end-100:end)))*2
+
+
+TOL = var_std;
+
+N = 32;
+
+
+found = false;
+for j=1:length(idx_state_s.tup)
+  ze_idx = idx_state_s.tup{j};
+  t_ = t(ze_idx);
+  ze = z_err(ze_idx);
+
+%   plot(t_, ze)
+  for k = N:length(t_)
+    
+    ze_k = ze(k-N+1:k);
+    
+    std_k = sqrt(var(ze_k));
+    
+    std_s(k-N+1) = std_k;
+    
+    
+    mu = mean(ze_k);
+    if std_k < TOL
+      plot([t_(k-N+1), t_(k)], [mu, mu], 'b')
+      
+      errorbar(t_(k-N+1), mu, std_k)
+      errorbar(t_(k), mu, std_k)
+      found = true;
+      break
+    else
+      found = false;
+    end
+  end
+
+  if j==5
+%       keyboard
+  end
+
+  if ~found
+    [~, idx_min] = min(ze);
+    
+    plot(t_(idx_min), ze(idx_min), 'x')
+  end
+
+end
+
+legend(hp(2:6))
 
 
 
