@@ -2,58 +2,116 @@ clear
 clc
 % dat2 = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\force-map-04.csv');
 addpath('functions');
-% dat_s{1} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-01.csv'));
-% dat_s{2} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-02.csv'));
-% dat_s{3} = csvread(fullfile(getdataroot, 'force-map', 'force-map-short_cant-03.csv'));
 
-% dat_s{1} = csvread(fullfile(getdataroot, 'force-map', 'force-map-01.csv'));
-
-
-% % dat_s{1} = csvread(fullfile(getdataroot, 'force-map', 'force-map-02.csv'));
-
-dat_s{1} = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\forcemap_data-out02.csv')
-dat_s{2} = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\forcemap_data-out03.csv')
+% dat_s{1} = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\forcemap_data-out02.csv')
+% dat_s{2} = csvread('C:\Users\arnold\Documents\labview\afm_imaging\data\forcemap_data-out03.csv')
 % dat_s{2} = csvread(fullfile(getdataroot, 'force-map', 'force-map-03.csv'));
 
+% dat_s{1} = csvread('/media/labserver/afm-cs/force-curve-10-8-2018-04.csv')
+% dat_s{1} = csvread('/media/labserver/afm-cs/force-curve-10-8-2018-05.csv')
+dat_s{1} = csvread('/media/labserver/afm-cs/force-curve-10-8-2018-06.csv')
 
-%
+Ts = 40e-6;
 clf
 volt2nm = (7/20)*1000;
-figure(3)
+
+figure(3), clf
 hold on
+figure(4), clf, 
+ax2=subplot(2,1,1); 
+hold on
+ax3=subplot(2,1,2); 
+hold on
+
+
+
 for datt = dat_s
+  figure(3);
     dat = datt{1};
 err = dat(:,1);
 uz = dat(:,2);
-uz = uz; % - uz(1);
 
-po = err(1);
-p = err; % - po;
+[~, idx_min] = min(uz);
 
-plot(uz, p)
+plot(uz, err)
 
-
+figure(4)
+subplot(2,1,1)
+t = (0:length(err)-1)'*Ts;
+plot(t, err)
+subplot(2,1,2)
+plot(t, uz)
 end
-% err2 = dat2(:,1);
-% uz2 = dat2(:,2);
-% uz2 = uz2 - uz2(1);
 
-
-% po2 = err2(1);
-
-% p2 = err2 - po2;
-% figure(1); hold on
-% plot(p);
-% ylabel('p')
-% 
-% figure(2);
-% plot(uz);
-% ylabel('uz')
-
-
+figure(3)
 xlabel('uz [v]')
 ylabel('p = err - po [v]')
 grid on
+
+figure(4)
+subplot(2,1,1)
+xlabel('t [s]')
+ylabel('z-err')
+grid on
+
+subplot(2,1,2)
+xlabel('t [s]')
+ylabel('u_z')
+grid on
+
+linkaxes([ax2, ax3], 'x')
+%%
+
+uz_up = uz(idx_min:end);
+err_up = err(idx_min:end);
+t_up = t(idx_min:end);
+figure(5), clf
+
+subplot(2,1,1)
+plot(t_up, err_up)
+xlabel('t [s]')
+ylabel('z-err')
+
+grid on, hold on
+subplot(2,1,2)
+plot(t_up, uz_up)
+grid on, hold on
+xlabel('t [s]')
+ylabel('u-z')
+
+
+N = 10;
+
+derr_k = 1;
+for k=N+1:length(err_up)
+  
+ derr_k_min1 = derr_k;
+ derr_k = err_up(k) - err_up(k-N); 
+ 
+ subplot(2,1,1)
+ if derr_k_min1 <0 && derr_k > 0
+   plot([t_up(k-N), t_up(k)], [err_up(k-N), err_up(k)], 'r')
+   break
+ else
+   plot([t_up(k-N), t_up(k)], [err_up(k-N), err_up(k)], 'k')
+ end
+%  if k>77
+%   keyboard
+%  end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
 %%
 k1 = 11599;
 k2 = 18546;
