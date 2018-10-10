@@ -8,3 +8,11 @@ Please look at branch "ACC2018". That branch won't change now, except possibly f
 
 
 
+## Dependencies
+Running the software in this repo requires several external dependencies:
+
+### Matlab dependecies
+-- [export_fig](https://github.com/altmany/export_fig) is only needed to for saving figures.
+
+
+### Labview dependencies
