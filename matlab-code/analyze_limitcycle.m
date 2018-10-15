@@ -8,20 +8,28 @@ Ts = 40e-6;
 addpath('functions')
 % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
 % data_root = fullfile(getdataroot(), 'cs-data');
-data_root = fullfile(getdataroot(), 'cs-data\20microns\9-23-2017');
-data_root = '/media/labserver/afm-cs'
+%data_root = fullfile(getdataroot(), 'cs-data\20microns\9-23-2017');
 % ---------------------------------------------------
-
-
-% f = 'cs-traj-z-bounce2.csv';
-% fpath = fullfile(data_root, f);
-% dat = csvread(fpath);
-
-
-
-cs_exp_data_name = 'cs-traj-z-bounce_out_10-8-2018-13.csv'; % illustrates problem
-% cs_exp_data_name = 'cs-traj-z-bounce_out_10-8-2018-22.csv';
+mode = 3;
+if mode == 1
+  data_root = '/media/labserver/afm-cs/z-bounce'
+  cs_exp_data_name = 'cs-traj-z-bounce_out_10-15-2018-03.csv'; % illustrates problem
+  % cs_exp_data_name = 'cs-traj-z-bounce_out_10-8-2018-22.csv';
+  uz_idx = 4;
+  met_idx = 5;
+elseif mode == 2
+  data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', '5microns', '10-14-2018');
+  cs_exp_data_name = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-14-2018-03.csv';
+  uz_idx = 4;
+  met_idx = 5;
+elseif mode == 3
+  data_root = '/media/labserver/acc2018-data/cs-data/5microns/9-22-2017';
+  cs_exp_data_name = 'cs-traj-512pix-15perc-500nm-5mic-01Hz_out_9-23-2017-03.csv';
+  uz_idx = 5;
+  met_idx = 6;
+end
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
+
 
 cs_data_path = fullfile(data_root, cs_exp_data_name);
 cs_meta_path = fullfile(data_root, cs_exp_meta_name);
@@ -37,15 +45,17 @@ indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
        'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
 
 xy = false;
-figbase = 100;
+figbase = 10;
 
 x = dat(:,1);
 y=dat(:,2);
 t = [0:1:length(x)-1]'*Ts;
 
 z_err = dat(:,3);
-uz = dat(:,4);
-met_ind = dat(:,5);
+% % new method
+uz = dat(:,uz_idx);
+met_ind = dat(:,met_idx);
+
 
 
 
@@ -161,7 +171,7 @@ for k=1:50
   
 end
 
-%
+
 % ---------------- Visualize uz engagement point. -------------------------
 
 for k=1:length(idx_state_s.tdown)
@@ -185,10 +195,46 @@ end
 
 legend(hp(2:6))
 
+%%
+
+% pick out the scan part of uz and zerr.
+len = Inf;
+uz_s = [];
+zer_s = [];
+
+
+figure(2),clf, hold on, grid on
+figure(3), clf, hold on, grid on
+for k=1:length(idx_state_s.scan)
+  idx_k = idx_state_s.scan{k};
+  uz_k = uz(idx_k);
+  zer_k = z_err(idx_k);
+  
+  len = min(length(uz_k), len);
+  if isempty(uz_s)
+    uz_s = uz_k;
+    zer_s = zer_k;
+  else
+    uz_s = [uz_s(1:len, :), uz_k(1:len)-uz_k(1)];
+    zer_s = [zer_s(1:len, :), zer_k(1:len)];
+  end
+  figure(2)
+  plot(uz_k-uz_k(1))
+  figure(3)
+  plot(zer_k)
+  keyboard
+end
+%%
+figure
+plot(uz_s)
+
+
+
 
 
 %%
-% ---------------------------- Test out variance detector -----------------
+% ----------
+% ------------------ Test out variance detector -----------------
 figure(300), clf
 hold on, grid on
 

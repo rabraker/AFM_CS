@@ -1,6 +1,6 @@
 clc
 clear
-<<<<<<< HEAD
+
 
 % This path should be set to the root of your github working directory. 
 root = 'C:\Users\arnold\Documents\labview';  % For windows
@@ -13,27 +13,16 @@ Ts = 40e-6;
 
 
 cs_exp_data_name ='cs-traj-512pix-8perc-500nm-5mic-01Hz_out_9-18-2017-02.csv';
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_9-18-2017-03.csv';
-cs_exp_data_name_s{2} = 'cs-traj-512pix-15perc-500nm-5mic-01Hz_out_9-18-2017-01.csv'
-sub_dir = '5microns'
-
-cs_exp_data_name_s = {};
-% cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-5.00e-01Hz_out_9-18-2017-02.csv';
-% cs_exp_data_name_s{2} = 'cs-traj-512pix-10perc-500nm-5mic-5.00e-01Hz_out_9-18-2017-01.csv';
-% cs_exp_data_name_s{3} = 'cs-traj-512pix-15perc-500nm-5mic-01Hz_out_9-18-2017-01.csv';
-
-%%
-% cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-2000nm-20mic-01Hz_out_9-23-2017-01.csv'
-cs_exp_data_name_s{1} = 'cs-traj-512pix-3perc-2000nm-20mic-01Hz_out_9-23-2017-01.csv';
-cs_exp_data_name_s{2} = 'cs-traj-512pix-15perc-2000nm-20mic-01Hz_out_9-23-2017-02.csv';
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-14-2018-02.csv';
+cs_exp_data_name_s{2} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-14-2018-03.csv';
+sub_dir = '5microns/10-14-2018'
 
 
-sub_dir = '20microns\9-23-2017';
 
 for i=1:length(cs_exp_data_name_s)
     cs_exp_data_name = cs_exp_data_name_s{i};
 
-data_root = fullfile(getdataroot, 'cs-data', sub_dir);
+data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', sub_dir);
 
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
@@ -65,7 +54,7 @@ hole_depth = (20/7)*(1/1000)*(2*120);
 % Drop all data corresponding to movement between points.
 ind_meas = find(dat(:, 6) > 0);  % Index of the movements are all 0.
 meta_ind = dat(:,6);
-=======
+
 pix = 256;
 width = 5;
 microns_per_volt = 50/10;
@@ -73,21 +62,20 @@ pix_per_volt = (pix/width)*microns_per_volt;
 
 Ts = 40e-6;
 
-% This path should be set to the root of your github working directory. 
-% root = 'C:\Users\arnold\Documents\labview';  % For windows
-root = '/home/arnold/gradschool/afm-cs';
-addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
+% % % % This path should be set to the root of your github working directory. 
+% % % % root = 'C:\Users\arnold\Documents\labview';  % For windows
+% % % root = '/home/arnold/gradschool/afm-cs';
+% % % addpath(fullfile(root, 'afm_imaging/matlab-code/functions'));
+% % % 
+% % % dat = csvread(fullfile(root, 'afm_imaging/data/cs-data-out02.csv'));
+% % % 
+% % % % Drop all data corresponding to movement between points.
+% % % ind_meas = find(dat(:, 6) ~= 0);  % Index of the movements are all 0.
 
-dat = csvread(fullfile(root, 'afm_imaging/data/cs-data-out02.csv'));
-
-% Drop all data corresponding to movement between points.
-ind_meas = find(dat(:, 6) ~= 0);  % Index of the movements are all 0.
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
-dat_meas = dat(ind_meas, :);
 
 % Fit a line to the control data and subtract it. Helps remove some of
 % the piezo drift. 
-<<<<<<< HEAD
+
 uz = dat_meas(:,5);
 figure(1+10*i); clf;
 plot(uz); hold on
@@ -196,7 +184,7 @@ end
    % ---- visualize ------
    if abs(max(U_k) - min(U_k))> hole_depth*.5
        % Then we have an edge. 
-=======
+
 dat_meas(:,5) = detrend(dat_meas(:,5)); % detrend u_z as a long vector
 
 
@@ -257,12 +245,10 @@ for k = 1:length(pix_dat)
     if abs(max(u_pix) - min(u_pix))> hole_depth*.5
        % Then we have an edge. 
        % have_edge = 1;
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
         cs = 'r';
     else
         % have_edge = 0;
         cs = 'b';
-<<<<<<< HEAD
    end
 %     figure(f2)
    plot(ax2, U_k, 'color', cs)
@@ -304,7 +290,7 @@ reduce_frac = 0.1;  %It's my understanding Yufan says 1/10 of sub-sample fractio
 maxiter = round(samp_frac*reduce_frac*n*m)
 Ir_smp = SMP_1D(I, pixelifsampled, maxiter);
 time_smp = toc;
-=======
+
     end
     
     % The mean doesn't really give us what we want. When a path contains
@@ -356,13 +342,11 @@ addpath(reconstruct_path)
 [n,m] = size(I);
 Ir_smp = SMP(I.*pixelifsampled,pixelifsampled,round(0.02*n*m));
 
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 
 reconstruct_root = fullfile(root, 'reconstruction/BP');
 reconstruct_path = genpath(reconstruct_root)
 addpath(reconstruct_path)
 
-<<<<<<< HEAD
 f5 = figure(7 + 10*i); clf
 subplot(2,3,1)
 ax3 = gca();
@@ -452,7 +436,7 @@ fig_path = fullfile(cs_exp_fig_name);
 saveas(f5, fig_path)
 
 end % MAIN LOOP
-=======
+
 % ********* BP *************
 [n m] = size(I);
 
@@ -488,4 +472,4 @@ title('SMP reconstruction');
 
 
 
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
+
