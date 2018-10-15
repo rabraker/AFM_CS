@@ -6,7 +6,8 @@
 	<Property Name="NI.LV.All.SourceOnly" Type="Bool">true</Property>
 	<Item Name="case-counter.vi" Type="VI" URL="../fpga_subVIs/case-counter.vi"/>
 	<Item Name="index_trigger.vi" Type="VI" URL="../fpga_subVIs/index_trigger.vi"/>
-	<Item Name="resetting-iter.vi" Type="VI" URL="../fpga_subVIs/resetting-iter.vi"/>
+	<Item Name="iter_resetable.vi" Type="VI" URL="../fpga_subVIs/iter_resetable.vi"/>
 	<Item Name="self-resetting-iter.vi" Type="VI" URL="../fpga_subVIs/self-resetting-iter.vi"/>
+	<Item Name="theshhold_iter_resetable.vi" Type="VI" URL="../fpga_subVIs/theshhold_iter_resetable.vi"/>
 	<Item Name="tip-down-trigger.vi" Type="VI" URL="../tip-down-trigger.vi"/>
 </Library>

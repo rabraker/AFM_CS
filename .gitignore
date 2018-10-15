@@ -23,6 +23,18 @@ Program Files (x86)/
 
 matlab-code/functions/export_fig/
 
+*.dll
+*.wdb
+*.wdb
+*.wdb
+*.wdb
+*.wdb
+*.wdb
+*.wdb
+*.wdb
+isim/
+
+
 afm_imaging/matlab-code/functions/export_fig
 afm_MPC_compare -optimize/
 afm_MPC_compare/
