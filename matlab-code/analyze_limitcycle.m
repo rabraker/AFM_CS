@@ -10,23 +10,28 @@ addpath('functions')
 % data_root = fullfile(getdataroot(), 'cs-data');
 %data_root = fullfile(getdataroot(), 'cs-data\20microns\9-23-2017');
 % ---------------------------------------------------
-mode = 3;
+mode = 2;
 if mode == 1
   data_root = '/media/labserver/afm-cs/z-bounce'
-  cs_exp_data_name = 'cs-traj-z-bounce_out_10-15-2018-03.csv'; % illustrates problem
+  cs_exp_data_name = 'cs-traj-z-bounce_out_10-17-2018-03.csv'; % illustrates problem
   % cs_exp_data_name = 'cs-traj-z-bounce_out_10-8-2018-22.csv';
   uz_idx = 4;
   met_idx = 5;
+  figbase = 10;
+
 elseif mode == 2
   data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', '5microns', '10-14-2018');
-  cs_exp_data_name = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-14-2018-03.csv';
+  cs_exp_data_name = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-15-2018-01.csv';
+  cs_exp_data_name = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-15-2018-02.csv';
   uz_idx = 4;
   met_idx = 5;
+  figbase = 50;
 elseif mode == 3
   data_root = '/media/labserver/acc2018-data/cs-data/5microns/9-22-2017';
   cs_exp_data_name = 'cs-traj-512pix-15perc-500nm-5mic-01Hz_out_9-23-2017-03.csv';
   uz_idx = 5;
   met_idx = 6;
+  figbase = 1000;
 end
 cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
 
@@ -45,7 +50,6 @@ indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
        'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
 
 xy = false;
-figbase = 10;
 
 x = dat(:,1);
 y=dat(:,2);
@@ -71,8 +75,8 @@ ax3 = gca();
 hp = plotbyindex(ax3, t, z_err, met_ind, indc);
 title('z-err')
 hold on
-plot([t(1), t(end)], [.05, .05])
-plot([t(1), t(end)], -[.05, .05])
+plot([t(1), t(end)], [.05, .05], '--k')
+plot([t(1), t(end)], -[.05, .05], '--k')
 legend(hp(2:6))
 
 if xy
@@ -170,7 +174,7 @@ for k=1:50
   end
   
 end
-
+%%
 
 % ---------------- Visualize uz engagement point. -------------------------
 
@@ -196,21 +200,45 @@ end
 legend(hp(2:6))
 
 %%
+zdrift  = load('z_drift.mat')
+zd_inv = 1/zdrift.gg;
+gg = zdrift.gg
+[z, p, k] = zpkdata(gg, 'v')
+g = zpk(z(2), p(1), k, Ts);
+g_inv = (1/g);
+g_inv = g_inv * 1/dcgain(g_inv);
 
 % pick out the scan part of uz and zerr.
 len = Inf;
 uz_s = [];
 zer_s = [];
 
+% fbase = 0;
+% figure(2+fbase),clf, hold on, grid on
+% figure(3+fbase), clf, hold on, grid on
+% figure(4+fbase), clf, hold on, grid on
 
-figure(2),clf, hold on, grid on
-figure(3), clf, hold on, grid on
+np = 2;
+lb = [-1*ones(1, np*2), -Inf]+eps;
+ub = -lb;
+opts = optimoptions(@lsqnonlin);
+opts.MaxFunctionEvaluations = 5000;
+opts.MaxIterations = 1000;
+opts.Display = 'iter';
+
+ zpk0 = [0.9922    0.9997    0.9997    0.9927    .8];
+  idx_z = [3,4];
+  idx_p = [1,2];
+  idx_K = 5;
+theta = [zpk0]; %, x0'];
+Gstatic = zpk([], [], 1, Ts);
+
 for k=1:length(idx_state_s.scan)
   idx_k = idx_state_s.scan{k};
   uz_k = uz(idx_k);
   zer_k = z_err(idx_k);
   
-  len = min(length(uz_k), len);
+  len = 1417; %min(length(uz_k), len);
   if isempty(uz_s)
     uz_s = uz_k;
     zer_s = zer_k;
@@ -218,12 +246,55 @@ for k=1:length(idx_state_s.scan)
     uz_s = [uz_s(1:len, :), uz_k(1:len)-uz_k(1)];
     zer_s = [zer_s(1:len, :), zer_k(1:len)];
   end
-  figure(2)
-  plot(uz_k-uz_k(1))
-  figure(3)
-  plot(zer_k)
-  keyboard
+  
+  
+  idx_start = idx_state_s.tdown{k}(min_idx(z_err(idx_state_s.tdown{k})));
+  idx_start = idx_start + 20;
+  idx_end = idx_state_s.scan{k}(end);
+  
+  uzk = uz(idx_start:idx_end);
+  uzk = -(uzk - uzk(1));
+  zek = z_err(idx_start:idx_end);
+  zek = zek - zek(1);
+  t = (0:length(uzk)-1)'*Ts;
+ 
+  if k <=2
+  theta0 = theta;
+  gdrift_cost = @(theta)fit_gdrift(theta, Gstatic, zek, uzk, t, np);
+  theta = lsqnonlin(gdrift_cost, theta0, lb, ub, opts);
+  
+  pls(k, :) = theta(idx_p);
+  zrs(k, :) = theta(idx_z);
+  ks(k)  = theta(idx_K);
+  
+  g_k = (zpk(theta(idx_z), theta(idx_p), theta(idx_K), Ts));
+  end
+  zsim = lsim(g_k, uzk, t);
+  
+  figure(10)
+  hold on
+  plot(t, zsim +0.2*(k-1), '--r')
+  plot(t, uzk +0.2*(k-1), 'b')
+  plot(t, zek +0.2*(k-1), 'k')
+  drawnow()
+%   keyboard
+
+
+%   t = (0:length(uz_k)-1)'*Ts;
+%   figure(2+fbase)
+%   plot(t, uz_k-uz_k(1))
+%   figure(3+fbase)
+%   plot(t, zer_k)
+%   
+%   figure(2+fbase)
+ 
+%   ysim = lsim(g_inv, uz_k-uz_k(1), t);
+%   plot(t, ysim, '--r')
+%   keyboard
 end
+
+
+
 %%
 figure
 plot(uz_s)
@@ -301,7 +372,10 @@ end
 legend(hp(2:6))
 
 
-
+function idx = min_idx(x)
+  
+  [~, idx] = min(x);
+end
 
 
 

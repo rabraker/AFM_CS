@@ -25,9 +25,9 @@ Ts = 40e-6;
 
 
 % cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-14-2018-02.csv';
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-15-2018-01.csv';
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-15-2018-03.csv';
 
-
+channel_map = containers.Map({'x', 'y', 'ze', 'uz', 'meta'}, {1,2,3,4,5})
 x_idx = 1;
 y_idx = 2;
 ze_idx = 3;
@@ -35,7 +35,9 @@ uz_idx = 4;
 met_idx = 5;
 
 sub_dir = '5microns/10-14-2018';
-
+gk = load('g_k.mat', 'g_k');
+gk = gk.g_k
+%%
 for i=1:length(cs_exp_data_name_s)
     cs_exp_data_name = cs_exp_data_name_s{i};
 
@@ -114,25 +116,12 @@ for k = 1:max(dat_meas(:,end))
    % Register the control data to zero. We can do this because we are
    % scanning long enough that we are always guaranteed to exit a hole.
    % This lets 
-%    figure(f3);clf
-%    plot(U_ks)
-%    plot(detrend(U_ks))
-%    keyboard
-%    U_ks = U_ks - mean(U_ks);
+
 if abs(min(U_ks)-max(U_ks)) < .5*hole_depth
 %    U_ks = detrend(U_ks);
 end
    U_ks = U_ks - max(U_ks);
    
-%     if min(U_ks) < -0.12
-% %         continue
-%     end
-    if min(U_ks) < -0.6
-        continue
-    end   
-% U_ks = max(U_ks, -.11);
-% U_ks = max(U_ks, -0.5);    
-
     
    % Make the assumption that the y-data for each path is constant enough.
    % Since we start at the (0,0) corner the xplane, we'll take the floor,
@@ -152,6 +141,9 @@ end
    xbins = linspace(min(X_ks), max(X_ks), npix_path_k+1); 
    U_k = [];
    for jj = 1:npix_path_k
+     if k == 168
+       keyboard
+     end
        if xpix_start+jj > npix
            continue
        end
@@ -188,6 +180,10 @@ end
         % have_edge = 0;
         cs = 'b';
    end
+   if min(U_ks) < -0.38
+      keyboard
+        % continue
+    end
 %     figure(f2)
    plot(ax2, U_k, 'color', cs)
 %    keyboard
