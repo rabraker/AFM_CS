@@ -59,13 +59,14 @@ while(k<=maxiter)
     if isempty(find(b == setCover))
         setCover(end+1)=b;
     end
-
     
     J_hat = J_hat - T*J_recover(b);
-       
     J_hat(setCover)=0;
     
-    k = k+1
+    if mod(k, 200) == 0
+      fprintf('SMP-1D iter:  %d\n', k);
+    end
+    k = k+1;
     
 
 end
