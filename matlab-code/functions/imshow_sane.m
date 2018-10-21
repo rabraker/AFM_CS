@@ -1,9 +1,13 @@
-function imshow_sane(I, ax, width, height )
+function imshow_sane(I, ax, width, height, lims)
 
 I = flipud(I);
-
-lo = min(min(I));
-hi = max(max(I));
+if ~exist('lims', 'var')
+  lo = min(min(I));
+  hi = max(max(I));
+else
+  lo = lims(1);
+  hi = lims(2);
+end
 % hi = .6
 
 xdata = [0, width];
