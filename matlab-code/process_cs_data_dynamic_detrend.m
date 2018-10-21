@@ -11,73 +11,47 @@ Ts = 40e-6;
 
 
 cs_exp_data_name_s{1} = 'cs-traj-z-bounce_out_10-17-2018-03.csv';
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-15-2018-02.csv';
-
-channel_map = containers.Map({'x', 'y', 'ze', 'uz', 'meta'}, {1,2,3,4,5})
-x_idx = 1;
-y_idx = 2;
-ze_idx = 3;
-uz_idx = 4;
-met_idx = 5;
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-15-2018-01.csv';
 
 sub_dir = '5microns/10-14-2018';
+data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', sub_dir);
+
 gk = load('g_k.mat', 'g_k');
 gk = gk.g_k
 
 
-cs_exp_data_name = cs_exp_data_name_s{1};
-data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', sub_dir);
+cs_paths = cs_exp_paths(data_root, cs_exp_data_name_s{1});
 
-cs_exp_meta_name = strrep(cs_exp_data_name, '.csv', '-meta.mat');
-
-cs_data_path = fullfile(data_root, cs_exp_data_name);
-cs_meta_path = fullfile(data_root, cs_exp_meta_name);
-
-dat = csvread(cs_data_path); 
-load(cs_meta_path);  % Provides ExpMetaData
-
-k = regexp(cs_data_path, 'Hz_out');
-meta_in_path = sprintf('%s.mat', cs_data_path(1:k+1));
-load(meta_in_path)   % Provides CsExpMetaIn
-
-state_ticks = ExpMetaData.state_counts;
-state_times = state_ticks*Ts;
-time_total = sum(state_times);
-fprintf('Total Imaging time: %.2f\n', time_total)
-
-%%
-clc
 clear CsExp
-width = CsExpMetaIn.width;
-npix =  CsExpMetaIn.npix;
-
-
-hole_depth = (20/7)*(1/1000)*(2*20);
+hole_depth = (20);
 chan_map = ChannelMap(1:5);
 
-cs_exp = CsExp(dat, chan_map, npix, width, Ts);
+cs_exp = CsExp(cs_paths, chan_map, Ts, hole_depth);
 cs_exp.idx_state_s
 
+fprintf('Total Imaging time: %.2f\n', cs_exp.time_total)
 
 %%
-f2 = figure(2+10*i); clf
-ylabel('u_z')
-xlabel('pixel')
-ax2 = gca();
-hold on;
+% f2 = figure(2+10*i); clf
+% ylabel('u_z')
+% xlabel('pixel')
+% ax2 = gca();
+% hold on;
 
 % Since we want to convert xy-coords to pixels, move all data to the
 % positive orthant:
 
-%%
 clc
 clear CsExp;
-% cs_exp.Gz = gk;
-cs_exp.Gz = zpk([], [], 1, Ts);
-cs_exp.process_cs_data(false, hole_depth);
+cs_exp.Gz = gk;
+% cs_exp.Gz = zpk([], [], 1, Ts);
+figs{1}= figure(1000); clf; hold on, grid on;
+figs{2}= figure(2000); clf; hold on, grid on;
+figs{3}= figure(3000); clf; hold on, grid on;
+
+cs_exp.process_cs_data(true, figs);
 
 %%
-
 pixelifsampled = cs_exp.pix_mask;
 I = cs_exp.Img;
 
@@ -101,15 +75,15 @@ maxiter = round(samp_frac*reduce_frac*n*m)
 Ir_smp = SMP_1D(I, pixelifsampled, maxiter);
 time_smp = toc;
 
-f5 = figure(8 + 10*i); clf
+f5 = figure(9 + 10*i); clf
 subplot(2,3,1)
 ax3 = gca();
-imshow_sane(I, ax3, width, width);
+imshow_sane(I, ax3, cs_exp.width, cs_exp.width);
 title('sample');
 
 subplot(2,3,3)
 ax5 = gca();
-imshow_sane(Ir_smp, ax5, width, width)
+imshow_sane(Ir_smp, ax5, cs_exp.width, cs_exp.width)
 title('SMP reconstruction');
 drawnow
 
@@ -135,16 +109,16 @@ if bp
     
     subplot(2,3,2)
     ax4 = gca();
-    % imshow_sane(PixelVectorToMatrix(Ir_bp,[n m]), ax4, width, width);
+    % imshow_sane(PixelVectorToMatrix(Ir_bp,[n m]), ax4, cs_exp.width, cs_exp.width);
     
-    imshow_sane(bp_im, ax4, width, width);
+    imshow_sane(bp_im, ax4, cs_exp.width, cs_exp.width);
 
     title('BP reconstruction');
 end
 %
 clc
 s = metadata2text(ExpMetaData, Ts)
-s = sprintf('%s\nperc=%.3f', s, sum(sum(pixelifsampled))/npix/npix);
+s = sprintf('%s\nperc=%.3f', s, sum(sum(pixelifsampled))/cs_exp.npix/cs_exp.npix);
 s2 = sprintf('%s', cs_exp_data_name)
 disp(s)
 subplot(2,3,[4,5,6])
