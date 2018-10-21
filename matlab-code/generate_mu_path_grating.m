@@ -13,31 +13,26 @@ close all
 addpath('classes')
 addpath('functions')
 
+
+
 %-------------- Location of System Model -------------------------
-dataroot      = fullfile(getMatPath(), 'AFM_SS',...
-                'System_Identification', 'data', 'data_xaxis'); 
-expName           = ['22-Jun-2016_exp01'];
-modFitName    = [expName, '.mat'];
-modFitPath    = fullfile(dataroot, modFitName);
-load(modFitPath, 'modelFit')
 
+plant_data = load(fullfile(PATHS.sysid(), 'x-axis_sines_infoFourierCoef_9-11-2018-01.mat'))
+PLANT_init_x = ss(plant_data.modelFit.models.G_uz2stage);
 
-% FitNum    = 'FitNum001';
-PLANT_init_x = ltiFit(modFitPath, 'SS02').sys;
 %-------------- Define scan Params -------------------------
-
 Ts = 40e-6;
 TsTicks = 1600;
 Ki_x = 0.01;
 
 if 1
-    width = 20;  % microns
-    pix =512;  % image resolution.
-    mu_length = 2;  % 1000 nm. length of the horizontal mu-path. 
-    sub_sample_frac = 0.20;  % Percent of pixels to subsample. 
+    width =5;  % microns
+    npix =512;  % image resolution.
+    mu_length = 0.5;  % 1000 nm. length of the horizontal mu-path. 
+    sub_sample_frac = 0.12;  % Percent of pixels to subsample. 
 end
 % Unit conversions.
-pix_per_micron = pix/width;
+pix_per_micron = npix/width;
 mu_pix = ceil(mu_length*pix_per_micron);
 
 % ************************************************
@@ -62,138 +57,55 @@ mu_Nsamples = ceil(mu_volts / volts_per_sample);
 ME = MeasEntityMu.factory([volts_per_sample, 0]);
 
 N_mve = 1;
-XR = [];
-YR = [];
+
 % ************************************************
 
+[pix_mask, XR, YR] = mu_path_mask(npix, mu_pix, sub_sample_frac, width, microns2volts);
 
-pixelifsampled = zeros(pix, pix);
-% 
-% for n=1:pix % down rows
-%     m = 1;
-%    while m < pix - mu_pix  % accros columns. pix - mu_pix so that the paths
-%                            % dont hang off outside the 5-micron square. 
-%        if rand(1,1) < sub_sample_frac/mu_pix
-%           pixelifsampled(n, m:m+mu_pix) = 1;
-%           XR = [XR; ( (m - 1) / pix_per_micron) * microns2volts];
-%           YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
-%           m = m + mu_pix;
-%        else
-%            m = m+1;
-%        end
-%    end
-% end
-swtch = rand(pix,1);
-for n=1:pix % down rows
-    
-    if  swtch(n) >0.5;
-        m = 1;
-       while m < pix - mu_pix
-           if rand(1,1) < sub_sample_frac/mu_pix
-              pixelifsampled(n, m:m+mu_pix) = 1;
-              XR = [XR; ( (m - 1) / pix_per_micron) * microns2volts];
-              YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
-              m = m + mu_pix;
-           else
-               m = m+1;
-           end
-       end
-    else
-       m = pix; % reverse direction for odd ones. 
-       while m > mu_pix
-           if rand(1,1) < sub_sample_frac/mu_pix
-              pixelifsampled(n, m-mu_pix:m) = 1;
-
-              XR = [XR; ( (m - mu_pix) / pix_per_micron) * microns2volts];
-              YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
-              m = m - mu_pix;
-           else
-               m = m-1;
-           end
-       end
-    end
-
-end
-
-% for n=1:pix % down rows
-%     m = 1;
-%    while m < pix  % accros columns. pix - mu_pix so that the paths
-%                            % dont hang off outside the 5-micron square. 
-%        if rand(1,1) < sub_sample_frac/mu_pix
-%            if m < pix-mu_pix
-%               pixelifsampled(n, m:m+mu_pix) = 1;
-%               XR = [XR; ( (m - 1) / pix_per_micron) * microns2volts];
-%               YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
-%            else
-%                pixelifsampled(n, end-mu_pix:end) = 1;
-%                XR = [XR; ( (pix-mu_pix - 1) / pix_per_micron) * microns2volts];
-%                YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
-%            end
-%           m = m + mu_pix;
-%        else
-%            m = m+1;
-%        end
-%    end
-%    m
-% end
-
-actual_sub_sample_frac = length(find(pixelifsampled == 1))/pix^2;
+actual_sub_sample_frac = length(find(pix_mask == 1))/npix^2;
 
 fprintf('Desired sub sample fraction: %f\n', sub_sample_frac)
 fprintf('Actual  sub sample fraction: %f\n', actual_sub_sample_frac)
 
 
-I = ones(pix,pix)-pixelifsampled;
+I = ones(npix,npix)-pix_mask;
 I = flipud(I); % why the fuck does it start from the top???
 imshow(I)
 
 
 
 % '------------------correct by overscan for ramp ramp set ---------------
+clc, clf
+
 N = mu_Nsamples;
 x_rate = volts_per_sample;
 G = PLANT_init_x;
 D = tf([0.01, 0], [1 -1], Ts);
 H = feedback(D*G, 1);
 % N-1 because x0 is sample 1.
-x0=0;
-x_N = x0 + (N-1)*x_rate;
-
-% This will put out a zero length vector if x_rate =0.
-% x_vec = [x0:x_rate:x_N];
-
-x_vec = linspace(x0, x_N, N);
-t_vec = [0:1:N-1]'*Ts;
-y_vec = lsim(H, x_vec, t_vec);
-figure(100)
-plot(t_vec, y_vec, t_vec, x_vec)
-hold on
-plot(t_vec(end), x_vec(end), 'x')
-x_diff = x_vec(end)-y_vec(end)
-N_extra = floor(x_diff/x_rate)
-x_N = x0 + (N+N_extra-1)*x_rate;
-x_vec_extra = linspace(x0, x_N, N+N_extra);
-t_vec_extra = [0:1:N+N_extra-1]'*Ts;
-y_vec_extra = lsim(H, x_vec_extra, t_vec_extra);
-plot(t_vec_extra, y_vec_extra, t_vec_extra, x_vec_extra)
-grid 
+x_N =  (N-1)*x_rate;
+N_extra = mu_overscan(G, D, x_rate, mu_Nsamples, 1)
 
 mu_Nsamples_extra = N+N_extra;
 meta_cell = repmat({mu_Nsamples_extra}, 1, length(XR));
+%
+
+clc
+mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, Ts)
+mpt.connect_mu_paths(0.064);
+vec = mpt.as_vector();
+mpt
+
+perc = floor(actual_sub_sample_frac*100)
+fname = sprintf('cs-traj-%dpix-%dperc-%dnm-%dmic-%.2dHz.csv',npix, perc, mu_length*1000,width, raster_freq)
+%%
+
 MT = MasterTrajster(XR, YR, meta_cell, MoveEntityStatic.factory(N_mve), ME);
-
-
-
 MT.visualize_sampling;
 
 xlabel('x [v]')
 ylabel('y [v]')
 grid on
-
-
-perc = floor(actual_sub_sample_frac*100)
-
-fname = sprintf('cs-traj-%dpix-%dperc-%dnm-%dmic-%.2dHz.csv',pix, perc, mu_length*1000,width, raster_freq)
 %%
 % create meta file name
 
@@ -214,8 +126,8 @@ CsExpMetaIn.width = width;
 CsExpMetaIn.nom_perc = sub_sample_frac;
 CsExpMetaIn.mu_length = mu_length;
 CsExpMetaIn.tip_velocity = tip_velocity;
-CsExpMetaIn.npix = pix
-CsExpMetaIn.pixelifsampled = pixelifsampled;
+CsExpMetaIn.npix = npix
+CsExpMetaIn.pix_mask = pix_mask;
 CsExpMetaIn.actual_perc = perc;
 
 datafile = fullfile(data_root, fname)
