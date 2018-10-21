@@ -11,7 +11,9 @@ close all
 addpath('functions')
 
 if ispc
-dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster\'
+% dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster\'
+
+dat_root = 'Z:\afm-cs\imaging\raster';
   % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data'
   % dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
 else
@@ -23,16 +25,13 @@ dat_name = 'raster_scan_5mic_1Hz_out_9-4-2017-01-full.csv';
 dat_name = 'raster_scan_5mic_1Hz_out_9-6-2017-01-full.csv'; % Uses Dinv
 dat_name = 'raster_scan_5mic_10Hz_out_9-6-2017-06-full.csv'; %uses Dinv, Ki=.02
 dat_name = 'raster_scan_512pix_5mic_01Hz_out_10-4-2018-03.csv'; % Ki=0.01;
+dat_name = 'raster_scan_512pix_5mic_01Hz_out_10-15-2018-09.csv';
 parent_name = 'raster_scan_5mic_01Hz.csv';
-
 
 sub_dir = '5microns';
 
-
-
-
 parent_name = get_parent_name(dat_name, '_out_')
-meta_name = strrep(parent_name, '.csv', '.mat')
+meta_name = strrep(parent_name, '.csv', '-meta.mat')
 
 
 % dat_name = '';
@@ -45,7 +44,7 @@ meta_out_path = strrep(dat_path, '.csv', '-meta.mat');
 
 tic
 
-load(meta_in_path);
+% load(meta_in_path);
 load(meta_out_path);
 
 datmat = csvread(dat_path);
@@ -110,12 +109,15 @@ volts2pix = volts2microns * micron2pix;
 % pixmat2 = detrend_sampled_plane(pixmat2, pixelifsampled)
 thresh = (20/7)*(1/1000)*20;
 pixmat2 = pixmat2 - mean(pixmat2(:));
-% pixmat2 = max(pixmat2, -thresh);
-% pixmat2 = min(pixmat2, thresh);
-F10 = figure(5);
+F10 = figure(5); clf
+ax1 = gca();
+f11 = figure(6); clf
+ax2 = gca();
 lo = min(min(pixmat2));
 hi = max(max(pixmat2));
-imshow(pixmat2, [-thresh, thresh])
+imshow_dataview(pixmat2, [-thresh, thresh], ax1, ax2)
+
+%%
 axis('on')
 
 Kiz = Cluster.raster_scan_params.PI_params.Ki;
