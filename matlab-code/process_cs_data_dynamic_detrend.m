@@ -91,11 +91,11 @@ if bp
 
     title('BP reconstruction');
 end
-%
+
 clc
 s = metadata2text(cs_exp.meta_exp, Ts)
 s = sprintf('%s\nperc=%.3f', s, sum(sum(pixelifsampled))/cs_exp.npix/cs_exp.npix);
-s2 = sprintf('%s', cs_exp_data_name)
+s2 = sprintf('%s', cs_paths.data_path)
 disp(s)
 subplot(2,3,[4,5,6])
 ax4 = gca();
