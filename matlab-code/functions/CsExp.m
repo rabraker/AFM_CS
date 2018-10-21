@@ -10,7 +10,9 @@ classdef CsExp < handle
     npix;
     width;
     channel_map;
-    Img;
+    Img_raw;
+    Img_smp1d;
+    Img_bp;
     pix_mask;
     Gz;
     meta_exp;
@@ -56,7 +58,9 @@ classdef CsExp < handle
       % Get indices for each state.
       self.idx_state_s = CsExp.divide_by_state(self.met_ind)
       
-      self.Img = zeros(self.npix, self.npix);
+      self.Img_raw = zeros(self.npix, self.npix);
+      self.Img_smp1d = zeros(self.npix, self.npix);
+      self.Img_bp = zeros(self.npix, self.npix);
       self.pix_mask = zeros(self.npix, self.npix);
       self.Gz = zpk([], [], 1, self.Ts);
       
@@ -160,7 +164,7 @@ classdef CsExp < handle
           continue
         end
         [y_idx, x_idx, U_k] = self.mu_data2pix(X_raw, Y_raw, U_scan);
-        self.Img(y_idx, x_idx) = U_k;
+        self.Img_raw(y_idx, x_idx) = U_k;
         self.pix_mask(y_idx, x_idx) = 1;
         
         if verbose
@@ -239,6 +243,42 @@ classdef CsExp < handle
       U_k = U_k - max(U_k);
       
     end % bin_data_into_pix
+    
+    function solve_smp1d(self)
+      [n,m] = size(self.Img_raw);
+
+      tic
+      samp_frac = sum(sum(self.pix_mask))/(n*m);
+      reduce_frac = 0.1;  %It's my understanding Yufan says 1/10 of sub-sample fraction.
+      maxiter = round(samp_frac*reduce_frac*n*m);
+      fprintf('sample fraction: %.2f     max-iter: %d\n', samp_frac, maxiter);
+      self.Img_smp1d = SMP_1D(self.Img_raw, self.pix_mask, maxiter);
+      time_smp = toc;      
+      fprintf('Total smp-1d solution time: %.1f\n', time_smp);
+    end
+    
+    function solve_basis_pursuit(self)
+      [n m] = size(self.Img_raw);
+      tic
+      I_vector = PixelMatrixToVector(self.Img_raw);
+
+      pix_mask_vec = PixelMatrixToVector(self.pix_mask);
+      I_vector = I_vector(find(pix_mask_vec>0.5));
+
+      A = @(x) IDCTfun(x,pix_mask_vec);
+      At = @(x) DCTfun(x,pix_mask_vec);
+
+      Ir_bp = idct(l1qc_logbarrier(At(I_vector), A, At, I_vector, 0.1));
+      Ir_bp = real(Ir_bp);
+      self.Img_bp = PixelVectorToMatrix(Ir_bp,[n m]);
+      time_bp = toc;
+      fprintf('BP Time: %f\n', time_bp);
+
+      self.Img_bp = detrend_plane(self.Img_bp);
+      
+      
+    end
+    
     
   end
   
