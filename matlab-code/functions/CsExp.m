@@ -13,34 +13,83 @@ classdef CsExp < handle
     Img;
     pix_mask;
     Gz;
+    meta_exp;
+    meta_in;
+    state_times;
+    time_total;
+    feature_height
   end
   
   methods
-    function self = CsExp(dat_meas, channel_map, npix, width, Ts)
+    function self = CsExp(cs_paths, channel_map, Ts, feature_height_nm)
+    % Obtain cs_paths (which is a struct) from, e.g.,
+    % cs_exp_paths(data_root, data_name)
+      
       if ~isa(channel_map, 'ChannelMap')
         error(['channel_map must be of class ChannelMap, but is a ' ...
                '%s'], class(channel_map));
       end
-      self.channel_map = channel_map;          
+      
+      dat_meas = csvread(cs_paths.data_path);
+      tmp = load(cs_paths.meta_path);  % Provides ExpMetaData
+      self.meta_exp = tmp.ExpMetaData;
+      tmp = load(cs_paths.meta_in_path); % Provides CsExpMetaIn
+      self.meta_in = tmp.CsExpMetaIn;
+
+      self.Ts = Ts;
+      self.feature_height = AFM.nm2volts_z*feature_height_nm;
+      self.npix = self.meta_in.npix;
+      self.width = self.meta_in.width;
+      
+      self.channel_map = channel_map;
       self.x = dat_meas(:, channel_map.x);
       self.x = self.x - min(self.x); % move to positive orthant.
-      
       self.y = dat_meas(:, channel_map.y);
       self.y = self.y - min(self.y); % move to positive orthant.
       
       self.uz = dat_meas(:, channel_map.uz);
       self.ze = dat_meas(:, channel_map.ze);
       self.met_ind = dat_meas(:, channel_map.met);
+      % convert the meta cs-measurment index to -4.
       self.met_ind(self.met_ind > 0) = -4;
-      self.Ts = Ts;
-      self.npix = npix;
-      self.width = width;
+      
+      % Get indices for each state.
       self.idx_state_s = CsExp.divide_by_state(self.met_ind)
       
-      self.Img = zeros(npix,npix);
-      self.pix_mask = zeros(npix, npix);
-      self.Gz = zpk([], [], 1, Ts);
+      self.Img = zeros(self.npix, self.npix);
+      self.pix_mask = zeros(self.npix, self.npix);
+      self.Gz = zpk([], [], 1, self.Ts);
+      
+      state_ticks = self.meta_exp.state_counts;
+      self.state_times = state_ticks*self.Ts;
+      self.time_total = sum(self.state_times);
     end
+
+    % function self = CsExp(dat_meas, channel_map, npix, width, Ts)
+    %   if ~isa(channel_map, 'ChannelMap')
+    %     error(['channel_map must be of class ChannelMap, but is a ' ...
+    %            '%s'], class(channel_map));
+    %   end
+    %   self.channel_map = channel_map;          
+    %   self.x = dat_meas(:, channel_map.x);
+    %   self.x = self.x - min(self.x); % move to positive orthant.
+      
+    %   self.y = dat_meas(:, channel_map.y);
+    %   self.y = self.y - min(self.y); % move to positive orthant.
+      
+    %   self.uz = dat_meas(:, channel_map.uz);
+    %   self.ze = dat_meas(:, channel_map.ze);
+    %   self.met_ind = dat_meas(:, channel_map.met);
+    %   self.met_ind(self.met_ind > 0) = -4;
+    %   self.Ts = Ts;
+    %   self.npix = npix;
+    %   self.width = width;
+    %   self.idx_state_s = CsExp.divide_by_state(self.met_ind)
+      
+    %   self.Img = zeros(npix,npix);
+    %   self.pix_mask = zeros(npix, npix);
+    %   self.Gz = zpk([], [], 1, Ts);
+    % end
 
     function [x_k, y_k, uz_k, ze_k] = get_settle_k(self, k)
       idx_k = self.idx_state_s.tsettle{k};
@@ -85,15 +134,19 @@ classdef CsExp < handle
         
     end
     
-    function [pix_mask] = process_cs_data(self, verbose, hole_depth)
+    function [pix_mask] = process_cs_data(self, verbose, figs)
       % bin all the data into pixels. 
       tend_last = 0;
       microns_per_volt = AFM.volts2mic_xy; 
       pix_per_volt = (self.npix/self.width)*microns_per_volt;
       if verbose
-        figure(1000); clf; hold on, grid on;
-        figure(2000); clf; hold on, grid on;
-        figure(3000); clf; hold on, grid on;
+        if ~exist('figs', 'var')
+          error('verbose=true but did not recieve figs')
+        end
+        
+        [Fig1, ax1] = parse_fig_ax(figs{1});
+        [Fig2, ax2] = parse_fig_ax(figs{2});
+        [Fig3, ax3] = parse_fig_ax(figs{3});
       end
       for k = 1:length(self.idx_state_s.scan)
         % Get the data for the current mu-path.
@@ -106,42 +159,47 @@ classdef CsExp < handle
         if max(U_scan) - min(U_scan) > 0.4 % throw out rediculous data.
           continue
         end
-        if verbose
-          t_k = (0:length(U_z)-1)'*self.Ts;
-          idx = length(U_z) - length(U_scan);
-          figure(1000); 
-          plot(t_k(1:idx)+tend_last, U_orig(1:idx)-U_orig(end), 'k') 
-          plot(t_k(idx:end)+tend_last, U_orig(idx:end)-U_orig(end), 'r')
-          
-          plot(t_k(1:idx)+tend_last, U_z(1:idx)-U_z(end), '--b') 
-          plot(t_k(idx:end)+tend_last, U_z(idx:end)-U_z(end), '--g')
-          tend_last = t_k(end) + tend_last;
-          U_ = U_orig(idx:end);
-          t_ = (0:length(U_)-1)'*self.Ts;
-          figure(2000); 
-          plot(t_, U_ - max(U_), 'k')
-          %keyboard
-          plot(t_, U_z(idx:end) - max(U_z(idx:end)), 'r')
-        end
-
         [y_idx, x_idx, U_k] = self.mu_data2pix(X_raw, Y_raw, U_scan);
         self.Img(y_idx, x_idx) = U_k;
         self.pix_mask(y_idx, x_idx) = 1;
-
+        
         if verbose
+          t_k = (0:length(U_z)-1)'*self.Ts;
+          idx = length(U_z) - length(U_scan);
+          % figure(Fig1); 
+          plot(ax1, t_k(1:idx)+tend_last, U_orig(1:idx)-U_orig(end), '--g');
+          h_f1_uog = plot(ax1, t_k(idx:end)+tend_last, U_orig(idx:end)-U_orig(end), 'k');
+          
+          plot(ax1, t_k(1:idx)+tend_last, U_z(1:idx)-U_z(end), '--b');
+          h_f1_uz = plot(ax1, t_k(idx:end)+tend_last, U_z(idx:end)-U_z(end), 'r');
+          tend_last = t_k(end) + tend_last;
+          U_ = U_orig(idx:end);
+          t_ = (0:length(U_)-1)'*self.Ts;
+          % figure(Fig2); 
+          h_f2_uog = plot(ax2, t_, U_ - max(U_), 'k');
+          h_f2_uz = plot(ax2, t_, U_z(idx:end) - max(U_z(idx:end)), 'r');
+
           % -------------------
           % ---- visualize ------
-          if abs(max(U_k) - min(U_k))> hole_depth*.5
+          if abs(max(U_k) - min(U_k))> self.feature_height
             % Then we have an edge. 
             cs = 'r';
           else
             cs = 'b';
           end
-          figure(3000);
-          plot(gca(), U_k, 'color', cs)
+          plot(ax3, U_k, 'color', cs)
         end
-        
+        drawnow();
       end % main loop
+      if verbose % draw legends
+         h_f1_uog.DisplayName = 'original';
+         h_f1_uz.DisplayName = 'Dynamic Detrend';
+         h_f2_uog.DisplayName = 'original';
+         h_f2_uz.DisplayName = 'Dynamic Detrend';
+         legend(ax1, [h_f1_uog, h_f1_uz])
+         legend(ax2, [h_f2_uog, h_f2_uz])
+      end
+      
     end % process_cs_data()
 
     function [y_idx, x_idx, U_k] = mu_data2pix(self, X_raw, Y_raw, U_ks)
