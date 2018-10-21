@@ -10,12 +10,13 @@ microns_per_volt = 50/10;
 pix_per_volt = (pix/width)*microns_per_volt;
 Ts = 40e-6;
 
-<<<<<<< HEAD
+%<<<<<<< HEAD
 
-=======
+%=======
 addpath('functions')
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
-data_root = fullfile(getdataroot(), 'cs-data');
+%>>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
+% data_root = fullfile(getdataroot(), 'cs-data');
+data_root = '/media/labserver/acc2018-data/cs-data/';
 % ---------------------------------------------------
 
 % % cs_exp_data_name = 'cs-traj10-500_out_8-25-2017-06.csv'; % k = 270202, original version
