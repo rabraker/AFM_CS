@@ -56,7 +56,7 @@ classdef CsExp < handle
       self.met_ind(self.met_ind > 0) = -4;
       
       % Get indices for each state.
-      self.idx_state_s = CsExp.divide_by_state(self.met_ind)
+      self.idx_state_s = CsExp.divide_by_state(self.met_ind);
       
       self.Img_raw = zeros(self.npix, self.npix);
       self.Img_smp1d = zeros(self.npix, self.npix);

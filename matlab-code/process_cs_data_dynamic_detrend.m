@@ -13,7 +13,7 @@ Ts = 40e-6;
 
 
 % cs_exp_data_name_s{1} = 'cs-traj-z-bounce_out_10-17-2018-03.csv';
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-22-2018-04.csv';
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-22-2018-06.csv';
 sub_dir = '5microns/10-21-2018';
 data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', sub_dir);
 chan_map = ChannelMap([1:5]);
@@ -24,31 +24,28 @@ chan_map = ChannelMap([1:5]);
 
 cs_paths = cs_exp_paths(data_root, cs_exp_data_name_s{1});
 
-clear CsExp
 hole_depth = (20);
 
-
 cs_exp = CsExp(cs_paths, chan_map, Ts, hole_depth);
-cs_exp.idx_state_s;
 
 fprintf('Total Imaging time: %.2f\n', cs_exp.time_total)
 figbase = 100;
 
 
-Dz = zpk([0], [1], cs_exp.meta_exp.Ki, Ts);
-
-models = load('G_zdir.mat');
-G2 = models.G2;
-LPF = G2*G2*G2*G2;
-
-G1 = zpk(models.G1*models.G2);
-models = load(fullfile(PATHS.sysid, 'x-axis_sines_infoFourierCoef_10-21-2018-03.mat'));
-G1 = -models.modelFit.G_zdir;
-H2 = 1 + G1*Dz;
-H1 = minreal(H2/Dz);
-cs_exp.Gz; %= -H1;
-
-cs_exp.Gz = zpk([], [], 1, Ts);
+% Dz = zpk([0], [1], cs_exp.meta_exp.Ki, Ts);
+% 
+% models = load('G_zdir.mat');
+% G2 = models.G2;
+% LPF = G2*G2*G2*G2;
+% 
+% G1 = zpk(models.G1*models.G2);
+% models = load(fullfile(PATHS.sysid, 'x-axis_sines_infoFourierCoef_10-21-2018-03.mat'));
+% G1 = -models.modelFit.G_zdir;
+% H2 = 1 + G1*Dz;
+% H1 = minreal(H2/Dz);
+% cs_exp.Gz; %= -H1;
+% 
+% cs_exp.Gz = zpk([], [], 1, Ts);
 verbose = false;
 if verbose
   figs{1}= figure(1000); clf; hold on, grid on;
