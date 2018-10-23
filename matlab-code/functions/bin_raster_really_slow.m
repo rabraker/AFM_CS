@@ -1,5 +1,5 @@
 
-function [ pixmat, pixelifsampled, m_s] = bin_raster_really_slow(xyu_dat, nperiods, samps_per_period, volt2pix)
+function [ pixmat, pixelifsampled, m_s] = bin_raster_really_slow(xyu_dat, nperiods, samps_per_period, volt2pix, Hz)
 if size(xyu_dat, 1) ~= nperiods*samps_per_period
    s = sprintf('Expected length(xyu_dat) == nperiods*samps_per_period')
    s = sprintf('%s \n but have length(xyu_dat)=%d, nperiods*samps_per_period = %d',...
@@ -40,9 +40,21 @@ for j_row = 0:ypix-1
     
     % detrend each row
 %     keyboard
+if exist('Hz', 'var')
+  t = (0:length(U_dat_j)-1)'*Hz.Ts;
+  U_dat_j = lsim(Hz, detrend(U_dat_j'), t);
+  %filtfilt(Hz.num{1}, Hz.den{1}, detrend(U_dat_j'));
+%   figure(100); hold on;
+%   plot(detrend(U_dat_j'))
+%   plot(U_, '--');
+%   keyboard
+else
     [U_dat_j, mb] = detrend(U_dat_j');
+%     U_dat_j = fft_notch(U_dat_j(:), 40e-6, 210, 216);
+%     U_dat_j = fft_notch(U_dat_j(:), 40e-6, 28, 31);
+end
     U_dat_j = U_dat_j';
-    m_s(j_row+1) = mb(1);
+%     m_s(j_row+1) = mb(1);
     for i_col = 0:xpix-1
         ind_x = find(x_dat_j >= i_col & x_dat_j < i_col+1);
         

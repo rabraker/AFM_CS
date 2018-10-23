@@ -135,7 +135,21 @@ classdef CsExp < handle
         U_z = lsim(self.Gz, U_orig(:)-U_orig(1), t_k);
         
         U_scan = U_z(scan_start_idx:end);
-        
+    end
+    function [U_scan, U_z, U_orig] = dynamic_detrend_ze(self, idx)
+        [~, ~, U_scan] = self.get_scan_k(idx);
+        [~, ~, U_down] = self.get_down_k(idx);
+        [~, ~, U_settle] = self.get_settle_k(idx);
+        U_orig = [U_down(:); U_settle(:); U_scan(:)];
+        U_orig = [U_scan(:)];
+%         scan_start_idx = length(U_down) + length(U_settle) + 1;
+        scan_start_idx = 1;
+        t_k = (0:length(U_orig)-1)'*self.Ts;
+        % U_z = lsim(self.Gz, U_orig(:)-U_orig(1), t_k);
+        U_z = fft_notch(U_orig(:), 40e-6, 211, 215);
+        %U_z = fft_notch(U_z(:), 40e-6, 28, 31);
+        %U_z = U_orig;    
+        U_scan = U_z(scan_start_idx:end);
     end
     
     function [pix_mask] = process_cs_data(self, verbose, figs)
@@ -152,6 +166,7 @@ classdef CsExp < handle
         [Fig2, ax2] = parse_fig_ax(figs{2});
         [Fig3, ax3] = parse_fig_ax(figs{3});
       end
+      
       for k = 1:length(self.idx_state_s.scan)
         % Get the data for the current mu-path.
         [X_raw, Y_raw] = self.get_scan_k(k);
@@ -161,7 +176,8 @@ classdef CsExp < handle
         [U_scan, U_z, U_orig] = self.dynamic_detrend(k);
      
         if max(U_scan) - min(U_scan) > 0.4 % throw out rediculous data.
-          continue
+          %fprintf('skipping\n')
+%           continue
         end
         [y_idx, x_idx, U_k] = self.mu_data2pix(X_raw, Y_raw, U_scan);
         self.Img_raw(y_idx, x_idx) = U_k;
@@ -195,6 +211,7 @@ classdef CsExp < handle
         end
         drawnow();
       end % main loop
+      
       if verbose % draw legends
          h_f1_uog.DisplayName = 'original';
          h_f1_uz.DisplayName = 'Dynamic Detrend';

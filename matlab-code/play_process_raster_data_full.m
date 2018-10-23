@@ -17,13 +17,10 @@ dat_root = 'Z:\afm-cs\imaging\raster';
   % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data'
   % dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
 else
-  dat_root = '/home/arnold/gradschool/afm-cs/afm_imaging/data';
+  % dat_root = '/home/arnold/gradschool/afm-cs/afm_imaging/data';
+  dat_root = fullfile(PATHS.exp, 'imaging', 'raster')
 end
-% datmat = csvread(fullfile(data_root, 'raster_8-1-2017_v3.csv'));
 
-dat_name = 'raster_scan_5mic_1Hz_out_9-4-2017-01-full.csv';
-dat_name = 'raster_scan_5mic_1Hz_out_9-6-2017-01-full.csv'; % Uses Dinv
-dat_name = 'raster_scan_5mic_10Hz_out_9-6-2017-06-full.csv'; %uses Dinv, Ki=.02
 dat_name = 'raster_scan_512pix_5mic_01Hz_out_10-4-2018-03.csv'; % Ki=0.01;
 dat_name = 'raster_scan_512pix_5mic_01Hz_out_10-15-2018-09.csv';
 parent_name = 'raster_scan_5mic_01Hz.csv';
@@ -94,14 +91,67 @@ if 1
 end
 %  Now try by actually using the x-y measured data;
 %%
-clc
 
+models = load('G_zdir.mat');
+% 
+LPF = models.G2*models.G2*models.G2*models.G2;
+% Dz = zpk([0], [1], 0.05, Ts);
+% G1 = zpk(models.G1*models.G2)
+% Hz = G1
+% clc
+
+% bsFilt = designfilt('bandstopfir','FilterOrder',20, ...
+%          'CutoffFrequency1',2000,'CutoffFrequency2',2200, ...
+%          'SampleRate',25e3);
+% fvtool(bsFilt);
+clf
+[z, p, k] = zpkdata(models.G1);
+g = zpk(p, [.95, .945], 1, Ts);
+gg = tf(g)/dcgain(g)
+bode(gg)
+%%
+clf
+% % % w = 214*2*pi;
+% % % z = 0.001;
+% % % gct = tf(w^2, [1, 2*z*w, w^2])
+% % % g_z = c2d(gct, Ts, 'matched');
+% % % [z, p] = zpkdata(g_z, 'v')
+% % % gg2 = zpk(p, [.992, .993], 1, Ts)
+% % % gg2 = gg2/dcgain(gg2)
+% % w = 214*2*pi;
+% % z = 0.0001;
+% % gct = tf(w^2, [1, 2*z*w, w^2])
+% % g_z = c2d(gct, Ts, 'matched');
+% % [z, p] = zpkdata(g_z, 'v')
+% % gg2 = zpk(p, [.95, .945], 1, Ts)
+% % gg2 = gg2/dcgain(gg2)
+% % 
+% % bode(gg2)
+% % grid
+% % 
+% % G = gg2; %*gg
+models = load(fullfile(PATHS.sysid, 'x-axis_sines_infoFourierCoef_10-21-2018-03.mat'))
+G = -models.modelFit.G_zdir;
+bode(G), grid on
+
+D = zpk([0], [1], 0.05, Ts);
+H = minreal(ss((1+G*D)/D)*LPF);
+figure(5)
+step(H)
+
+figure
+bode(H)
+% hold on
+% plot(t, yy, '--')
+%%
+clc
 width = 5;
 % volts2micron = 50/10;
 micron2pix = pix/width;
 volts2pix = volts2microns * micron2pix;
 
 
+% [pixmat2, pixelifsampled] = bin_raster_really_slow(datmat(:,[1,2,4]), pix, samps_per_period, volts2pix, (H));
 [pixmat2, pixelifsampled] = bin_raster_really_slow(datmat(:,[1,2,4]), pix, samps_per_period, volts2pix);
 
 % pixmat2=pixmat2(:,1:end);
@@ -109,9 +159,9 @@ volts2pix = volts2microns * micron2pix;
 % pixmat2 = detrend_sampled_plane(pixmat2, pixelifsampled)
 thresh = (20/7)*(1/1000)*20;
 pixmat2 = pixmat2 - mean(pixmat2(:));
-F10 = figure(5); clf
+F10 = figure(5+0); clf
 ax1 = gca();
-f11 = figure(6); clf
+f11 = figure(6+0); clf
 ax2 = gca();
 lo = min(min(pixmat2));
 hi = max(max(pixmat2));
