@@ -4,7 +4,7 @@ clear
 if ispc
     dataroot = 'C:\Users\arnold\Documents\labview\afm_imaging\data\sys_id';
 else
-    dataroot = '/home/arnold/gradschool/afm-cs/afm_imaging/data/sys_id';
+    dataroot = '/home/arnold/gradschool/publications/afm-cs/afm_imaging/data/sys_id';
 end
 % load('C:\Users\arnold\Documents\MATLAB\AFM_SS\System_Identification\data\data_ZAxis\z-axis_sines_in_329_out_9-6-2017-01.mat');
 load(fullfile(dataroot, 'z-axis_sines_in_long_out_9-8-2017-01.mat'));
@@ -29,7 +29,7 @@ P_frf_nodelay = P_frf.*Del_frf;
 
 % Plot it.
 F1 = figure(1+10); clf
-frfBode(P_frf, freq_s, F1, 'r', 'Hz')
+frfBode(P_frf, freq_s, F1, 'Hz', 'r')
 
 
 
@@ -40,7 +40,7 @@ freq_fit = freq_s(k1:k2);
 p_frd = frd(P_fit, freq_fit*2*pi, Ts);
 
 F2 = figure(2+10); clf
-frfBode(P_fit, freq_fit, F2, 'r', 'Hz')
+frfBode(P_fit, freq_fit, F2,  'Hz', 'r')
 
 
 % Make a transfer function for the initial guess.
@@ -59,7 +59,7 @@ theta = fminsearch(logcost_, theta0, opts);
 G1 = tf(theta(1:3), [1, theta(4:5)], Ts);
 
 % frfBode(D, freq_fit, F2, '--k', 'Hz');
-frfBode(G1, freq_fit, F2, '--g', 'Hz');
+frfBode(G1, freq_fit, F2, 'Hz', '--g');
 
 %%
 
@@ -73,18 +73,14 @@ G = 2.5*zpk(G1*G2*G2*G2*G2);
 G_frf = squeeze(freqresp(G, w_s));
 
 % frfBode(G_frf,  freq_s, F1, 'k', 'Hz');
-<<<<<<< HEAD
 % The I controller.
-=======
-% The I controller. 
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
 K = 1000
 Ki = .01;
 
 Di = -tf(Ki*[1 0], [1 -1], Ts)
 D_inv = tf(zpk((1/G1)*dcgain(G1))); %make it have unity dc gain.
 G1_frf =squeeze(freqresp(G1, w_s));
-frfBode(G1_frf, freq_s, F1, 'k', 'Hz');
+frfBode(G1_frf, freq_s, F1, 'Hz', 'k');
 subplot(2,1,2)
 xlm = xlim;
 plot(xlm, [-180, -180], 'k')
@@ -93,10 +89,10 @@ D = D_inv*Di;
 Dfrf =squeeze(freqresp(D, w_s));
 % and plot
 F2 = figure(2+20); clf
-frfBode(P_frf.*Dfrf, freq_s, F2, 'k', 'Hz');
+frfBode(P_frf.*Dfrf, freq_s, F2,  'Hz', 'k');
 % frfBode(P_frf.*Dfrf*.1, freq_s, F1, '--k', 'Hz');
 % frfBode(P_frf.*Dfrf*.5, freq_s, F1, '--m', 'Hz');
-frfBode(P_frf.*Dfrf./(1+P_frf.*Dfrf), freq_s, F2, 'r', 'Hz');
+frfBode(P_frf.*Dfrf./(1+P_frf.*Dfrf), freq_s, F2, 'Hz', 'r');
 format long
 D_inv.Numerator{1}
 D_inv.Denominator{1}
@@ -122,8 +118,4 @@ plot(t, u)
 
 y = lsim(D_inv, u, t);
 plot(t, y)
-<<<<<<< HEAD
-=======
 
-
->>>>>>> a7af7a1f535a2ec39beb6a80c571215473c615e9
