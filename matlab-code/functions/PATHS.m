@@ -19,18 +19,30 @@ classdef PATHS
           % Path to simulation data folder.
           PATH = fullfile(PATHS.MPCJ_root(), 'data');
         end
-        function [ PATH ] = MPCJ_root()
+        function [ PATH ] = CS_root()
+            % PATH constant to where all experimental data is stored for the 
+            % MPC journal paper.
+            if ~ispc()
+              PATH = fullfile(getMatPath, 'afm-cs');
+            else
+              PATH = 'C:\Users\arnold\Documents\afm-cs';
+            end
+        end
+        
+        function [ PATH ] = labview()
             % PATH constant to where all experimental data is stored for the 
             % MPC journal paper.
 
-            PATH = fullfile(getMatPath, 'afm-cs');
+            PATH = fullfile(PATHS.CS_root, 'labview');
         end
-%         function [ PATH ] = labview()
-%             % PATH constant to where all experimental data is stored for the 
-%             % MPC journal paper.
-% 
-%             PATH = fullfile(PATHS.MPCJ_root, 'labview');
-%         end
+        
+        function path = reconstruction_BP()
+          path = fullfile(PATHS.CS_root, 'reconstruction', 'BP');
+        end
+        function path = reconstruction_SMP1D()
+          path = fullfile(PATHS.CS_root, 'reconstruction', 'SMP_1D');
+        end
+        
 %         function [ PATH ] = sim_models()
 %             % PATH constant to where all experimental data is stored for the
 %             % MPC journal paper.
