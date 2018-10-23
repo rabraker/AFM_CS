@@ -74,10 +74,6 @@ end
     Ir = idct2(J_recover);
     Ir = PixelVectorToMatrix(Ir, [n n]);
 
-    figure(1);
-    imshow(Ir,[-0.05 0]);
-
-
 end
 
 
