@@ -28,13 +28,13 @@ PLANT_init_x = ltiFit(modFitPath, 'SS02').sys;
 
 Ts = 40e-6;
 TsTicks = 1600;
-Ki_x = 0.01;
+Ki_x = 0.005;
 
 if 1
-    width = 20;  % microns
+    width = 5;  % microns
     pix =512;  % image resolution.
-    mu_length = 2;  % 1000 nm. length of the horizontal mu-path. 
-    sub_sample_frac = 0.20;  % Percent of pixels to subsample. 
+    mu_length = 1;  % 1000 nm. length of the horizontal mu-path. 
+    sub_sample_frac = 0.14;  % Percent of pixels to subsample. 
 end
 % Unit conversions.
 pix_per_micron = pix/width;
@@ -198,7 +198,7 @@ fname = sprintf('cs-traj-%dpix-%dperc-%dnm-%dmic-%.2dHz.csv',pix, perc, mu_lengt
 % create meta file name
 
 target_dir = sprintf('%dmicrons/parents', width)
-data_root = fullfile(getdataroot, 'cs-data', target_dir)
+data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', target_dir)
 if exist(data_root, 'file') ~=2
     mkdir(fullfile(getdataroot, 'cs-data'), target_dir)
 end
@@ -219,7 +219,7 @@ CsExpMetaIn.pixelifsampled = pixelifsampled;
 CsExpMetaIn.actual_perc = perc;
 
 datafile = fullfile(data_root, fname)
-
+%%
 if 1
     MT.write_csv(datafile)
     save(meta_data_path, 'CsExpMetaIn')

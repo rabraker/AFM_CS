@@ -25,33 +25,109 @@ K = F_newtons / L;
 wo = sqrt( K / M)
 fo = wo/2/pi
 %%
-
+clc
 % dat1 = csvread('/media/labserver/afm-cs/z-scope/data-out_KI_p00_nobungee_10-26-2018.csv');
-dat1 = csvread('/media/labserver/afm-cs/z-scope/data-out_KI_p00.csv');
-dat2 = csvread('/media/labserver/afm-cs/z-scope/data-out_KI_p00_withbungee04_10-26-2018.csv');
+root = fullfile(PATHS.exp, 'z-scope')
+dat1 = csvread(fullfile(root, 'data-out_KI_p00_nobungee_10-30-2018.csv'));
+dat2 = csvread(fullfile(root, 'data-out_KI_p00_withbungee_10-30-2018.csv'));
+dat3 = csvread(fullfile(root, 'data-out_KI_p00_withbungee_xyon_disconnected_10-30-2018.csv'));
+dat4 = csvread(fullfile(root, 'data-out_KI_p00_nobungee_xyon_connected_10-30-2018.csv'));
 
-ze1 = detrend(dat1(:,1));
-N = length(ze1);
-ze2 = detrend(dat2(end-N:end,1));
-length(ze2)
+dat1 = dat1(4000:end,:);
+dat2 = dat2(4000:end,:);
+dat3 = dat3(4000:end,:);
+dat4 = dat4(4000:end,:);
 
-% N = min(length(ze1), length(ze2));
+N1 = size(dat1,1);
+N2 = size(dat2,1);
+N3 = size(dat3,1);
+N4 = size(dat4,1);
+
+N = min([N1, N2, N3, N4]);
+
+ze1 = detrend(dat1(end-N+1:end,1));
+ze2 = detrend(dat2(end-N+1:end,1));
+ze3 = detrend(dat3(end-N+1:end,1));
+ze4 = detrend(dat4(end-N+1:end,1));
+
+
 
 figure(8); clf
 
-plot(ze1(1:N))
+h1 = plot(ze1);
+h1.DisplayName = 'no-bungee, xy-off';
 hold on;
-plot(ze2(1:N))
+h2 = plot(ze2);
+h2.DisplayName = 'with bungee, xy-off';
+h3 = plot(ze3);
+h3.DisplayName = 'with bungee, xy-on, discon';
+h4 = plot(ze4);
+h4.DisplayName = 'no bungee, xy-on, con';
+
+legend([h1, h2, h3, h4])
+
+[Z1, freqs] = power_spectrum(ze1, Ts);
+[Z2, freqs] = power_spectrum(ze2, Ts);
+[Z3, freqs] = power_spectrum(ze3, Ts);
+[Z4, freqs] = power_spectrum(ze4, Ts);
+
+figure(9); clf
+semilogx(freqs, Z1);
+hold on
+semilogx(freqs, Z2)
+semilogx(freqs, Z3)
+% semilogx(freqs, Z4)
+
+legend([h1, h2, h3])
+
+%%
+clc
+% dat1 = csvread('/media/labserver/afm-cs/z-scope/data-out_KI_p00_nobungee_10-26-2018.csv');
+root = fullfile(PATHS.exp, 'z-scope')
+dat1 = csvread(fullfile(root, 'data-out_KI_p00_xyon_nondisconnected.csv'));
+dat2 = csvread(fullfile(root, 'data-out_KI_p00_xon_ydisconnected.csv'));
+dat3 = csvread(fullfile(root, 'data-out_KI_p00_yon_xdisconnected.csv'));
+% dat2 = csvread(fullfile(root, 'data-out_KI_p00_xyon_disconnected.csv'));
+
+dat1 = dat1(4000:end,:);
+dat2 = dat2(4000:end,:);
+dat3 = dat3(4000:end,:);
+
+N1 = size(dat1,1);
+N2 = size(dat2,1);
+N3 = size(dat3,1);
+
+
+ze1 = detrend(dat1(:,1));
+ze2 = detrend(dat2(:,1));
+ze3 = detrend(dat3(:,1));
+
+% N = length(dat1(:,1));
+N = min([N1, N2, N3]);
+
+figure(8); clf
+
+h1 = plot(ze1(1:N));
+h1.DisplayName = 'all connected';
+hold on;
+h2 = plot(ze2(1:N));
+h2.DisplayName = 'xon, ydisconnected';
+h3 = plot(ze3(1:N));
+h3.DisplayName = 'yon, x-disconnected';
 
 [Z1, freqs] = power_spectrum(ze1(1:N), Ts);
 [Z2, freqs] = power_spectrum(ze2(1:N), Ts);
-
+[Z3, freqs] = power_spectrum(ze3(1:N), Ts);
+%%
 
 figure(9); clf
 
 semilogx(freqs, Z1);
 hold on
 semilogx(freqs, Z2)
+semilogx(freqs, Z3)
+
+legend([h1, h2, h3])
 
 
 
