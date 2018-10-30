@@ -29,7 +29,7 @@
 
 
 function [ hp ] = plotbyindex(ax, t, x, ind_vec, indc)
-
+  hold(ax, 'on')
     hp = []; % For the plot handles. 
 
     ind_cur = 1; 
