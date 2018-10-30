@@ -4,6 +4,7 @@ classdef CsExp < handle
     y;
     uz;  
     ze;
+    t;
     Ts;
     met_ind;
     idx_state_s;
@@ -23,7 +24,7 @@ classdef CsExp < handle
   end
   
   methods
-    function self = CsExp(cs_paths, channel_map, Ts, feature_height_nm)
+    function self = CsExp(cs_paths, channel_map, Ts, feature_height_nm, gg)
     % Obtain cs_paths (which is a struct) from, e.g.,
     % cs_exp_paths(data_root, data_name)
       
@@ -49,7 +50,8 @@ classdef CsExp < handle
       self.y = dat_meas(:, channel_map.y);
       self.y = self.y - min(self.y); % move to positive orthant.
       
-      self.uz = dat_meas(:, channel_map.uz);
+      self.t = (0:length(self.x)-1)'*gg.Ts;
+      self.uz = lsim(gg, dat_meas(:, channel_map.uz), self.t);
       self.ze = dat_meas(:, channel_map.ze);
       self.met_ind = dat_meas(:, channel_map.met);
       % convert the meta cs-measurment index to -4.
@@ -69,32 +71,20 @@ classdef CsExp < handle
       self.time_total = sum(self.state_times);
     end
 
-    % function self = CsExp(dat_meas, channel_map, npix, width, Ts)
-    %   if ~isa(channel_map, 'ChannelMap')
-    %     error(['channel_map must be of class ChannelMap, but is a ' ...
-    %            '%s'], class(channel_map));
-    %   end
-    %   self.channel_map = channel_map;          
-    %   self.x = dat_meas(:, channel_map.x);
-    %   self.x = self.x - min(self.x); % move to positive orthant.
-      
-    %   self.y = dat_meas(:, channel_map.y);
-    %   self.y = self.y - min(self.y); % move to positive orthant.
-      
-    %   self.uz = dat_meas(:, channel_map.uz);
-    %   self.ze = dat_meas(:, channel_map.ze);
-    %   self.met_ind = dat_meas(:, channel_map.met);
-    %   self.met_ind(self.met_ind > 0) = -4;
-    %   self.Ts = Ts;
-    %   self.npix = npix;
-    %   self.width = width;
-    %   self.idx_state_s = CsExp.divide_by_state(self.met_ind)
-      
-    %   self.Img = zeros(npix,npix);
-    %   self.pix_mask = zeros(npix, npix);
-    %   self.Gz = zpk([], [], 1, Ts);
-    % end
+    function plot_time(self, ax1, ax2)
+    % plot_time(self, ax1, ax2)
+      indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
+       'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
+      plotbyindex(ax1, self.t, self.uz, self.met_ind, indc);
+      title(ax1, 'uz')
 
+      hp = plotbyindex(ax2, self.t, self.ze, self.met_ind, indc);
+      title(ax2, 'z-err')
+      hold on
+      plot([self.t(1), self.t(end)], [.05, .05], '--k')
+      plot([self.t(1), self.t(end)], -[.05, .05], '--k')
+      linkaxes([ax1, ax2], 'x')
+    end
     function [x_k, y_k, uz_k, ze_k] = get_settle_k(self, k)
       idx_k = self.idx_state_s.tsettle{k};
 

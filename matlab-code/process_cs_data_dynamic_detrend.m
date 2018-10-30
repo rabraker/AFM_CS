@@ -13,39 +13,45 @@ Ts = 40e-6;
 
 
 % cs_exp_data_name_s{1} = 'cs-traj-z-bounce_out_10-17-2018-03.csv';
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-22-2018-06.csv';
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-29-2018-01.csv';
 sub_dir = '5microns/10-21-2018';
 data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', sub_dir);
 chan_map = ChannelMap([1:5]);
+% -------------------
+fname = fullfile(PATHS.sysid, 'x-axis_sines_info_intsamps_zaxisFourierCoef_10-29-2018-01.mat');
+models = load(fname);
+G = -models.modelFit.G_zdir;
+p = pole(G);
+z = zero(G);
 
-% cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_9-23-2017-04.csv';
-% data_root = '/media/labserver/acc2018-data/cs-data/5microns/9-22-2017';
-% chan_map = ChannelMap([1:3, 5,6])
+gg = zpk(z(end-1:end), p(1:2), 1, G.Ts);
+% gpz = zpk(p(end-1:end), z(9:10), 1, G.Ts);
+% D = zpk(0, 1, 0.025, G.Ts);
+% LPF = zpk([], [0.85, 0.85], 1, Ts);
+% LPF = LPF/dcgain(LPF);
+% H = minreal(ss( (1+D*G)/D)*LPF);
 
+% gg = gg/dcgain(gg);
+% ---------------------
 cs_paths = cs_exp_paths(data_root, cs_exp_data_name_s{1});
 
 hole_depth = (20);
 
-cs_exp = CsExp(cs_paths, chan_map, Ts, hole_depth);
+cs_exp = CsExp(cs_paths, chan_map, Ts, hole_depth, gg);
 
 fprintf('Total Imaging time: %.2f\n', cs_exp.time_total)
 figbase = 100;
 
+Fig_uz = figure(20+figbase); clf
 
-% Dz = zpk([0], [1], cs_exp.meta_exp.Ki, Ts);
-% 
-% models = load('G_zdir.mat');
-% G2 = models.G2;
-% LPF = G2*G2*G2*G2;
-% 
-% G1 = zpk(models.G1*models.G2);
-% models = load(fullfile(PATHS.sysid, 'x-axis_sines_infoFourierCoef_10-21-2018-03.mat'));
-% G1 = -models.modelFit.G_zdir;
-% H2 = 1 + G1*Dz;
-% H1 = minreal(H2/Dz);
-% cs_exp.Gz; %= -H1;
-% 
-% cs_exp.Gz = zpk([], [], 1, Ts);
+ax1 = gca();
+Fig_ze = figure(30+figbase); clf
+
+ax2 = gca();
+cs_exp.plot_time(ax1, ax2);
+%%
+
+
 verbose = false;
 if verbose
   figs{1}= figure(1000); clf; hold on, grid on;
@@ -60,7 +66,7 @@ cs_exp.process_cs_data(verbose, figs);
 pixelifsampled = cs_exp.pix_mask;
 I = cs_exp.Img_raw;
 fprintf('finished processing raw CS data...\n');
-%%
+
 
 bp = true;
 % ********* SMP *************
