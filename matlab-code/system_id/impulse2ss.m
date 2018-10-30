@@ -14,7 +14,7 @@
 
 
 
-function [Ad, Bd, Cd] = impulse2ssMIMO(yy_IMP, r, s, Ns)
+function [Ad, Bd, Cd, sigmas] = impulse2ss(yy_IMP, r, s, Ns)
 
 no = size(yy_IMP, 1);
 ni = size(yy_IMP, 2);
@@ -80,6 +80,7 @@ if exist('Ns', 'var')
 end
 % keyboard
 
+sigmas = D;
 
 end
 

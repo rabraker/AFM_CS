@@ -8,7 +8,7 @@ classdef frf2ss
        impulse_experimental;
        Nd; 
        opts;
-       
+       sigmas;
        ss_full;        
     end
     
@@ -53,10 +53,11 @@ classdef frf2ss
             self.impulse_experimental = frf2impulse(self.frf_even);
             
             % Do the ERA on the impulse response
-            [Ad, Bd, Cd] = impulse2ss(reshape(self.impulse_experimental,1,1, []), opts.r, opts.s);
+            [Ad, Bd, Cd, sigmas] = impulse2ss(reshape(self.impulse_experimental,1,1, []), opts.r, opts.s);
             self.ss_full.A = Ad;
             self.ss_full.B = Bd;
             self.ss_full.C = Cd;
+            self.sigmas = sigmas;
         end
         
         function sys = realize(self, Ns)
