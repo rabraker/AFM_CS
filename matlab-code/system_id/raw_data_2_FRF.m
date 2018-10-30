@@ -32,7 +32,7 @@ clc
 
 
 % FC_data_file = 'x-axis_sines_infoFourierCoef_10-21-2018-03.csv';
-FC_data_file = 'x-axis_sines_info_intsamps_zaxisFourierCoef_10-29-2018-01.csv';
+FC_data_file = 'z-axis_sines_info_intsampsFourierCoef_10-29-2018-01.csv';
 dataRoot = PATHS.sysid;
 FC_path = fullfile(dataRoot, FC_data_file);
 
@@ -188,7 +188,7 @@ Dinv = zpk(p(end-1:end), z(end-1:end), 1, Ts);
 Dinv = Dinv/dcgain(Dinv);
 
 %%
-KI = -0.1
+KI = -0.051
 D_I = zpk(0, 1, KI, Ts)
 
 Loop = Dinv*D_I*sys_log;
