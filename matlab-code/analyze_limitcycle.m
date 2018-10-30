@@ -20,9 +20,8 @@ if mode == 1
   figbase = 10;
 
 elseif mode == 2
-  data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', '5microns', '10-14-2018');
-  cs_exp_data_name = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-15-2018-01.csv';
-  cs_exp_data_name = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-15-2018-02.csv';
+  data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', '5microns', '10-21-2018');
+  cs_exp_data_name = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-29-2018-01.csv';
   uz_idx = 4;
   met_idx = 5;
   figbase = 50;
@@ -49,7 +48,8 @@ fprintf('loading done...\n')
 indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
        'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
 
-xy = false;
+do_x = true;
+do_y = false;
 
 x = dat(:,1);
 y=dat(:,2);
@@ -59,9 +59,25 @@ z_err = dat(:,3);
 % % new method
 uz = dat(:,uz_idx);
 met_ind = dat(:,met_idx);
+%%
+models = load(fullfile(PATHS.sysid, 'x-axis_sines_info_intsamps_zaxisFourierCoef_10-29-2018-01.mat'));
+G = -models.modelFit.G_zdir;
+p = pole(G)
+z = zero(G)
+
+gg = zpk(z(end-1:end), p(1:2), 1, Ts)
+%%
 
 
+zz = lsim(gg, uz, t);
 
+N = 100000;
+figure(10); clf
+ax = gca;
+plotbyindex(ax, t(1:N), zz(1:N), met_ind(1:N), indc)
+
+
+%%
 
 Fig_uz = figure(20+figbase); clf
 % plot(uz)
@@ -78,20 +94,20 @@ hold on
 plot([t(1), t(end)], [.05, .05], '--k')
 plot([t(1), t(end)], -[.05, .05], '--k')
 legend(hp(2:6))
-
-if xy
- 
+%%
+if do_x
+  
   figure(10+figbase), clf
   % plot(x)
   title('x')
   ax1 = gca;
   plotbyindex(ax1, t, x, met_ind, indc);
-  
-  figure(40+figbase), clf
-  ax4=gca();
-  plotbyindex(ax4, t, y, met_ind, indc);
-  title('y')
-  linkaxes([ax1, ax2, ax3, ax4], 'x')
+  linkaxes([ax1, ax2, ax3], 'x')
+%   figure(40+figbase), clf
+%   ax4=gca();
+%   plotbyindex(ax4, t, y, met_ind, indc);
+%   title('y')
+%   linkaxes([ax1, ax2, ax3, ax4], 'x')
 else
   linkaxes([ax2, ax3], 'x')
 end
