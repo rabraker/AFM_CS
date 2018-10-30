@@ -145,6 +145,7 @@ frfBode(sys_log, freqs, F2,  'Hz', '-b');
 
 
 %%
+clc
 F3 = figure(3); clf
 F3.PaperPosition = [1.3376    2.3454    5.8247    6.3093];
 h1 = frfBode(G_uz2stage, freqs, F3,  'Hz', '-r');
@@ -158,15 +159,13 @@ frfBode(sys_log2, freqs, F3, 'Hz', '-k');
 plotPZ_freqs(sys_log2, F3);
 
 
-
-%%
-clc
 k_estmax = find(freqs > 2000, 1, 'first');
 sos_fos = SosFos(sys_log2, 'iodelay', 1);
 LG = LogCostZPK(G_uz2stage(1:k_estmax), freqs(1:k_estmax)*2*pi, sos_fos);
 LG.solve_lsq(2, LGopts)
 [sys_log3, p] = LG.sos_fos.realize();
 
+sys_log3.InputDelay = max(0, round(p, 0));
 fprintf('LG says delay = %.2f\n', p);
 
 stab = isstable(sys_log3);
@@ -181,7 +180,24 @@ end
 frfBode(sys_log3, freqs, F3,  'Hz', '--g');
 plotPZ_freqs(sys_log3, F3);
 
+%%
+z = zero(sys_log3);
+p = pole(sys_log3);
 
+Dinv = zpk(p(end-1:end), z(end-1:end), 1, Ts);
+Dinv = Dinv/dcgain(Dinv);
+
+%%
+KI = -0.1
+D_I = zpk(0, 1, KI, Ts)
+
+Loop = Dinv*D_I*sys_log;
+H_yr = minreal(Loop/(1+Loop));
+isstable(H_yr)
+F10 = figure(10); clf
+
+frfBode(Loop, freqs, F10, 'Hz', '-b')
+frfBode(H_yr, freqs, F10, 'Hz', '-k')
 
 
 
@@ -201,6 +217,7 @@ modelFit.frf.Ts        = Ts;
 modelFit.frf.freq_s    = freqs;
 modelFit.G_zdir        = sys_log;
 modelFit.G_reduce      = sys_log3;
+modelFit.Dinv          = Dinv;
 
 if save_data
         save(model_path, 'modelFit');
