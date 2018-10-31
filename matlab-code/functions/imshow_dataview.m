@@ -24,18 +24,25 @@ function output_txt = local_callback_function(~,event_obj, ax1, ax2)
 
         ind = get(event_obj, 'DataIndex');
         
-        idx = pos(2);
-        dat = event_obj.Target.CData(idx, :);
+        yidx = pos(2);
+        xidx = pos(1);
+        
+        dat = event_obj.Target.CData(yidx, :);
+        height = dat(xidx);
         
         zmin = min(event_obj.Target.CData(:));
         zmax = max(event_obj.Target.CData(:));
+        cla(ax2);
         plot(ax2, dat);
+        hold(ax2, 'on')
+        plot(ax2, xidx, dat(xidx), 'xk')
+        
         grid(ax2, 'on');
         ylim(ax2, [zmin, zmax]);
-
         hold(ax1, 'on')
+        
         dims = size(event_obj.Target.CData);
-        h_line = plot(ax1, [1, dims(1)], [idx, idx], 'r');
+        h_line = plot(ax1, [1, dims(1)], [yidx, yidx], 'r');
         if ~isempty(event_obj.Target.UserData) ...
             && isa(event_obj.Target.UserData, 'matlab.graphics.chart.primitive.Line')
           delete(event_obj.Target.UserData)
@@ -44,7 +51,8 @@ function output_txt = local_callback_function(~,event_obj, ax1, ax2)
         
         output_txt = {['x-pix: ',num2str(pos(1),4)],...
             ['y-pix: ',num2str(pos(2),4)],...
-            ['Index: ', num2str(ind)]};
+            ['Index: ', num2str(ind)],...
+            ['value:  ', num2str(height)]};
 
 
     end
