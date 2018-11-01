@@ -129,7 +129,7 @@ title(ax3, 'sample');
 imshow_sane(cs_exp.Img_smp1d, ax5, cs_exp.width, cs_exp.width, [-ht, ht])
 title(ax5, 'SMP reconstruction');
 drawnow
-%%
+
 if bp
     cs_exp.solve_basis_pursuit();
 
