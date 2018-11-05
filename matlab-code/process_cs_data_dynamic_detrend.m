@@ -13,8 +13,8 @@ Ts = 40e-6;
 
 
 % cs_exp_data_name_s{1} = 'cs-traj-z-bounce_out_10-17-2018-03.csv';
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-29-2018-01.csv';
-sub_dir = '5microns/10-21-2018';
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_11-4-2018-01.csv';
+sub_dir = '5microns/11-04-2018';
 data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', sub_dir);
 chan_map = ChannelMap([1:5]);
 % -------------------
@@ -30,7 +30,7 @@ gg = zpk(z(end-1:end), p(1:2), 1, G.Ts);
 % LPF = zpk([], [0.85, 0.85], 1, Ts);
 % LPF = LPF/dcgain(LPF);
 % H = minreal(ss( (1+D*G)/D)*LPF);
-
+% gg = zpk([], [], 1, Ts);
 % gg = gg/dcgain(gg);
 % ---------------------
 cs_paths = cs_exp_paths(data_root, cs_exp_data_name_s{1});
@@ -38,8 +38,8 @@ cs_paths = cs_exp_paths(data_root, cs_exp_data_name_s{1});
 hole_depth = (20);
 
 cs_exp = CsExp(cs_paths, chan_map, Ts, hole_depth, gg);
-
 fprintf('Total Imaging time: %.2f\n', cs_exp.time_total)
+%%
 figbase = 100;
 
 Fig_uz = figure(20+figbase); clf
@@ -48,7 +48,26 @@ ax1 = gca();
 Fig_ze = figure(30+figbase); clf
 
 ax2 = gca();
-cs_exp.plot_time(ax1, ax2);
+cs_exp.plot_all_cycles(ax1, ax2);
+%%
+clc
+G = models.modelFit.G_zdir;
+[z, p,k] = zpkdata(G, 'v')
+
+zdrift = z(end-1:end);
+pdrift = p(1:2);
+
+gdrift = zpk(zdrift, pdrift, 1, G.Ts);
+gvib = ss(minreal(G/gdrift));
+
+figure(10); clf
+ax1 = gca()
+figure(11); clf
+ax2 = gca()
+
+cs_exp.fit_gdrift_per_cycle(ax1, ax2, gdrift, gvib);
+
+
 %%
 
 

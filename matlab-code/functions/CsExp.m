@@ -51,7 +51,7 @@ classdef CsExp < handle
       self.y = self.y - min(self.y); % move to positive orthant.
       
       self.t = (0:length(self.x)-1)'*gg.Ts;
-      self.uz = lsim(gg, dat_meas(:, channel_map.uz), self.t);
+      self.uz = lsim(gg, detrend(dat_meas(:, channel_map.uz)), self.t);
       self.ze = dat_meas(:, channel_map.ze);
       self.met_ind = dat_meas(:, channel_map.met);
       % convert the meta cs-measurment index to -4.
@@ -71,47 +71,149 @@ classdef CsExp < handle
       self.time_total = sum(self.state_times);
     end
 
-    function plot_time(self, ax1, ax2)
+    function plot_all_cycles(self, ax1, ax2)
     % plot_time(self, ax1, ax2)
-      indc = {'k',        'r',       [0, .75, .75], 'm', [.93 .69 .13], 'b';
-       'xy-move', 'tip down', 'tip settle',  'na', 'tip up', '$\mu$-path scan'};
-      plotbyindex(ax1, self.t, self.uz, self.met_ind, indc);
+      indc = {'k',        'r', [0, .75, .75], 'b', [.93 .69 .13], ;
+       'xy-move', 'tip down', 'tip settle',  '$\mu$-path scan', 'tip up',};
+      
+      state_seq = {'move', 'tdown', 'tsettle', 'scan', 'tup'};
+      hold(ax1, 'on')
+      hold(ax2, 'on')
       title(ax1, 'uz')
-
-      hp = plotbyindex(ax2, self.t, self.ze, self.met_ind, indc);
       title(ax2, 'z-err')
-      hold on
-      plot([self.t(1), self.t(end)], [.05, .05], '--k')
-      plot([self.t(1), self.t(end)], -[.05, .05], '--k')
+      grid(ax1, 'on')
+      grid(ax2, 'on')
+      for idx_cs_seq = 1:length(self.idx_state_s.move);
+        
+        for k=1:length(state_seq)
+          idx_state = self.idx_state_s.(state_seq{k}){idx_cs_seq};
+          uz_k = self.uz(idx_state);
+          ze_k = self.ze(idx_state);
+          t_k  = idx_state*self.Ts;
+          
+          plot(ax1, t_k, uz_k, 'color', indc{1, k});
+          plot(ax2, t_k, ze_k, 'color', indc{1, k});
+        end
+        
+      end
+
       linkaxes([ax1, ax2], 'x')
+      plot(ax2, [self.t(1), self.t(end)], [.05, .05], '--k')
+      plot(ax2, [self.t(1), self.t(end)], -[.05, .05], '--k')
+
     end
-    function [x_k, y_k, uz_k, ze_k] = get_settle_k(self, k)
+    
+    function self = fit_gdrift_per_cycle(self, ax1, ax2, go, gvib)
+      indc = {'k',        'r', [0, .75, .75], 'b', [.93 .69 .13], ;
+       'xy-move', 'tip down', 'tip settle',  '$\mu$-path scan', 'tip up',};
+      
+      state_seq = {'move', 'tdown', 'tsettle', 'scan', 'tup'};
+      hold(ax1, 'on')
+      hold(ax2, 'on')
+%       title(ax1, 'uz')
+%       title(ax2, 'z-err')
+      grid(ax1, 'on')
+      grid(ax2, 'on')
+      [z, p, k] = zpkdata(go, 'v');
+      theta0 = [z;p;k*2];
+      np = length(p);
+      ub = ones(2*np+1);
+      ub(end) = Inf;
+    
+      for idx_cs_seq = 1:length(self.idx_state_s.move);
+        
+          idx_down = self.idx_state_s.tdown{idx_cs_seq};
+          idx_settle = self.idx_state_s.tsettle{idx_cs_seq};
+          idx_scan = self.idx_state_s.scan{idx_cs_seq};
+          scan_start_idx = length(idx_down) + length(idx_settle) + 1;
+          
+          uz_ = self.uz([idx_down, idx_settle]);
+          ze_ = self.ze([idx_down, idx_settle]);
+          t_  = [idx_down, idx_settle;]*self.Ts;
+          
+          
+          uz_whole = self.uz([idx_down, idx_settle, idx_scan]);
+          ze_whole = self.ze([idx_down, idx_settle, idx_scan]);
+          t_whole  = [idx_down, idx_settle, idx_scan]*self.Ts;
+          
+          u0 = uz_(1);
+          ze0 = ze_(1);
+          uz_ = uz_ - u0;
+          ze_ = ze_ - ze0;
+          
+          
+          
+          
+          fun = @(theta) fit_gdrift(theta, gvib, ze_, uz_, t_, np);
+          
+          theta = lsqnonlin(fun, theta0, 0.9*ub, ub);
+          gdrift = zpk(theta(np+1:end-1), theta(1:np), theta(end), self.Ts);
+          z_fit1 = lsim(gdrift*gvib, uz_whole-u0, t_whole)
+          z_fit2 = -lsim(gdrift*gvib, uz_whole-u0, t_whole) + u0;
+          
+          k = idx_down(1);
+          plot(ax1, t_whole(idx_down-k+1), z_fit2(idx_down-k+1), 'color', indc{1,2}, 'LineStyle', '--')          
+          plot(ax1, t_whole(idx_settle-k+1), z_fit2(idx_settle-k+1), 'color', indc{1,3}, 'LineStyle', '-')
+          plot(ax1, t_whole(idx_scan-k+1), z_fit2(idx_scan-k+1), 'color', indc{1,4}, 'LineStyle', '--')
+          
+          plot(ax1, t_whole(idx_down-k+1), uz_whole(idx_down-k+1), 'color', indc{1,2}, 'LineStyle', '-')          
+          plot(ax1, t_whole(idx_settle-k+1), uz_whole(idx_settle-k+1), 'color', indc{1,3}, 'LineStyle', '-')
+          plot(ax1, t_whole(idx_scan-k+1), uz_whole(idx_scan-k+1), 'color', indc{1,4}, 'LineStyle', '-')
+
+          plot(ax2, t_whole(idx_down-k+1), z_fit1(idx_down-k+1), 'color', indc{1,2}, 'LineStyle', '--')          
+          plot(ax2, t_whole(idx_settle-k+1), z_fit1(idx_settle-k+1), 'color', indc{1,3}, 'LineStyle', '-')
+          plot(ax2, t_whole(idx_scan-k+1), z_fit1(idx_scan-k+1), 'color', indc{1,4}, 'LineStyle', '--')
+
+          plot(ax2, t_whole(idx_down-k+1), ze_whole(idx_down-k+1)-ze0, 'color', indc{1,2}, 'LineStyle', '-')          
+          plot(ax2, t_whole(idx_settle-k+1), ze_whole(idx_settle-k+1)-ze0, 'color', indc{1,3}, 'LineStyle', '-')
+          plot(ax2, t_whole(idx_scan-k+1), ze_whole(idx_scan-k+1)-ze0, 'color', indc{1,4}, 'LineStyle', '-')
+          
+        keyboard
+      end
+
+%       linkaxes([ax1, ax2], 'x')
+%       plot(ax2, [self.t(1), self.t(end)], [.05, .05], '--k')
+%       plot(ax2, [self.t(1), self.t(end)], -[.05, .05], '--k')
+
+    end      
+      
+
+    function [x_k, y_k, uz_k, ze_k, t_k] = get_tup_k(self, k)
+      x_k = self.x(idx_k);
+      y_k = self.y(idx_k);
+      uz_k = self.uz(idx_k);
+      ze_k = self.ze(idx_k);
+      t_k = idx_k*Ts;
+      
+    end
+    function [x_k, y_k, uz_k, ze_k, t_k] = get_settle_k(self, k)
       idx_k = self.idx_state_s.tsettle{k};
 
       x_k = self.x(idx_k);
       y_k = self.y(idx_k);
       uz_k = self.uz(idx_k);
       ze_k = self.ze(idx_k);
-          
+      t_k = idx_k*Ts;
     end
       
-    function [x_k, y_k, uz_k, ze_k] = get_down_k(self, k)
+    function [x_k, y_k, uz_k, ze_k, t_k] = get_down_k(self, k)
       idx_k = self.idx_state_s.tdown{k};
         
       x_k = self.x(idx_k);
       y_k = self.y(idx_k);
       uz_k = self.uz(idx_k);
       ze_k = self.ze(idx_k);
-          
+      t_k = idx_k*Ts;    
     end
       
-    function [x_k, y_k, uz_k, ze_k] = get_scan_k(self, k)
+    function [x_k, y_k, uz_k, ze_k, t_k] = get_scan_k(self, k)
       idx_k = self.idx_state_s.scan{k};
         
       x_k = self.x(idx_k);
       y_k = self.y(idx_k);
       uz_k = self.uz(idx_k);
       ze_k = self.ze(idx_k);
+      t_k = idx_k*Ts;
       
     end
     
@@ -131,13 +233,11 @@ classdef CsExp < handle
         [~, ~, U_down] = self.get_down_k(idx);
         [~, ~, U_settle] = self.get_settle_k(idx);
         U_orig = [U_down(:); U_settle(:); U_scan(:)];
-        U_orig = [U_scan(:)];
-%         scan_start_idx = length(U_down) + length(U_settle) + 1;
-        scan_start_idx = 1;
+
+        scan_start_idx = length(U_down) + length(U_settle) + 1;
+
         t_k = (0:length(U_orig)-1)'*self.Ts;
-        % U_z = lsim(self.Gz, U_orig(:)-U_orig(1), t_k);
-        U_z = fft_notch(U_orig(:), 40e-6, 211, 215);
-        %U_z = fft_notch(U_z(:), 40e-6, 28, 31);
+        U_z = lsim(self.Gz, U_orig(:)-U_orig(1), t_k);
         %U_z = U_orig;    
         U_scan = U_z(scan_start_idx:end);
     end
