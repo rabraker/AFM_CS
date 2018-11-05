@@ -23,11 +23,7 @@ udat_trace = xyu_dat(trace_inds, 3);
 % Make the image be at (0,0, 0).
 xdat_trace = (xdat_trace - min(xdat_trace))*volt2pix;
 ydat_trace = (ydat_trace - min(ydat_trace))*volt2pix;
-
 % make 
-% udat_trace = (udat_trace - min(udat_trace));
-% udat_trace = udat_trace/max(udat_trace);
-
 
 pixelifsampled = zeros(xpix, ypix);
 pixmat = zeros(xpix,ypix)*mean(udat_trace);
@@ -38,12 +34,9 @@ for j_row = 0:ypix-1
     x_dat_j = xdat_trace(ind_y)';
     U_dat_j = udat_trace(ind_y)';
     
-    % detrend each row
-%     keyboard
 if exist('Hz', 'var')
   t = (0:length(U_dat_j)-1)'*Hz.Ts;
   U_dat_j = lsim(Hz, detrend(U_dat_j'), t);
-  %filtfilt(Hz.num{1}, Hz.den{1}, detrend(U_dat_j'));
 %   figure(100); hold on;
 %   plot(detrend(U_dat_j'))
 %   plot(U_, '--');
@@ -51,7 +44,6 @@ if exist('Hz', 'var')
 else
     [U_dat_j, mb] = detrend(U_dat_j');
 %     U_dat_j = fft_notch(U_dat_j(:), 40e-6, 210, 216);
-%     U_dat_j = fft_notch(U_dat_j(:), 40e-6, 28, 31);
 end
     U_dat_j = U_dat_j';
 %     m_s(j_row+1) = mb(1);

@@ -6,7 +6,7 @@
 % faster scans, we want to use that data, so we can process it better.
 % That's what this script does.
 clc
-clear
+% clear
 close all
 addpath('functions')
 
@@ -18,21 +18,18 @@ dat_root = 'Z:\afm-cs\imaging\raster';
   % dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
 else
   % dat_root = '/home/arnold/gradschool/afm-cs/afm_imaging/data';
-  dat_root = fullfile(PATHS.exp, 'imaging', 'raster')
+  dat_root = fullfile(PATHS.exp, 'imaging', 'raster');
 end
 
 dat_name = 'raster_scan_512pix_5mic_01Hz_out_10-4-2018-03.csv'; % Ki=0.01;
-dat_name = 'raster_scan_512pix_5mic_01Hz_out_10-15-2018-09.csv';
+dat_name = 'raster_scan_512pix_5mic_01Hz_out_10-31-2018-01.csv';
 parent_name = 'raster_scan_5mic_01Hz.csv';
 
 sub_dir = '5microns';
 
-parent_name = get_parent_name(dat_name, '_out_')
-meta_name = strrep(parent_name, '.csv', '-meta.mat')
-
-
-% dat_name = '';
-% parent_name = 'raster_scan__256pix_20mic_1.25e-01Hz.csv';
+parent_name = get_parent_name(dat_name, '_out_');
+meta_name = strrep(parent_name, '.csv', '-meta.mat');
+fprintf('Using parent Data file\n%s\n', parent_name)
 
 dat_path = fullfile(dat_root, sub_dir, dat_name);
 parent_path = fullfile(dat_root, sub_dir, parent_name);
@@ -41,16 +38,15 @@ meta_out_path = strrep(dat_path, '.csv', '-meta.mat');
 
 tic
 
-% load(meta_in_path);
-load(meta_out_path);
 
+fprintf('Loading Meta file...\n%s\n', meta_out_path)
+load(meta_out_path);
+fprintf('Loading Data file...\n%s\n', dat_path)
 datmat = csvread(dat_path);
 parent_dat = csvread(parent_path);
 
-
 xyref = reshape(parent_dat', 2, [])';
 xref = xyref(:,1);
-%
 
 % figure(1); plot(datmat(:,1));
 % ax1 = gca
@@ -83,80 +79,80 @@ if 1
 
     ylm = ylim;
     ylim([0, ylm(2)+.1*ylm(2)])
-    ylabel('x-dir [\mu m]')
+    ylabel('x-dir [$\mu$ m]')
     xlabel('time [s]')
     leg1 = legend([p1, p2]);
     set(leg1, 'FontSize', 14, 'interpreter', 'latex', 'orientation', 'horizontal')
     leg1.Position=[0.6436    0.8590    0.2611    0.0640];
 end
+%%
+if 1
+  N = 2*samps_per_line;
+  figure(1)
+  subplot(2,1,1)
+  plot(datmat(1:N, 4))
+  title('uz')
+  grid on
+  ax1 = gca();
+  
+  subplot(2,1,2)
+  plot(datmat(1:N, 3))
+  title('ze')
+  grid on
+  ax2 = gca();
+  linkaxes([ax1, ax2], 'x')
+  
+end
 %  Now try by actually using the x-y measured data;
 %%
 
-models = load('G_zdir.mat');
-% 
-LPF = models.G2*models.G2*models.G2*models.G2;
-% Dz = zpk([0], [1], 0.05, Ts);
-% G1 = zpk(models.G1*models.G2)
-% Hz = G1
-% clc
-
-% bsFilt = designfilt('bandstopfir','FilterOrder',20, ...
-%          'CutoffFrequency1',2000,'CutoffFrequency2',2200, ...
-%          'SampleRate',25e3);
-% fvtool(bsFilt);
-clf
-[z, p, k] = zpkdata(models.G1);
-g = zpk(p, [.95, .945], 1, Ts);
-gg = tf(g)/dcgain(g)
-bode(gg)
-%%
-clf
-% % % w = 214*2*pi;
-% % % z = 0.001;
-% % % gct = tf(w^2, [1, 2*z*w, w^2])
-% % % g_z = c2d(gct, Ts, 'matched');
-% % % [z, p] = zpkdata(g_z, 'v')
-% % % gg2 = zpk(p, [.992, .993], 1, Ts)
-% % % gg2 = gg2/dcgain(gg2)
-% % w = 214*2*pi;
-% % z = 0.0001;
-% % gct = tf(w^2, [1, 2*z*w, w^2])
-% % g_z = c2d(gct, Ts, 'matched');
-% % [z, p] = zpkdata(g_z, 'v')
-% % gg2 = zpk(p, [.95, .945], 1, Ts)
-% % gg2 = gg2/dcgain(gg2)
-% % 
-% % bode(gg2)
-% % grid
-% % 
-% % G = gg2; %*gg
-models = load(fullfile(PATHS.sysid, 'x-axis_sines_infoFourierCoef_10-21-2018-03.mat'))
-G = -models.modelFit.G_zdir;
-bode(G), grid on
-
-D = zpk([0], [1], 0.05, Ts);
-H = minreal(ss((1+G*D)/D)*LPF);
-figure(5)
-step(H)
-
-figure
-bode(H)
-% hold on
-% plot(t, yy, '--')
-%%
 clc
 width = 5;
 % volts2micron = 50/10;
 micron2pix = pix/width;
 volts2pix = volts2microns * micron2pix;
+w_lpf = 600*2*pi;
+z_lpf = exp(-w_lpf*Ts);
+LPF1 = zpk([], [z_lpf], 1-z_lpf, Ts);
+LPF = LPF1*LPF1;
+rand_fname = fullfile(PATHS.sysid, 'rand_noise_zaxis_10-30-2018_01.mat');
+models = load(rand_fname);
+G1 = models.modelFit.G_zdir;
+Dinv1 = models.modelFit.Dinv;
+gdrift1 = models.modelFit.gdrift;
+
+KI = -Cluster.raster_scan_params.PI_params.Ki;
+D1 = zpk([0], 1, KI, G1.Ts) * Dinv1;
+H = -minreal(feedback(D1, G1))*G*LPF;
+figure, step(H)
 
 
-% [pixmat2, pixelifsampled] = bin_raster_really_slow(datmat(:,[1,2,4]), pix, samps_per_period, volts2pix, (H));
-[pixmat2, pixelifsampled] = bin_raster_really_slow(datmat(:,[1,2,4]), pix, samps_per_period, volts2pix);
+zz = lsim(gdrift1, datmat(:,4), (0:length(datmat(:,4))-1)'*G1.Ts);
+figure(1); clf
+% subplot(2,1,1)
+plot(zz(1:1:samps_per_line*8))
+hold on
+% subplot(2,1,2)
+plot(datmat(1:samps_per_line*80,4))
+%%
+figure(20)
+plot(datmat(1:samps_per_line*4, 3))
+%%
+idd = iddata(datmat(1:samps_per_line, 3), datmat(1:samps_per_line, 4), Ts);
 
-% pixmat2=pixmat2(:,1:end);
+sys = ssest(idd, 12);
 
-% pixmat2 = detrend_sampled_plane(pixmat2, pixelifsampled)
+zes = lsim(sys, datmat(1:samps_per_line, 3), (0:samps_per_line-1)'*Ts)
+
+plot(zes)
+
+%%
+
+[pixmat2, pixelifsampled] = bin_raster_really_slow([datmat(:,[1,2]), zz], pix, samps_per_period, volts2pix);
+% [pixmat2, pixelifsampled] = bin_raster_really_slow(datmat(:,[1,2,4]), pix, samps_per_period, volts2pix);
+
+
+
 thresh = (20/7)*(1/1000)*20;
 pixmat2 = pixmat2 - mean(pixmat2(:));
 F10 = figure(5+0); clf

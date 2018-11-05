@@ -1,14 +1,12 @@
 clc
-clear
-pix = 256;
-width = 5;
-microns_per_volt = 50/10;
-pix_per_volt = (pix/width)*microns_per_volt;
+% clear
+% pix = 256;
+% width = 5;
+% microns_per_volt = 50/10;
+% pix_per_volt = (pix/width)*microns_per_volt;
 Ts = 40e-6;
 addpath('functions')
-% data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\';
-% data_root = fullfile(getdataroot(), 'cs-data');
-%data_root = fullfile(getdataroot(), 'cs-data\20microns\9-23-2017');
+
 % ---------------------------------------------------
 mode = 2;
 if mode == 1
@@ -21,7 +19,7 @@ if mode == 1
 
 elseif mode == 2
   data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', '5microns', '10-21-2018');
-  cs_exp_data_name = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-29-2018-01.csv';
+  cs_exp_data_name = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-31-2018-02.csv';
   uz_idx = 4;
   met_idx = 5;
   figbase = 50;
@@ -68,15 +66,16 @@ z = zero(G)
 gg = zpk(z(end-1:end), p(1:2), 1, Ts)
 %%
 
-
-zz = lsim(gg, uz, t);
+clc
+zz = uz;
+zz= lsim(gg, uz, t);
 
 N = 100000;
-figure(10); clf
+figure(11); clf
 ax = gca;
 plotbyindex(ax, t(1:N), zz(1:N), met_ind(1:N), indc)
 
-
+figure; plot(z_err(1:N))
 %%
 
 Fig_uz = figure(20+figbase); clf
