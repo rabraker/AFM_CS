@@ -6,8 +6,16 @@
 % faster scans, we want to use that data, so we can process it better.
 % That's what this script does.
 clc
+<<<<<<< variant A
 % clear
 close all
+>>>>>>> variant B
+clear
+% close all
+####### Ancestor
+clear
+close all
+======= end
 addpath('functions')
 
 if ispc
@@ -21,8 +29,7 @@ else
   dat_root = fullfile(PATHS.exp, 'imaging', 'raster');
 end
 
-dat_name = 'raster_scan_512pix_5mic_01Hz_out_10-4-2018-03.csv'; % Ki=0.01;
-dat_name = 'raster_scan_512pix_5mic_01Hz_out_10-31-2018-01.csv';
+dat_name = 'raster_scan_512pix_5mic_01Hz_out_11-2-2018-01.csv';
 parent_name = 'raster_scan_5mic_01Hz.csv';
 
 sub_dir = '5microns';
@@ -86,23 +93,17 @@ if 1
     leg1.Position=[0.6436    0.8590    0.2611    0.0640];
 end
 %%
-if 1
-  N = 2*samps_per_line;
-  figure(1)
-  subplot(2,1,1)
-  plot(datmat(1:N, 4))
-  title('uz')
-  grid on
-  ax1 = gca();
-  
-  subplot(2,1,2)
-  plot(datmat(1:N, 3))
-  title('ze')
-  grid on
-  ax2 = gca();
-  linkaxes([ax1, ax2], 'x')
-  
-end
+figure(2)
+subplot(2,1,1)
+ax1 = gca();
+N1 = 314;
+N2 = N1+4;
+plot(datmat(N1*samps_per_line+1:N2*samps_per_line,3))
+subplot(2,1,2)
+plot(datmat(N1*samps_per_line+1:N2*samps_per_line,4))
+ax2 = gca();
+
+linkaxes([ax1, ax2], 'x')
 %  Now try by actually using the x-y measured data;
 %%
 
