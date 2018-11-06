@@ -13,7 +13,7 @@ Ts = 40e-6;
 
 
 % cs_exp_data_name_s{1} = 'cs-traj-z-bounce_out_10-17-2018-03.csv';
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_11-4-2018-01.csv';
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_11-5-2018-10.csv';
 sub_dir = '5microns/11-04-2018';
 data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', sub_dir);
 chan_map = ChannelMap([1:5]);
@@ -38,19 +38,25 @@ cs_paths = cs_exp_paths(data_root, cs_exp_data_name_s{1});
 hole_depth = (20);
 
 cs_exp = CsExp(cs_paths, chan_map, Ts, hole_depth, gg);
-fprintf('Total Imaging time: %.2f\n', cs_exp.time_total)
 %%
+cs_exp.print_state_times();
+fprintf('Total Imaging time: %.2f\n', cs_exp.time_total)
+
 figbase = 100;
 
 Fig_uz = figure(20+figbase); clf
 
 ax1 = gca();
 Fig_ze = figure(30+figbase); clf
-
 ax2 = gca();
-cs_exp.plot_all_cycles(ax1, ax2);
+
+Fig_x = figure(40+figbase); clf
+ax3 = gca();
+Fig_y = figure(50+figbase); clf
+ax4 = gca();
+cs_exp.plot_all_cycles(ax1, ax2, ax3, ax4);
 %%
-clc
+
 G = models.modelFit.G_zdir;
 [z, p,k] = zpkdata(G, 'v')
 
@@ -73,20 +79,21 @@ cs_exp.fit_gdrift_per_cycle(ax1, ax2, gdrift, gvib);
 
 verbose = false;
 if verbose
-  figs{1}= figure(1000); clf; hold on, grid on;
-  figs{2}= figure(2000); clf; hold on, grid on;
-  figs{3}= figure(3000); clf; hold on, grid on;
+  fig_inc = 10;
+  figs{1}= figure(1000+fig_inc); clf; hold on, grid on;
+  figs{2}= figure(2000+fig_inc); clf; hold on, grid on;
+  figs{3}= figure(3000+fig_inc); clf; hold on, grid on;
 else
   figs = [];
 end
-cs_exp.process_cs_data(verbose, figs);
 
-%
+cs_exp.process_cs_data(verbose, figs);
 pixelifsampled = cs_exp.pix_mask;
 I = cs_exp.Img_raw;
 fprintf('finished processing raw CS data...\n');
 
-
+fprintf('nperc=%.3f\n', sum(cs_exp.pix_mask(:))/cs_exp.npix^2);
+%%
 bp = true;
 % ********* SMP *************
 clear CsExp
@@ -156,9 +163,11 @@ disp(s)
 ax6.Visible = 'off';
 
 t1 = text(0,.5, s, 'Units', 'normalized');
-t2 = text(0, t1.Extent(2)-.1, s2, 'Units', 'normalized', 'interpreter', 'none');
+%%
+pixmat2 = cs_exp.Img_bp;
+save('Z:\afm-cs\tuesday-figs\11-5-2016\cs_img_quickdown.mat', 'pixmat2')
 
-
+%%
 figure(12)
 ax = gca();
 figure(13)
