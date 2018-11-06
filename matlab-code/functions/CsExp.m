@@ -71,7 +71,7 @@ classdef CsExp < handle
       self.time_total = sum(self.state_times);
     end
 
-    function plot_all_cycles(self, ax1, ax2)
+    function plot_all_cycles(self, ax1, ax2, ax3, ax4)
     % plot_time(self, ax1, ax2)
       indc = {'k',        'r', [0, .75, .75], 'b', [.93 .69 .13], ;
        'xy-move', 'tip down', 'tip settle',  '$\mu$-path scan', 'tip up',};
@@ -83,21 +83,53 @@ classdef CsExp < handle
       title(ax2, 'z-err')
       grid(ax1, 'on')
       grid(ax2, 'on')
-      for idx_cs_seq = 1:length(self.idx_state_s.move);
+      if exist('ax3', 'var')
+        hold(ax3, 'on')
+        title(ax3, 'x')
+        grid(ax3, 'on')
+      end
+      if exist('ax4', 'var')
+        hold(ax4, 'on')
+        title(ax4, 'y')
+        grid(ax4, 'on')
+      end   
+      
+      Num_cycles = min([length(self.idx_state_s.move), length(self.idx_state_s.tdown),...
+        length(self.idx_state_s.tsettle), length(self.idx_state_s.scan),...
+        length(self.idx_state_s.tup)]);
+      
+      for idx_cs_seq = 1:Num_cycles
         
         for k=1:length(state_seq)
+          try
           idx_state = self.idx_state_s.(state_seq{k}){idx_cs_seq};
+          catch
+            keyboard
+          end
           uz_k = self.uz(idx_state);
           ze_k = self.ze(idx_state);
           t_k  = idx_state*self.Ts;
           
           plot(ax1, t_k, uz_k, 'color', indc{1, k});
           plot(ax2, t_k, ze_k, 'color', indc{1, k});
+          if exist('ax3', 'var')
+            x_k = self.x(idx_state);
+            plot(ax3, t_k, x_k, 'color', indc{1, k});
+          end
+          if exist('ax4', 'var')
+            y_k = self.y(idx_state);
+            plot(ax4, t_k, y_k, 'color', indc{1, k});
+          end          
         end
         
       end
-
-      linkaxes([ax1, ax2], 'x')
+      if exist('ax4', 'var')
+        linkaxes([ax1, ax2, ax3, ax4], 'x')
+      elseif exist('ax', 'var')
+        linkaxes([ax1, ax2, ax3], 'x')
+      else
+        linkaxes([ax1, ax2], 'x')
+      end
       plot(ax2, [self.t(1), self.t(end)], [.05, .05], '--k')
       plot(ax2, [self.t(1), self.t(end)], -[.05, .05], '--k')
 
@@ -177,13 +209,24 @@ classdef CsExp < handle
 
     end      
       
+    function print_state_times(self)
+      tmove = self.state_times(1);
+      tlower = self.state_times(2);
+      tsettle = self.state_times(3);
+      tscan = self.state_times(4);
+      tup = self.state_times(5);
+      
+      fprintf(['Total times\n--------\n',...
+               'move   |  lower  |  settle  | scan   | up \n']);
+      fprintf('%.3f | %.3f  | %.3f   | %.3f  | %.3f |\n', tmove, tlower, tsettle, tscan, tup);
+    end
 
     function [x_k, y_k, uz_k, ze_k, t_k] = get_tup_k(self, k)
       x_k = self.x(idx_k);
       y_k = self.y(idx_k);
       uz_k = self.uz(idx_k);
       ze_k = self.ze(idx_k);
-      t_k = idx_k*Ts;
+      t_k = idx_k*self.Ts;
       
     end
     function [x_k, y_k, uz_k, ze_k, t_k] = get_settle_k(self, k)
@@ -193,7 +236,7 @@ classdef CsExp < handle
       y_k = self.y(idx_k);
       uz_k = self.uz(idx_k);
       ze_k = self.ze(idx_k);
-      t_k = idx_k*Ts;
+      t_k = idx_k*self.Ts;
     end
       
     function [x_k, y_k, uz_k, ze_k, t_k] = get_down_k(self, k)
@@ -203,7 +246,7 @@ classdef CsExp < handle
       y_k = self.y(idx_k);
       uz_k = self.uz(idx_k);
       ze_k = self.ze(idx_k);
-      t_k = idx_k*Ts;    
+      t_k = idx_k*self.Ts;    
     end
       
     function [x_k, y_k, uz_k, ze_k, t_k] = get_scan_k(self, k)
@@ -213,7 +256,7 @@ classdef CsExp < handle
       y_k = self.y(idx_k);
       uz_k = self.uz(idx_k);
       ze_k = self.ze(idx_k);
-      t_k = idx_k*Ts;
+      t_k = idx_k*self.Ts;
       
     end
     
@@ -257,6 +300,8 @@ classdef CsExp < handle
         [Fig3, ax3] = parse_fig_ax(figs{3});
       end
       
+      % Reset the pix_mask
+      self.pix_mask = self.pix_mask*0;
       for k = 1:length(self.idx_state_s.scan)
         % Get the data for the current mu-path.
         [X_raw, Y_raw] = self.get_scan_k(k);
@@ -264,7 +309,10 @@ classdef CsExp < handle
         X_raw = X_raw*pix_per_volt;
      
         [U_scan, U_z, U_orig] = self.dynamic_detrend(k);
-     
+        U_scan = U_scan(500:end);
+        Y_raw = Y_raw(500:end);
+        X_raw = X_raw(500:end);
+        
         if max(U_scan) - min(U_scan) > 0.4 % throw out rediculous data.
           %fprintf('skipping\n')
 %           continue
