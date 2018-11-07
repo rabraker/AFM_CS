@@ -118,16 +118,41 @@ h3.DisplayName = 'yon, x-disconnected';
 [Z1, freqs] = power_spectrum(ze1(1:N), Ts);
 [Z2, freqs] = power_spectrum(ze2(1:N), Ts);
 [Z3, freqs] = power_spectrum(ze3(1:N), Ts);
+legend([h1, h2, h3])
 %%
-
+clc
 figure(9); clf
 
-semilogx(freqs, Z1);
-hold on
-semilogx(freqs, Z2)
-semilogx(freqs, Z3)
 
-legend([h1, h2, h3])
+h11 = semilogx(freqs, log10(Z1));
+h11.DisplayName = 'xy-on, both connected';
+hold on, grid on
+h22 = semilogx(freqs, log10(Z2));
+h22.DisplayName = 'xy-on, y-disconnected';
 
+h33 = semilogx(freqs, log10(Z3));
+h33.DisplayName = 'xy-on, x-disconnected';
+% uistack(h11, 'top')
+legend([h11, h22, h33]);
 
+%%
+rmpath functions
+addpath ~/matlab/afm_mpc_journal/functions/canon/
+addpath ~/matlab/afm_mpc_journal/functions
 
+[plants_xy, frf_xy] = CanonPlants.plants_ns14(9, 2);
+
+rmpath ~/matlab/afm_mpc_journal/functions/canon/
+rmpath ~/matlab/afm_mpc_journal/functions/
+addpath functions
+
+rand_fname = fullfile(PATHS.sysid, 'rand_noise_zaxis_10-30-2018_01.mat');
+models_z = load(rand_fname);
+%%
+yyaxis right
+h44 = semilogx(frf_xy.freqs_Hz, log10(abs(frf_xy.G_uz2stage)), '-k', 'LineWidth', 2);
+h44.DisplayName = '$G_{z,u_z}$';
+h55 = semilogx(models_z.modelFit.frf.freqs_Hz, log10(abs(models_z.modelFit.frf.G_uz2stage)), '-r', 'LineWidth', 2);
+h55.DisplayName = '$G_{z,u_z}$';
+
+legend([h11, h22, h33, h44, h55])

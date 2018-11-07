@@ -6,16 +6,11 @@
 % faster scans, we want to use that data, so we can process it better.
 % That's what this script does.
 clc
-<<<<<<< variant A
+
 % clear
-close all
->>>>>>> variant B
-clear
 % close all
-####### Ancestor
-clear
-close all
-======= end
+
+
 addpath('functions')
 
 if ispc
@@ -29,7 +24,7 @@ else
   dat_root = fullfile(PATHS.exp, 'imaging', 'raster');
 end
 
-dat_name = 'raster_scan_512pix_5mic_01Hz_out_11-2-2018-01.csv';
+dat_name = 'raster_scan_512pix_5mic_01Hz_out_11-5-2018-03.csv';
 parent_name = 'raster_scan_5mic_01Hz.csv';
 
 sub_dir = '5microns';
@@ -149,21 +144,23 @@ plot(zes)
 
 %%
 
-[pixmat2, pixelifsampled] = bin_raster_really_slow([datmat(:,[1,2]), zz], pix, samps_per_period, volts2pix);
-% [pixmat2, pixelifsampled] = bin_raster_really_slow(datmat(:,[1,2,4]), pix, samps_per_period, volts2pix);
+% [pixmat2, pixelifsampled] = bin_raster_really_slow([datmat(:,[1,2]), zz], pix, samps_per_period, volts2pix);
+[pixmat2, pixelifsampled] = bin_raster_really_slow(datmat(:,[1,2,4]), pix, samps_per_period, volts2pix);
 
 
 
 thresh = (20/7)*(1/1000)*20;
 pixmat2 = pixmat2 - mean(pixmat2(:));
-F10 = figure(5+0); clf
+F10 = figure(5+2); clf
 ax1 = gca();
-f11 = figure(6+0); clf
+f11 = figure(6+2); clf
 ax2 = gca();
 lo = min(min(pixmat2));
 hi = max(max(pixmat2));
 imshow_dataview(pixmat2, [-thresh, thresh], ax1, ax2)
 
+%%
+save('tuesday-figs/11-5-2018/derate_retrace.mat', 'pixmat2', 'thresh', 'Cluster')
 %%
 axis('on')
 
