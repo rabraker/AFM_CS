@@ -12,6 +12,8 @@ latex/auto
 *.csv
 *.mat
 acc2018-data
+*.slxc
+
 qpPaper/
 quadProg/
 qpFPGA_*

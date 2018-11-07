@@ -42,7 +42,7 @@ E2 = 179e9;
 k = 0.12;
 % Q = 100;
 Q = 2;
-wo = 2*pi*10e3;
+wo = 2*pi*5e3;
 m = (k)/wo^2;
 
 fo = R*(2/3)*pi*pi*eps*rho1*rho2*sig^4;
@@ -55,13 +55,14 @@ params = struct('sigma', sig, 'k', k, 'Q', Q, 'wo', wo,...
 go_den = 3*pi*( (1-nu1^2)/(pi*E1) + (1-nu2^2)/(pi*E2))
 params.go = 8*sqrt(2)*sqrt(R)/(go_den);
 
-fun = @(x) (-k/m)*x + (1/m)*force2(x, 0, params);
+fun = @(x) -k*x + force2(x, 0, params);
 % fun = @(xz) force2(xz(1), xz(2), params);
 x1_guess = ro;
 x10 = fsolve(fun, x1_guess)
 x20 = 0;
+fun(x10)
 %%
-params.x0 = [x10; x20];
+params.x0 = [-2.4220e-09; x20];
 
 % Plot the force curve with these parameters.
 % close all
@@ -71,17 +72,18 @@ F = r_s*0;
 % params.fo = .5*scl;
 
 for k=1:length(r_s)
-    F(k) = force2(r_s(k), 0, params);
+    F(k) = force2(-r_s(k), 0, params);
+% F(k) = fun(r_s(k));
 end
 
 figure(100)
-plot(r_s, F)
-
+plot(-r_s, F)
+%%
 % --------------- Closed Loop Sim ----------------------------------------
-%
+
 clc
 % D_I = zpk([],[], 1, Ts);
-KK = 9;
+KK = -20;
 v2m = (7/20)*1e-6;
 m2v = 1/v2m;
 mic2nm = 1000;
@@ -95,7 +97,7 @@ n = floor(M*To/Ts);
 t = (0:n-1)'*Ts;
 Amp = 10*scl;
 surface = sign(sin(w_surf*t))*Amp + Amp;
-
+surface(1) = []; t(1) = [];
 figure(2)
 plot(surface)
 
@@ -105,12 +107,12 @@ trun = surface.Time(end);
 
 sim('tip_interaction_closedloop')
 
-
+%%
 figure(10); clf
 subplot(3,1,1)
-plot(uz.Time, uz.Data*(7/20)*mic2nm)
+plot(uz.Time, -uz.Data*(7/20)*mic2nm)
 hold on
-plot(surface.Time, surface.Data*m2nm);
+plot(surface.Time, 20-surface.Data*m2nm);
 ylabel('control p(t)')
 xlabel('time [s]')
 legend('control', 'surface')
@@ -118,7 +120,7 @@ ax1 = gca();
 grid on;
 
 subplot(3,1,2)
-plot(simout.Time, simout.Data(:,1)*m2nm)
+plot(simout.Time, (simout.Data(:,1))*m2nm)
 ylabel('defl [nm]')
 xlabel('time [s]')
 % ylim([-100, 100])
