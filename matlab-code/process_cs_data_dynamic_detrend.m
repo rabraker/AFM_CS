@@ -13,8 +13,8 @@ Ts = 40e-6;
 
 
 % cs_exp_data_name_s{1} = 'cs-traj-z-bounce_out_10-17-2018-03.csv';
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_11-5-2018-10.csv';
-sub_dir = '5microns/11-04-2018';
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-6-2018-02.csv';
+sub_dir = '5microns/11-06-2018';
 data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', sub_dir);
 chan_map = ChannelMap([1:5]);
 % -------------------
@@ -38,7 +38,7 @@ cs_paths = cs_exp_paths(data_root, cs_exp_data_name_s{1});
 hole_depth = (20);
 
 cs_exp = CsExp(cs_paths, chan_map, Ts, hole_depth, gg);
-%%
+
 cs_exp.print_state_times();
 fprintf('Total Imaging time: %.2f\n', cs_exp.time_total)
 
@@ -165,7 +165,7 @@ ax6.Visible = 'off';
 t1 = text(0,.5, s, 'Units', 'normalized');
 %%
 pixmat2 = cs_exp.Img_bp;
-save('Z:\afm-cs\tuesday-figs\11-5-2016\cs_img_quickdown.mat', 'pixmat2')
+save('Z:\afm-cs\tuesday-figs\11-5-2016\cs_img_slowdown.mat', 'pixmat2')
 
 %%
 figure(12)

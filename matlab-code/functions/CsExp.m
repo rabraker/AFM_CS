@@ -309,9 +309,9 @@ classdef CsExp < handle
         X_raw = X_raw*pix_per_volt;
      
         [U_scan, U_z, U_orig] = self.dynamic_detrend(k);
-        U_scan = U_scan(500:end);
-        Y_raw = Y_raw(500:end);
-        X_raw = X_raw(500:end);
+%         U_scan = U_scan(500:end);
+%         Y_raw = Y_raw(500:end);
+%         X_raw = X_raw(500:end);
         
         if max(U_scan) - min(U_scan) > 0.4 % throw out rediculous data.
           %fprintf('skipping\n')
