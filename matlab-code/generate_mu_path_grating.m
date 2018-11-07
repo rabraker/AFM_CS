@@ -9,7 +9,7 @@
 % then we know the lower part of the signal was in a hole. If no edge is
 % present, the entire signal was on the flat part of the grating. 
 clear, clc
-close all
+% close all
 addpath('classes')
 addpath('functions')
 
@@ -17,7 +17,7 @@ addpath('functions')
 
 %-------------- Location of System Model -------------------------
 
-plant_data = load(fullfile(PATHS.sysid(), 'x-axis_sines_infoFourierCoef_9-11-2018-01.mat'))
+plant_data = load(fullfile(PATHS.sysid(), 'x-axis_sines_infoFourierCoef_9-11-2018-01.mat'));
 PLANT_init_x = ss(plant_data.modelFit.models.G_uz2stage);
 
 %-------------- Define scan Params -------------------------
@@ -29,7 +29,7 @@ if 1
     width =5;  % microns
     npix =512;  % image resolution.
     mu_length = 0.5;  % 1000 nm. length of the horizontal mu-path. 
-    sub_sample_frac = 0.12;  % Percent of pixels to subsample. 
+    sub_sample_frac = 0.125;  % Percent of pixels to subsample. 
 end
 % Unit conversions.
 pix_per_micron = npix/width;
@@ -70,12 +70,13 @@ fprintf('Actual  sub sample fraction: %f\n', actual_sub_sample_frac)
 
 I = ones(npix,npix)-pix_mask;
 I = flipud(I); % why the fuck does it start from the top???
+figure(1)
 imshow(I)
 
 
 
 % '------------------correct by overscan for ramp ramp set ---------------
-clc, clf
+
 
 N = mu_Nsamples;
 x_rate = volts_per_sample;
@@ -84,29 +85,39 @@ D = tf([0.01, 0], [1 -1], Ts);
 H = feedback(D*G, 1);
 % N-1 because x0 is sample 1.
 x_N =  (N-1)*x_rate;
-N_extra = mu_overscan(G, D, x_rate, mu_Nsamples, 1)
+N_extra = mu_overscan(G, D, x_rate, mu_Nsamples, 1);
 
 mu_Nsamples_extra = N+N_extra;
 meta_cell = repmat({mu_Nsamples_extra}, 1, length(XR));
 %
 
-clc
-mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, Ts)
+% clc
+mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, Ts,...
+  'overscan_samples', N_extra, 'pre_pad_samples', 500);
 mpt.connect_mu_paths(0.064);
 vec = mpt.as_vector();
-mpt
 
-perc = floor(actual_sub_sample_frac*100)
-fname = sprintf('cs-traj-%dpix-%dperc-%dnm-%dmic-%.2dHz.csv',npix, perc, mu_length*1000,width, raster_freq)
+
+perc = floor(actual_sub_sample_frac*100);
+fname = sprintf('cs-traj-%dpix-%dperc-%dnm-%dmic-%.2dHz_v2.csv',npix, perc, mu_length*1000,width, raster_freq);
+target_dir = sprintf('%dmicrons/parents', width);
+data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', target_dir);
+
+fpath_csv = fullfile(data_root, fname);
+fprintf('File root:\n%s\n', data_root)
+fprintf('File name:\n%s\n', fname)
+
 %%
-
-MT = MasterTrajster(XR, YR, meta_cell, MoveEntityStatic.factory(N_mve), ME);
-MT.visualize_sampling;
-
-xlabel('x [v]')
-ylabel('y [v]')
-grid on
+mpt.write_data(fpath_csv)
 %%
+% 
+% MT = MasterTrajster(XR, YR, meta_cell, MoveEntityStatic.factory(N_mve), ME);
+% MT.visualize_sampling;
+% 
+% xlabel('x [v]')
+% ylabel('y [v]')
+% grid on
+
 % create meta file name
 
 target_dir = sprintf('%dmicrons/parents', width)
@@ -114,31 +125,6 @@ data_root = fullfile(getdataroot, 'cs-data', target_dir)
 if exist(data_root, 'file') ~=2
     mkdir(fullfile(getdataroot, 'cs-data'), target_dir)
 end
-meta_in = strrep(fname, '.csv', '.mat');
-meta_data_path = fullfile(data_root, meta_in);
-
-
-
-
-tip_velocity = width/(0.5*(1/raster_freq));
-
-CsExpMetaIn.width = width;
-CsExpMetaIn.nom_perc = sub_sample_frac;
-CsExpMetaIn.mu_length = mu_length;
-CsExpMetaIn.tip_velocity = tip_velocity;
-CsExpMetaIn.npix = npix
-CsExpMetaIn.pix_mask = pix_mask;
-CsExpMetaIn.actual_perc = perc;
-
-datafile = fullfile(data_root, fname)
-
-if 1
-    MT.write_csv(datafile)
-    save(meta_data_path, 'CsExpMetaIn')
-end
-   
-
-
 
     
 

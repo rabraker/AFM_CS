@@ -24,12 +24,33 @@ classdef MuPathTraj < handle
     YR_pix_starts;
     XR_volt_starts;
     YR_volt_starts;
+    
+    pre_pad_samples;
+    overscan_samples;
+    
+    sub_sample_perc;
   end
   
 
   methods
-    function self = MuPathTraj(pix_mask, width_mic, mu_len, x_rate, Ts)
-    % self = MuPathTraj(pix_mask, width_mic, mu_len, x_rate, Ts)
+    function self = MuPathTraj(pix_mask, width_mic, mu_len, x_rate, Ts, varargin)
+    % self = MuPathTraj(pix_mask, width_mic, mu_len, x_rate, Ts, varargin)
+    %
+    % varargin:
+    % ---------
+    %   'pre_pad_samples', (int) number of samples to move the
+    %    trajectory left by (so we can begin the scan during z-settling).
+    %    
+    %   'overscan_samples': (int) number of samples to overscan by (to correct
+    %   for ramp following error).
+    
+      p = inputParser();
+      p.addParameter('pre_pad_samples', 0);
+      p.addParameter('overscan_samples', 0);
+      p.parse(varargin{:});
+      self.overscan_samples = p.Results.overscan_samples;
+      self.pre_pad_samples =  p.Results.pre_pad_samples;
+      
       self.pix_mask = pix_mask;
       self.npix = size(pix_mask, 2);
       self.width_mic = width_mic;
@@ -47,10 +68,33 @@ classdef MuPathTraj < handle
       self.mu_lengths_pix = repmat(self.mu_pix_nom, N_paths, 1);
       self.mu_lengths_mic = self.mu_lengths_pix*self.pix2mic;
       self.mu_lengths_volts = self.mu_lengths_pix * self.pix2volts;
+      
+      self.sub_sample_perc = 100 * sum(self.pix_mask(:)) / self.npix^2;
     end
     
-    function vec = as_vector(self)
-    % vec = as_vector(self)
+    function write_data(self, csv_fname)
+      vec = self.as_vector();
+      
+      csvwrite(csv_fname, vec);
+      
+      meta_in_fname = strrep(csv_fname, '.csv', '.mat');
+      CsExpMetaIn.width = self.width_mic;
+      
+      CsExpMetaIn.mu_length = self.mu_length_mic_nom;
+      CsExpMetaIn.tip_velocity = self.x_rate_mic_per_sec;
+      CsExpMetaIn.npix = self.npix;
+      CsExpMetaIn.pix_mask = self.pix_mask;
+      CsExpMetaIn.actual_perc = self.sub_sample_perc;
+      
+      save(meta_in_fname, 'CsExpMetaIn');
+    end
+    
+    function vec = as_vector(self, pre_pad_samples)
+    % vec = as_vector(self,  pre_pad_samples)
+    
+      if exist('pre_pad_samples', 'var')
+        self.pre_pad_samples = pre_pad_samples;
+      end
       
       if isempty(self.XR_volt_starts) || isempty(self.YR_volt_starts)
         self.build_xr_yr_volt_starts();
@@ -65,9 +109,11 @@ classdef MuPathTraj < handle
       % FPGA is to build a matrix and then reshape.
       for k=1:length(self.XR_volt_starts)
         
-        xr_k = self.XR_volt_starts(k);
-        yr_k = self.YR_volt_starts(k);
-        N_k = N_vec(k);
+        xr_ = self.XR_volt_starts(k);
+        yr_ = self.YR_volt_starts(k);
+        N_ = N_vec(k);
+        [xr_k, yr_k, N_k] = self.adjust_pre_pad(xr_, yr_, N_);
+        N_k = N_k + self.overscan_samples;
         
         % the setpoint has a meta-idx=0;
         vec_k = [xr_k; 
@@ -81,12 +127,27 @@ classdef MuPathTraj < handle
         met_idx = ones(1, N_k) * k;
         met_idx(end) = -1;
         
-        vec_k = [vec_k, [x_mu_ramp_k; y_mu_k; met_idx]];
+        vec_k = [vec_k, [x_mu_ramp_k; y_mu_k; met_idx]]; %#ok<AGROW>
         
-        vec = [vec; reshape(vec_k, [], 1)];
+        vec = [vec; reshape(vec_k, [], 1)];              %#ok<AGROW>
       end
       
     end
+
+    function [xr, yr, N] = adjust_pre_pad(self, xr_volts, yr_volts, N_)
+    % [xr, yr, N] = adjust_pre_pad(self, xr_volts, yr_volts, N_)
+    % 
+      N = N_ + self.pre_pad_samples;
+      
+      volts_per_sec = self.x_rate_mic_per_sec * AFM.mic2volt_xy();
+      
+      x_diff_ticks = N_ * volts_per_sec * self.Ts; % Ts is seconds per tick
+      
+      xr = xr_volts - x_diff_ticks;
+      yr = yr_volts;
+      
+    end
+    
     
     function connect_mu_paths(self, Tmu)
       % connect_mu_paths(self, Tmu)

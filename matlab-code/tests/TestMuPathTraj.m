@@ -35,6 +35,21 @@ classdef TestMuPathTraj < matlab.unittest.TestCase
   
   methods (Test)
   
+    function test_adjust_pre_pad(self)
+      mpt = MuPathTraj(self.pix_mask, self.width_mic, self.mu_len, self.x_rate, self.Ts);
+      mpt.x_rate_mic_per_sec = 5; % adjust so we get 1 volt per sec.
+      mpt.pre_pad_samples = 10;
+      xr_ = 0;
+      yr_ = 0;
+      N_ = 0;
+      [xr, yr, N] = mpt.adjust_pre_pad(xr_, yr_, 10);
+      
+      self.assertEqual(yr, yr_);
+      self.assertEqual(N, 20);
+      self.assertEqual(xr, xr_ - 1)
+      
+    end
+    
     function test_connect_mu_paths(self)
       
       pix_min = 3; % Threshold for connecting two paths.
@@ -144,7 +159,7 @@ classdef TestMuPathTraj < matlab.unittest.TestCase
       
       mpt = MuPathTraj(self.pix_mask, self.width_mic, self.mu_len, self.x_rate, self.Ts);
       
-      mpt.build_xr_yr_starts();
+      mpt.build_xr_yr_pix_starts();
       
       self.assertEqual(mpt.XR_pix_starts, [1,10, 6]')
       self.assertEqual(mpt.YR_pix_starts, [1,1, 11]')
