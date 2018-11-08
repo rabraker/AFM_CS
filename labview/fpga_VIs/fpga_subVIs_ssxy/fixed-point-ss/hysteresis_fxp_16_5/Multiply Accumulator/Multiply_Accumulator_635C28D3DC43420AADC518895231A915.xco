@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 14.7
-# Date: Mon May 21 04:34:30 2018
+# Date: Wed Nov 07 01:33:29 2018
 #
 ##############################################################
 #
@@ -42,7 +42,7 @@ SELECT Multiply_Accumulator xilinx.com:ip:xbip_multaccum:2.0
 CSET a_input_type=Signed
 CSET a_input_width=16
 CSET accum_mode=Add
-CSET accum_width=32
+CSET accum_width=48
 CSET b_input_type=Signed
 CSET b_input_width=16
 CSET bypass=true
@@ -58,4 +58,4 @@ CSET sync_ce_priority=Sync_Overrides_CE
 MISC pkg_timestamp=2013-07-22T10:40:50Z
 # END Extra information
 GENERATE
-# CRC: e005ccc4
+# CRC:  7a30639
