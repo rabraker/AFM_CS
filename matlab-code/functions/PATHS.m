@@ -19,6 +19,10 @@ classdef PATHS
           % Path to simulation data folder.
           PATH = fullfile(PATHS.MPCJ_root(), 'data');
         end
+        function PATH = step_exp()
+          PATH = fullfile(PATHS.exp, 'steps');
+        end
+        
         function [ PATH ] = CS_root()
             % PATH constant to where all experimental data is stored for the 
             % MPC journal paper.
