@@ -47,6 +47,8 @@ afm_ss_singlematrix_FXP/
 slprj
 *.autosave
 *.mexa64
+*.mexw64
+
 *~
 matlab-code/figures/RESULTS/
 matlab-code/tuesday-figs/

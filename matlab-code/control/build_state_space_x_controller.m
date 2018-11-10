@@ -29,7 +29,7 @@ traj_path     = fullfile(PATHS.step_exp, refTrajName);
 
 %%
 clc
-fprintf('\n\n\n\n')
+
 TOL = 14/512; % max volts by pixels
 % TOL = .01;
 tol_mode = 'abs';

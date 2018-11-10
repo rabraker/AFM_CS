@@ -285,21 +285,26 @@ classdef SimAFM
       fprintf(fid, '%d, %f, %.12f,  %.12f, %d, %d, %d\n',...
         Ns, umax, self.du_max, self.Nbar, Nhyst, Nsat, Ndrift);
       
-      fprintf(fid, '0, 0, 0, 0\n'); % was for MPC parameters
+      % fprintf(fid, '0, 0, 0, 0\n'); % was for MPC parameters
         
       % These get written all as one row. 
       fprint_row(fid, '%.12f', AllMatrix);
       if Nhyst > 1
         fprint_row(fid, '%.12f', hyst_vec);
+      else
+        fprintf(fid, '\n');
       end
       
       if Nsat > 1
         fprint_row(fid, '%.12f', sat_vec);
+      else
+        fprintf(fid, '\n');
       end
       
       if Ndrift > 0
         fprint_row(fid, '%12f', ABCD_vec);
       end
+
       
       fclose(fid);
       
