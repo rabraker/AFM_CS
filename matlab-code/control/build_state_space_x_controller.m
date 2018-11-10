@@ -2,18 +2,19 @@
 % 'estimate' the delay states.
 
 
-clear all
+% clear all
 clc
 % Options
 figbase  = 50;
 verbose = 0;
-controlParamName = 'exp01Controls.csv';
+controlParamName = 'LinControls02.csv';
 refTrajName      = 'ref_traj_track.csv';
 outputDataName = 'exp01outputBOTH.csv';
 % Build data paths
 
-addpath(fullfile(getMatPath(), 'afm_mpc_journal', 'functions'));
-% PATH_sim_model       = pwd;  % for simulink simulations
+addpath(fullfile(getCsRoot(), 'functions'));
+addpath(fullfile(getCsRoot(), 'functions', 'state_space_x'));
+
 
 % ---- Paths for shuffling data to labview and back. ------
 %labview reads data here
@@ -21,18 +22,13 @@ controlDataPath = fullfile(PATHS.step_exp, controlParamName);
 % labview saves experimental results/data here
 data_out_path    = fullfile(PATHS.step_exp, outputDataName);
 % labview reads desired trajectory here
-refTrajPath     = fullfile(PATHS.step_exp, refTrajName);
+traj_path     = fullfile(PATHS.step_exp, refTrajName);
 % location of the vi which runs the experiment.
 
-% folder into which to save results. Point
-% process_settle_time_data.m here...
-% experiment_directory = ['many_steps_sweep_gamma_21-Sep-2018_01'];
-% step_exp_root = fullfile(PATHS.exp, 'step-exps');
-% 
-% [status, message ] = mkdir(step_exp_root, experiment_directory);
-% save_root = fullfile(step_exp_root, experiment_directory);
+
 
 %%
+clc
 fprintf('\n\n\n\n')
 TOL = 14/512; % max volts by pixels
 % TOL = .01;
@@ -56,7 +52,7 @@ gam_s = sort([gam_rob]);
 exp_id_str = 'const-sig';
 
 % ------- Load Plants -----
-[plants, frf_data] = CanonPlants.plants_ns14(9,2);
+[plants, frf_data] = CanonPlants.plants_ns14(9);
 Ts  = plants.SYS.Ts;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -143,21 +139,22 @@ if 1
   analyze_margins(plants, sys_obsDist, K_lqr, L_dist, verbose);
 end
 
-
+%%
 % --------------------  Fixed Linear stuff -----------------------------
 
 K_fxp = fi(K_lqr, 1, nw,32-10);
 sims_fxpl = SimAFM(plants.PLANT, K_fxp, Nx_fxp, sys_obs_fxp, L_fxp, du_max_fxp,...
   true, 'nw', nw, 'nf', nf, 'thenoise', thenoise);
-
-sims_fxpl.r = plants.hyst_sat.r;
-sims_fxpl.w = plants.hyst_sat.w;
-sims_fxpl.rp = fi(plants.hyst_sat.rp, 1, 16, 11);
-sims_fxpl.wp = fi(plants.hyst_sat.wp, 1, 16, 11);
-sims_fxpl.d = plants.hyst_sat.d;
-sims_fxpl.ws = plants.hyst_sat.ws;
-sims_fxpl.dp = fi(plants.hyst_sat.dp, 1, 16, 11);
-sims_fxpl.wsp = fi(plants.hyst_sat.wsp, 1, 16, 11);
+if 0
+  sims_fxpl.r = plants.hyst_sat.r;
+  sims_fxpl.w = plants.hyst_sat.w;
+  sims_fxpl.rp = fi(plants.hyst_sat.rp, 1, 16, 11);
+  sims_fxpl.wp = fi(plants.hyst_sat.wp, 1, 16, 11);
+  sims_fxpl.d = plants.hyst_sat.d;
+  sims_fxpl.ws = plants.hyst_sat.ws;
+  sims_fxpl.dp = fi(plants.hyst_sat.dp, 1, 16, 11);
+  sims_fxpl.wsp = fi(plants.hyst_sat.wsp, 1, 16, 11);
+end
 sims_fxpl.gdrift_inv = plants.gdrift_inv;
 sims_fxpl.gdrift = plants.gdrift;
 
@@ -176,39 +173,28 @@ figure(F_y)
 h22 = sim_exp_fxpl.ploty(F_y);
 legend([h22]);
 
+%%
+fprintf('===========================================================\n');
+fprintf('Writing control data...\n');
+fprintf('===========================================================\n');
 
 
+sims_fxpl.sys_obs_fp = sys_obsDist;
+sims_fxpl.sys_obs_fp.a = sys_obsDist.a - L_dist*sys_obsDist.c;
+
+sims_fxpl.write_control_data(controlDataPath, yref, traj_path)
 
 %%
 
 
 % column spec: [gamma, lin_exp, mpc_exp]
 
-fprintf('===========================================================\n');
-fprintf('Starting Experiments for gamma = %\n', gam_iter);
-fprintf('===========================================================\n');
-
-
-K_lqr = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_iter, S1);
-Qp = dare(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_iter, S1);
-
-
-% We have to rebuild these. This is a bit awkward, but i need the stuff
-% inside an instance of SimAFM, because a method there writes the control
-% data.
-K_fxp = fi(K_lqr, 1, nw,32-10);
-
-sims_fxpl = SimAFM(plants.PLANT, K_fxp, Nx_fxp, sys_obs_fxp, L_fxp, du_max_fxp,...
-  true, 'nw', nw, 'nf', nf, 'thenoise', thenoise, 'useNbar', true);
-
-sims_fxpl.sys_obs_fp = sys_obsDist;
-sims_fxpl.sys_obs_fp.a = sys_obsDist.a - L_dist*sys_obsDist.c;
-
-
-fprintf('------------ Running Linear Experiment, gamma = %.2f ----------------', gam_iter);
 %--------------------------------------------------------------------------
 % --------------------------- LINEAR Experiment ---------------------------
 
+fprintf('===========================================================\n');
+fprintf('Starting Experiments for gamma = %\n', gam_iter);
+fprintf('===========================================================\n');
 % Build the u-reset.
 if 1
   dry_run = false;
@@ -216,10 +202,6 @@ if 1
     'verbose', false, 'dry_run', dry_run)
   fprintf('...finished running piezo-reset.\n')
 end
-
-fxplin_dat_path = 'Z:\afm-cs\step-exps\LinControls01.csv';
-traj_path = 'Z:\afm-cs\step-exps\traj_data.csv';
-sims_fxpl.write_control_data(fxplin_dat_path, yref, traj_path)
 
 SettleTicks = 20000;
 Iters = length(yref.Data)-1;

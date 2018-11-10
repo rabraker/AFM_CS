@@ -46,7 +46,7 @@ classdef SimAFM
       p = inputParser();
       p.addParameter('thenoise', []);
       p.addParameter('step_amp', 0);
-      p.addParameter('r', 0);
+      p.addParameter('r', 0); % These must not be empty, else simulink fails.
       p.addParameter('w', 0);
       p.addParameter('rp', 0);
       p.addParameter('wp', 0);
@@ -77,14 +77,8 @@ classdef SimAFM
       self.PLANT = PLANT;
       self.controller = controller;
       self.Nx = Nx;
-      if self.useNbar
-        if ~isnumeric(controller)
-          error('useNbar only makes sense if controller is feedback gain, K')
-        end
-        self.Nbar = controller*Nx;
-      else
-        self.Nbar = [];
-      end
+      self.Nbar = controller*Nx;
+
       self.sys_obs = sys_obs;
       self.L = L;
       self.du_max = du_max;
@@ -244,6 +238,11 @@ classdef SimAFM
     function write_control_data(self, data_path, ref, varargin)
     % write_control_data(self, data_path, ref, varargin)
       
+      if isempty(self.sys_obs_fp)
+        error(['to write the controller data, set property ' ...
+               'sys_obs_fp'])
+      end
+    
       if ~isnumeric(ref)
         ref_traj_path = varargin{1};
         ref_f_1 = 0;
@@ -251,66 +250,70 @@ classdef SimAFM
         fprintf(fid, '%.12f, ', ref.Data(:)'); % as a row.
         fprintf(fid, '\n');
         fclose(fid);
-      else
-        ref_f_1 = ref(1);
       end
 
       Ns = size(self.sys_obs.b,1);
       Ns_mpc = Ns; %*size(self.sys_obs.b,2);
       umax = 0;
-      
-      fid = fopen(data_path, 'w+');
-      fprintf(fid, '%d, %.5f, 0, %f, %.12f,  %.12f\n', Ns, ref_f_1, umax, self.du_max, self.Nbar);
-      
-      
-      if isnumeric(self.controller)
-        MPC_mat = [];
-        fprintf(fid, '0, 0, 0, 0\n');
-        K = self.controller;
+      Nhyst = length(self.rp);
+      Nsat  = length(self.dp);
+      Ndrift = length(pole(self.gdrift_inv));
+      if Nhyst > 1
+        hyst_vec = [self.wp(:); self.rp(:)];
       else
-        % Should I make the FGMProb class do this??
-        Nmpc = self.controller.N_mpc;
-        I_HL = self.controller.I_HL;
-        ML = self.controller.ML;
-        MPC_mat = [double(I_HL), zeros(Nmpc,2), double(ML), zeros(Nmpc, 2)];
-        K = zeros(size(ML,2),1);
+        Nhyst = 0;
+      end
+      
+      if Nsat > 1
+        sat_vec = [self.wsp(:); self.dp(:)];
+      else
+        Nsat = 0;
+      end
+      if Ndrift >0
+        [a,b,c, d] = ssdata(balreal(self.gdrift_inv));
+        ABCD = [a, b; c, d];
+        % reshape into a column vector along rows.
+        ABCD_vec = reshape(ABCD', [], 1);
+      end
+      K = self.controller;
+
+      AllMatrix = packMatrixDistEst(self.sys_obs_fp,...
+        double(self.L), double(K), []);
+      
+      % ----------- Open File and write data -----------------------------
+      [fid, msg] = fopen(data_path, 'w+');
+      fprintf(fid, '%d, %f, %.12f,  %.12f, %d, %d, %d\n',...
+        Ns, umax, self.du_max, self.Nbar, Nhyst, Nsat, Ndrift);
+      
+      fprintf(fid, '0, 0, 0, 0\n'); % was for MPC parameters
         
-        fprintf(fid, '%.12f, %f, %f, %f\n', double(self.controller.beta),...
-                self.controller.maxIter, self.controller.N_mpc, Ns_mpc);
+      % These get written all as one row. 
+      fprint_row(fid, '%.12f', AllMatrix);
+      if Nhyst > 1
+        fprint_row(fid, '%.12f', hyst_vec);
       end
       
-      if isempty(self.sys_obs_fp)
-        error(['to write the controller data, set property ' ...
-               'sys_obs_fp'])
+      if Nsat > 1
+        fprint_row(fid, '%.12f', sat_vec);
       end
       
-      if self.useNbar
-        AllMatrix = packMatrixDistEst(self.sys_obs_fp,...
-          double(self.L), double(K), []);
-      else
-        AllMatrix = packMatrixDistEst(self.sys_obs_fp,...
-          double(self.L), double(K), double(self.Nx));
+      if Ndrift > 0
+        fprint_row(fid, '%12f', ABCD_vec);
       end
       
-      % These get written all as one row. AllMatrix is already a single a
-      % column.
-      fprintf(fid, '%.12f, ', AllMatrix(1:end-1));
-      fprintf(fid, '%.12f\n', AllMatrix(end));
-            
-      % MPC_mat is a matrix, not a column vector already!
-      if ~isempty(MPC_mat)
-        for k=1:size(MPC_mat, 1)-1
-          fprintf(fid, '%.12f, ', MPC_mat(k,:));
-        end
-        fprintf(fid, '%.12f, ', MPC_mat(end,1:end-1));
-        fprintf(fid, '%.12f\n', MPC_mat(end,end));
-      end
       fclose(fid);
       
     end % write control data
   
    end %methods
 end
+
+function fprint_row(fid, fmt, row)
+  fprintf(fid, [fmt, ', '], row(1:end-1));
+  fprintf(fid, [fmt, '\n'], row(end));
+  
+end
+
 
 % allmatrix = packMatrix(sys_obs, L, K, Nx)
 %

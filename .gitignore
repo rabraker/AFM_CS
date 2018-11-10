@@ -23,7 +23,7 @@ LRC_ptos_tac/
 MAC_project.zip
 Program Files (x86)/
 
-matlab-code/functions/export_fig/
+
 
 *.dll
 *.wdb
@@ -37,7 +37,7 @@ matlab-code/functions/export_fig/
 isim/
 
 
-afm_imaging/matlab-code/functions/export_fig
+matlab-code/functions/export_fig
 afm_MPC_compare -optimize/
 afm_MPC_compare/
 afm_MPC_project/
@@ -46,8 +46,9 @@ afm_ss_singlematrix_FXP/
 .svn/
 slprj
 *.autosave
+*.mexa64
 *~
-afm_imaging/matlab-code/figures/RESULTS/
+matlab-code/figures/RESULTS/
 matlab-code/tuesday-figs/
 
 

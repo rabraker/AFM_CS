@@ -20,7 +20,7 @@ classdef PATHS
           PATH = fullfile(PATHS.MPCJ_root(), 'data');
         end
         function PATH = step_exp()
-          PATH = fullfile(PATHS.exp, 'steps');
+          PATH = fullfile(PATHS.exp, 'step-exps');
         end
         
         function [ PATH ] = CS_root()

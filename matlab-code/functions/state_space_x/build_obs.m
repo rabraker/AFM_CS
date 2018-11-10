@@ -11,8 +11,10 @@ function [sys_obsDist, L_dist] = build_obs(sys_obs, can_params)
   Qw = sys_obs.b*sys_obs.b'*can_params.beta;
   
   Lx = dlqr(sys_obs.a', sys_obs.c', Qw, 1)';
+  Ad = 1;
+  Cd = 1;
   [L_dist, sys_obsDist, IDENT_obs, eNs_12] = DistEst.output_dist_est(sys_obs,...
-                                                    Lx, p_int_d);
+                                                    Lx, p_int_d, Ad, Cd);
   [Nx_r, Nx_d, Nu_r, Nu_d] = DistEst.steady_state_gains(sys_obs, sys_obs.b*0, 1);
   
 end
