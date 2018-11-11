@@ -9,18 +9,9 @@
 % The script will automatically save the resulting FRF's into a .mat file
 % with the same name as sinesOut_FileName, replacing only .csv with .mat.
 
-if ispc
-  rmpath('C:\Users\arnold\Documents\MATLAB\miscScripts\system_id\')
-  addpath('C:\Users\arnold\Documents\labview\sysID\matlab\functions')
-else
-  rmpath(fullfile(getMatPath(), 'toolboxes', 'system_id'))
-  addpath('/home/arnold/gradschool/sysID/matlab/functions')
-end
 
-% addpath('functions')
+init_paths();
 
-clear
-clc
 
 
 % Experiemental data out file. Although we need the data from the

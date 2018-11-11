@@ -1,14 +1,9 @@
 clc
 clear
 
-% This path should be set to the root of your github working directory. 
-if ~ispc
-  addpath /home/arnold/gradschool/sysID/matlab/functions
-end
+% initialize paths.
+init_paths();
 
-addpath(fullfile(getMatPath(), 'afm-cs', 'matlab-code', 'functions'))
-addpath(genpath(fullfile(getMatPath(), 'afm-cs', 'reconstruction', 'BP')))
-addpath(fullfile(getMatPath(), 'afm-cs', 'reconstruction', 'SMP_1D'))
 Ts = 40e-6;
 
 
