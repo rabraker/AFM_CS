@@ -3,7 +3,7 @@ function imshow_dataview(IM, thresh, ax1, ax2)
   h_im = imshow(IM, thresh)
   ax1 = h_im.Parent;
   
-  if exist('ax1', 'var')
+  if exist('ax2', 'var')
     dcm = datacursormode(gcf);
     set(dcm, 'UpdateFcn', @(x, event_obj) local_callback_function(x, event_obj, ax1, ax2));
   end
