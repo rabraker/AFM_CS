@@ -270,10 +270,13 @@ classdef SimAFM
         Nsat = 0;
       end
       if Ndrift >0
+        Ndrift_p1 = Ndrift + 1;
         [a,b,c, d] = ssdata(balreal(self.gdrift_inv));
         ABCD = [a, b; c, d];
         % reshape into a column vector along rows.
         ABCD_vec = reshape(ABCD', [], 1);
+      else
+        Ndrift_p1 = 0;
       end
       K = self.controller;
 
@@ -283,7 +286,7 @@ classdef SimAFM
       % ----------- Open File and write data -----------------------------
       [fid, msg] = fopen(data_path, 'w+');
       fprintf(fid, '%d, %f, %.12f,  %.12f, %d, %d, %d\n',...
-        Ns, umax, self.du_max, self.Nbar, Nhyst, Nsat, Ndrift);
+        Ns, umax, self.du_max, self.Nbar, Nhyst, Nsat, Ndrift_p1);
       
       % fprintf(fid, '0, 0, 0, 0\n'); % was for MPC parameters
         
@@ -301,7 +304,7 @@ classdef SimAFM
         fprintf(fid, '\n');
       end
       
-      if Ndrift > 0
+      if Ndrift_p1 > 0
         fprint_row(fid, '%12f', ABCD_vec);
       end
 

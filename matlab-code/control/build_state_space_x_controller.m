@@ -7,7 +7,7 @@ clc
 % Options
 figbase  = 50;
 verbose = 0;
-controlParamName = 'LinControls02.csv';
+controlParamName = 'LinControls01.csv';
 refTrajName      = 'ref_traj_track.csv';
 outputDataName = 'exp01outputBOTH.csv';
 % Build data paths
@@ -25,10 +25,6 @@ data_out_path    = fullfile(PATHS.step_exp, outputDataName);
 traj_path     = fullfile(PATHS.step_exp, refTrajName);
 % location of the vi which runs the experiment.
 
-
-
-%%
-clc
 
 TOL = 14/512; % max volts by pixels
 % TOL = .01;
@@ -101,7 +97,9 @@ du_max_orig = StageParams.du_max;
 du_max = du_max_orig/norm(plants.gdrift_inv, Inf);
 
 cmplx_rad = 0.9;
-[Q1, R0, S1, P_x] = build_control_constsigma(plants.sys_recyc, cmplx_rad);
+% [Q1, R0, S1, P_x] = build_control_constsigma(plants.sys_recyc, cmplx_rad);
+can_cntrl = CanonCntrlParamsChoozeZeta();
+[Q1, R0, S1, P_x] = build_control_choosezeta(plants.sys_recyc, can_cntrl);
 
 % ------------------------- Observer Gain ---------------------------------
 can_obs_params = CanonObsParams_01();
@@ -139,9 +137,9 @@ if 1
   analyze_margins(plants, sys_obsDist, K_lqr, L_dist, verbose);
 end
 
-%%
-% --------------------  Fixed Linear stuff -----------------------------
 
+% --------------------  Fixed Linear stuff -----------------------------
+%%
 K_fxp = fi(K_lqr, 1, nw,32-10);
 sims_fxpl = SimAFM(plants.PLANT, K_fxp, Nx_fxp, sys_obs_fxp, L_fxp, du_max_fxp,...
   true, 'nw', nw, 'nf', nf, 'thenoise', thenoise);
@@ -155,9 +153,10 @@ if 0
   sims_fxpl.dp = fi(plants.hyst_sat.dp, 1, 16, 11);
   sims_fxpl.wsp = fi(plants.hyst_sat.wsp, 1, 16, 11);
 end
-sims_fxpl.gdrift_inv = plants.gdrift_inv;
-sims_fxpl.gdrift = plants.gdrift;
-
+if 0
+  sims_fxpl.gdrift_inv = plants.gdrift_inv;
+  sims_fxpl.gdrift = plants.gdrift;
+end
 
 [y_fxpl, U_full_fxpl, U_nom_fxpl, dU_fxpl, Xhat_fxpl] = sims_fxpl.sim(yref, dist_traj);
 name = sprintf('FXP lin Sim. (%s)', exp_id_str);
