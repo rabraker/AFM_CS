@@ -18,7 +18,7 @@ function [Ad, Bd, Cd, sigmas] = impulse2ss(yy_IMP, r, s, Ns)
 
 no = size(yy_IMP, 1);
 ni = size(yy_IMP, 2);
-fprintf('Assuming number if outputs = %d, number inputs = %d\n', no, ni) 
+fprintf('Assuming number of outputs = %d, number inputs = %d\n', no, ni) 
 % Form Hankel matrices and start the Eigen system Realization
 k = 1;
 H0 = impulse2hankel(yy_IMP, k, r, s,ni, no);
