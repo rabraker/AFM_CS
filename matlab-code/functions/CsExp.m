@@ -51,7 +51,7 @@ classdef CsExp < handle
       self.y = self.y - min(self.y); % move to positive orthant.
       
       self.t = (0:length(self.x)-1)'*gg.Ts;
-      self.uz = lsim(gg, detrend(dat_meas(:, channel_map.uz)), self.t);
+      self.uz = lsim(gg, (dat_meas(:, channel_map.uz)), self.t);
       self.ze = dat_meas(:, channel_map.ze);
       self.met_ind = dat_meas(:, channel_map.met);
       % convert the meta cs-measurment index to -4.
