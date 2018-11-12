@@ -32,7 +32,7 @@ clear
 addpath('functions')
 
 % File name
-InputFileName = 'x-axis_sines_info_intsamps_zaxis.csv';
+InputFileName = 'x-axis_sines_info_intsamps_quick.csv';
 
 
 
@@ -59,9 +59,10 @@ Amp = 0.20; % Sin wave amplitude.
 
 freq0 = [];
 freq1 = linspace(1, 190, 40)';
-freq2 = linspace(191, 235, 45)';
-% freq3 = linspace(236, 3
-freq3 = logspace(log10(235), log10(12500-1), 100)';
+freq2 = [];
+% freq2 = linspace(191, 235, 20)';
+% % freq3 = linspace(236, 3
+freq3 = logspace(log10(191), log10(12500-1), 120)';
 
 
 % freq0 = [];
@@ -88,7 +89,7 @@ semilogx(freqs_Hz, 0*freqs_Hz, 'x')
 
 
 % You shouldn't have to change any of this. 
-Nsettle = floor(5.0/Ts); % This should probably be sufficient for your AFM. 
+Nsettle = floor(0.5/Ts); % This should probably be sufficient for your AFM. 
 Tsettle = Nsettle*Ts; % Amount of time to let transients die. Make it an integer multiple
 
 % -------------------------------------------------------------------------
