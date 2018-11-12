@@ -11,7 +11,9 @@ Ts = 40e-6;
 % cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-6-2018-02.csv';
 % sub_dir = '5microns/11-06-2018';
 % data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', sub_dir);
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-1000nm-5mic-01Hz_out_11-8-2018-01.csv';
+
+% cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-10-2018-02.csv';
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-10-2018CZ-01.csv';
 sub_dir = 'step-exps';
 data_root = fullfile(PATHS.exp(), sub_dir);
 chan_map = ChannelMap([1:5]);
@@ -21,7 +23,7 @@ models = load(fname);
 G = -models.modelFit.G_zdir;
 p = pole(G);
 z = zero(G);
-
+%%
 gg = zpk(z(end-1:end), p(1:2), 1, G.Ts);
 % gpz = zpk(p(end-1:end), z(9:10), 1, G.Ts);
 % D = zpk(0, 1, 0.025, G.Ts);
