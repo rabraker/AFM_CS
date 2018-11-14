@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 14.7
-# Date: Wed Nov 07 01:33:29 2018
+# Date: Wed Nov 14 22:57:33 2018
 #
 ##############################################################
 #
@@ -42,12 +42,12 @@ SELECT Multiply_Accumulator xilinx.com:ip:xbip_multaccum:2.0
 CSET a_input_type=Signed
 CSET a_input_width=16
 CSET accum_mode=Add
-CSET accum_width=48
+CSET accum_width=32
 CSET b_input_type=Signed
 CSET b_input_width=16
 CSET bypass=true
 CSET bypass_sense=Active_High
-CSET component_name=Multiply_Accumulator_635C28D3DC43420AADC518895231A915
+CSET component_name=Multiply_Accumulator_ED2DB7673BE24B9DA25B94993391B6B2
 CSET implementation=DSP48
 CSET latency=1
 CSET latency_configuration=Manual
@@ -58,4 +58,4 @@ CSET sync_ce_priority=Sync_Overrides_CE
 MISC pkg_timestamp=2013-07-22T10:40:50Z
 # END Extra information
 GENERATE
-# CRC:  7a30639
+# CRC: 5898e2ca
