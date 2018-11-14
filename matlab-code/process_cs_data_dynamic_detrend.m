@@ -6,11 +6,11 @@ init_paths();
 
 Ts = 40e-6;
 
-
+size = '5microns';
 
 cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-13-2018-03.csv';
-sub_dir = '5microns/11-13-2018';
-data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', sub_dir);
+
+data_root = PATHS.cs_image_data(size, '11-13-2018');
 
 % % cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-10-2018-02.csv';
 % cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-10-2018CZ-01.csv';
@@ -33,7 +33,7 @@ gg = zpk(z(end-1:end), p(1:2), 1, G.Ts);
 % gg = zpk([], [], 1, Ts);
 % gg = gg/dcgain(gg);
 % ---------------------
-cs_paths = cs_exp_paths(data_root, cs_exp_data_name_s{1});
+cs_paths = get_cs_paths(data_root, cs_exp_data_name_s{1});
 
 hole_depth = (20);
 
@@ -54,7 +54,7 @@ Fig_x = figure(40+figbase); clf
 ax3 = gca();
 Fig_y = figure(50+figbase); clf
 ax4 = gca();
-cs_exp.plot_all_cycles(ax1, ax2, ax3, ax4);
+% cs_exp.plot_all_cycles(ax1, ax2, ax3, ax4);
 %%
 
 % % G = models.modelFit.G_zdir;
@@ -92,7 +92,7 @@ I = cs_exp.Img_raw;
 fprintf('finished processing raw CS data...\n');
 
 fprintf('nperc=%.3f\n', sum(cs_exp.pix_mask(:))/cs_exp.npix^2);
-%%
+
 ht = cs_exp.feature_height;
 figure(10+figbase)
 ax = gca();
@@ -100,7 +100,7 @@ figure(11+figbase)
 axx = gca();
 imshow_dataview(cs_exp.Img_raw-mean(cs_exp.Img_raw(:)), [-ht, ht], ax, axx)
 
-%%
+
 bp = true;
 % ********* SMP *************
 clear CsExp
@@ -143,10 +143,6 @@ title(ax3, 'sample');
 imshow_sane(cs_exp.Img_smp1d, ax5, cs_exp.width, cs_exp.width, [-ht, ht])
 title(ax5, 'SMP reconstruction');
 drawnow
-
-fun = @ cs_exp.solve_basis_pursuit;
-
-batch('fun')
 
 
 if bp

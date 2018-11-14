@@ -7,45 +7,33 @@
 % That's what this script does.
 clc
 
-% clear
-% close all
+init_paths();
 
+clear size
+size_dir = '5microns';
+dat_root = PATHS.raster_image_data(size_dir, '11-13-2018');
+dat_name = 'raster_scan_512pix_5mic_01Hz_out_11-13-2018-01.csv';
 
-addpath('functions')
+raster_paths = get_raster_paths(dat_root, dat_name)
+%%
 
-if ispc
-% dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster\'
+% meta_name = strrep(parent_name, '.csv', '-meta.mat');
+% fprintf('Using parent Data file\n%s\n', parent_name)
 
-dat_root = 'Z:\afm-cs\imaging\raster';
-  % data_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data'
-  % dat_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
-else
-  % dat_root = '/home/arnold/gradschool/afm-cs/afm_imaging/data';
-  dat_root = fullfile(PATHS.exp, 'imaging', 'raster');
-end
-
-dat_name = 'raster_scan_512pix_5mic_01Hz_out_11-13-2018-02.csv';
-parent_name = 'raster_scan_5mic_01Hz.csv';
-
-sub_dir = '5microns';
-
-parent_name = get_parent_name(dat_name, '_out_');
-meta_name = strrep(parent_name, '.csv', '-meta.mat');
-fprintf('Using parent Data file\n%s\n', parent_name)
-
-dat_path = fullfile(dat_root, sub_dir, dat_name);
-parent_path = fullfile(dat_root, sub_dir, parent_name);
-meta_in_path = fullfile(dat_root, sub_dir,  meta_name);
-meta_out_path = strrep(dat_path, '.csv', '-meta.mat');
+% dat_path = fullfile(dat_root, sub_dir, dat_name);
+% parent_path = fullfile(dat_root, sub_dir, parent_name);
+% meta_in_path = fullfile(dat_root, sub_dir,  meta_name);
+% meta_out_path = strrep(dat_path, '.csv', '-meta.mat');
 
 tic
 
 
-fprintf('Loading Meta file...\n%s\n', meta_out_path)
-load(meta_out_path);
-fprintf('Loading Data file...\n%s\n', dat_path)
-datmat = csvread(dat_path);
-parent_dat = csvread(parent_path);
+fprintf('Loading Meta file...\n%s\n', raster_paths.meta_path)
+load(raster_paths.meta_path);
+fprintf('Loading Data file...\n%s\n', raster_paths.data_path)
+datmat = csvread(raster_paths.data_path);
+
+parent_dat = csvread(raster_paths.parent_path);
 
 xyref = reshape(parent_dat', 2, [])';
 xref = xyref(:,1);
@@ -115,17 +103,20 @@ gdrift1 = models.modelFit.gdrift;
 
 KI = -Cluster.raster_scan_params.PI_params.Ki;
 D1 = zpk([0], 1, KI, G1.Ts) * Dinv1;
-H = -minreal(feedback(D1, G1))*G*LPF;
+H = -minreal(feedback(D1, G1))*G1*LPF;
 figure, step(H)
 
 
 zz = lsim(gdrift1, datmat(:,4), (0:length(datmat(:,4))-1)'*G1.Ts);
 figure(1); clf
 % subplot(2,1,1)
-plot(zz(1:1:samps_per_line*8))
+%%
+plot(detrend2(detrend(zz))); %(1:1:samps_per_line*8))
 hold on
+
 % subplot(2,1,2)
-plot(datmat(1:samps_per_line*80,4))
+% plot(datmat(1:samps_per_line*80,4))
+
 %%
 figure(20)
 plot(datmat(1:samps_per_line*4, 3))
@@ -147,9 +138,21 @@ volts2pix = volts2microns * micron2pix;
 % [pixmat2, pixelifsampled] = bin_raster_really_slow([datmat(:,[1,2]), zz], pix, samps_per_period, volts2pix);
 [pixmat2, pixelifsampled] = bin_raster_really_slow(datmat(:,[1,2,4]), pix,...
   samps_per_period, volts2pix);
-%%
-pixmat2 = detrend_plane(pixmat2);
 
+% pixmat2 = detrend_plane(pixmat2);
+
+x = [1:512];
+y = x;
+[xx, yy, zz] = prepareSurfaceData(x, y, pixmat2);
+%%
+pixmat3 = pixmat2*0;
+f= fit([xx, yy], zz, 'poly23')
+for k=1:512
+  pixmat3(k, :) = pixmat2(k,:) - f(k, x');
+end
+[xx, yy, zzz] = prepareSurfaceData(x, y, pixmat3);
+figure, plot([xx, yy], zzz)
+%%
 thresh = (20/7)*(1/1000)*20;
 pixmat2 = pixmat2 - mean(pixmat2(:));
 F10 = figure(5+2); clf
@@ -158,8 +161,15 @@ f11 = figure(6+2); clf
 ax2 = gca();
 lo = min(min(pixmat2));
 hi = max(max(pixmat2));
-imshow_dataview(pixmat2, [-thresh, thresh], ax1, ax2)
 
+
+pixmat3 = detrend_plane(detrend2(pixmat2(10:end-10,10:end-25)));
+imshow_dataview(pixmat3 - mean(pixmat3(:)), [-thresh, thresh], ax1, ax2)
+
+figure,
+mesh(pixmat3)
+% [xx, yy, zzz] = prepareSurfaceData(x, y, pixmat3);
+% figure, plot([xx, yy], zzz)
 %%
 save('tuesday-figs/11-5-2018/derate_retrace.mat', 'pixmat2', 'thresh', 'Cluster')
 %%

@@ -22,7 +22,14 @@ classdef PATHS
         function PATH = step_exp()
           PATH = fullfile(PATHS.exp, 'step-exps');
         end
+        function PATH = cs_image_data(size, date_dir)
+          PATH = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', size, date_dir);
+        end
         
+        function PATH = raster_image_data(size, date_dir)
+          PATH = fullfile(PATHS.exp(), 'imaging', 'raster', size, date_dir);
+        end
+
         function [ PATH ] = CS_root()
             % PATH constant to where all experimental data is stored for the 
             % MPC journal paper.
