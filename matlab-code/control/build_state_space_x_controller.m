@@ -176,12 +176,13 @@ legend([h22]);
 fprintf('===========================================================\n');
 fprintf('Writing control data...\n');
 fprintf('===========================================================\n');
-
+clc
 
 sims_fxpl.sys_obs_fp = sys_obsDist;
 sims_fxpl.sys_obs_fp.a = sys_obsDist.a - L_dist*sys_obsDist.c;
 
 sims_fxpl.write_control_data(controlDataPath, yref, traj_path)
+sims_fxpl.write_control_data_json('/media/labserver/afm-cs/step-exps/LinControls01.json')
 
 %%
 
