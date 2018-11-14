@@ -24,7 +24,7 @@ else
   dat_root = fullfile(PATHS.exp, 'imaging', 'raster');
 end
 
-dat_name = 'raster_scan_512pix_5mic_01Hz_out_11-5-2018-03.csv';
+dat_name = 'raster_scan_512pix_5mic_01Hz_out_11-13-2018-02.csv';
 parent_name = 'raster_scan_5mic_01Hz.csv';
 
 sub_dir = '5microns';
@@ -102,11 +102,7 @@ linkaxes([ax1, ax2], 'x')
 %  Now try by actually using the x-y measured data;
 %%
 
-clc
-width = 5;
-% volts2micron = 50/10;
-micron2pix = pix/width;
-volts2pix = volts2microns * micron2pix;
+
 w_lpf = 600*2*pi;
 z_lpf = exp(-w_lpf*Ts);
 LPF1 = zpk([], [z_lpf], 1-z_lpf, Ts);
@@ -143,11 +139,16 @@ zes = lsim(sys, datmat(1:samps_per_line, 3), (0:samps_per_line-1)'*Ts)
 plot(zes)
 
 %%
-
+clc
+width = 5;
+% volts2micron = 50/10;
+micron2pix = pix/width;
+volts2pix = volts2microns * micron2pix;
 % [pixmat2, pixelifsampled] = bin_raster_really_slow([datmat(:,[1,2]), zz], pix, samps_per_period, volts2pix);
-[pixmat2, pixelifsampled] = bin_raster_really_slow(datmat(:,[1,2,4]), pix, samps_per_period, volts2pix);
-
-
+[pixmat2, pixelifsampled] = bin_raster_really_slow(datmat(:,[1,2,4]), pix,...
+  samps_per_period, volts2pix);
+%%
+pixmat2 = detrend_plane(pixmat2);
 
 thresh = (20/7)*(1/1000)*20;
 pixmat2 = pixmat2 - mean(pixmat2(:));
