@@ -45,20 +45,40 @@ classdef CsExp < handle
       self.width = self.meta_in.width;
       
       self.channel_map = channel_map;
+      
+      % Get indices for each state.
+      self.met_ind = dat_meas(:, channel_map.met);
+      % convert the meta cs-measurment index to -4.
+      self.met_ind(self.met_ind > 0) = -4;      
+      self.idx_state_s = CsExp.divide_by_state(self.met_ind);
+      
       self.x = dat_meas(:, channel_map.x);
-      self.x = self.x - min(self.x); % move to positive orthant.
+      self.x = self.x; %- min(self.x); % move to positive orthant.
       self.y = dat_meas(:, channel_map.y);
-      self.y = self.y - min(self.y); % move to positive orthant.
+      self.y = self.y; %- min(self.y); % move to positive orthant.
+      
+      % Move x-y data to the positive othant. Need to do this based on
+      % MEASUREMENT DATA, because with pre-scan, we may be purposefully outside
+      % e.g., to the left of the y-axis. Moving everything to positive orthant
+      % will leave us with a strip of "unmeasured" data in the final image.
+      xmin_meas = [];
+      ymin_meas = []; % n.b. min([ [], 9]) = 9.
+      for k=1:length(self.idx_state_s.scan)
+        idx_k = self.idx_state_s.scan{k};
+        xmin_k = min(self.x(idx_k));
+        ymin_k = min(self.y(idx_k));
+        xmin_meas = min([xmin_meas, xmin_k]); % brackets necessary
+        ymin_meas = min([ymin_meas, ymin_k]); % brackets necessary
+      end
+      
+      self.x = self.x - xmin_meas;
+      self.y = self.y - ymin_meas;
       
       self.t = (0:length(self.x)-1)'*gg.Ts;
       self.uz = lsim(gg, (dat_meas(:, channel_map.uz)), self.t);
       self.ze = dat_meas(:, channel_map.ze);
-      self.met_ind = dat_meas(:, channel_map.met);
-      % convert the meta cs-measurment index to -4.
-      self.met_ind(self.met_ind > 0) = -4;
+
       
-      % Get indices for each state.
-      self.idx_state_s = CsExp.divide_by_state(self.met_ind);
       
       self.Img_raw = zeros(self.npix, self.npix);
       self.Img_smp1d = zeros(self.npix, self.npix);
