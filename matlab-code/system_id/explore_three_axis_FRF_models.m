@@ -100,19 +100,8 @@ if max(abs(pole(sys))) < 1
 end
 
 end
-sys = fd.realize(kstab);
-
-t = (0:floor(1/Ts))'*Ts;
-amp = 0.00001;
-ux = randn(size(t,1), 1)*amp;
-uy = randn(size(t,1), 1)*amp;
-u = [ux, uy];
-[y, t] = lsim(sys, u, t);
-size(y)
-
-figure(6)
-plot(t, y)
 %%
+
 clc
 try
   delete(h_ux_fit)
@@ -137,60 +126,57 @@ for k=1:3
   h_uy_fit(k).DisplayName = names_y{k};
 end
 legend([ h1y, h2y, h3y, h_uy_fit'])
-%%
-
-clc
 
 %%
 clc
 fc_time_file = 'x-axis_sines_info_intsamps_quick_out_11-11-2018xdrive-01.csv';
 time_path = fullfile(dataRoot, fc_time_file);
-
-
 ss_ux_off = SweptSinesOffline(time_path);
-%%
-S_ij = SweptSines.getCrossSpectra(xk, ssOpts2);
-%%
+[FC_s, E_s] = SweptSines.fourierCoefs_all_periods(ss_ux_off.xk, ss_ux_off);
+ss_ux_off.FC_s = FC_s;
 
-
-Gux2xdir2 = squeeze(S_ij(2,1,:)./S_ij(1,1,:));
-Gux2ydir2 = squeeze(S_ij(3,1,:)./S_ij(1,1,:));
-Gux2zdir2 = squeeze(S_ij(4,1,:)./S_ij(1,1,:));
 % F2 = figure(2); clf
-frfBode(Gux2xdir2, ssOpts2.freq_s_adjusted', F2, 'Hz', '--b')
-frfBode(Gux2ydir2, ssOpts2.freq_s_adjusted', F2, 'Hz', '--m')
-frfBode(Gux2zdir2, ssOpts2.freq_s_adjusted', F2, 'Hz', '--y')
-%%
-clc
-clf
+Gux2xdir2 = FC_s(:,2)./FC_s(:,1);
+Gux2ydir2 = FC_s(:,3)./FC_s(:,1); 
+Gux2zdir2 = FC_s(:,4)./FC_s(:,1); 
+
 names = {'ux', 'x-dir', 'y-dir', 'z-dir'};
 
+F2 = figure(2); clf
 clrs = {'k', 'g', 'r'};
 F3 = figure(3);clf;
-Gz_list = {Gux2xdir, Gux2ydir, Gux2zdir2};
-freqs = ssOpts2.freq_s_adjusted(:);
-frf_bode_dataview(Gz_list, FC_s,freqs, Ts, F2, xk, F3, names, 'Hz', clrs);
-
+Gz_list = {Gux2xdir2, Gux2ydir2, Gux2zdir2};
+freqs = ss_ux_off.freq_s_adjusted(:);
+frf_bode_dataview(Gz_list, ss_ux_off.FC_s*2,freqs, Ts, F2, ss_ux_off.xk, F3, names, 'Hz', clrs);
+%%
+save('good_frf_xdir.mat', 'Gz_list', 'freqs', 'Ts', 'ss_ux_off', 'names', 'clrs')
 
 %%
-[~, E_s] = SweptSines.fourierCoefs_all_periods(xk, ssOpts2);
-figure
-semilogx(freqs, E_s(:,1))
+% S_ij = SweptSines.getCrossSpectra(ss_ux_off.xk, ss_ux_off);
+% Gux2xdir2 = squeeze(S_ij(2,1,:)./S_ij(1,1,:));
+% Gux2ydir2 = squeeze(S_ij(3,1,:)./S_ij(1,1,:));
+% % Gux2zdir2 = squeeze(S_ij(4,1,:)./S_ij(1,1,:));
+% frfBode(Gux2xdir2, ss_ux_off.freq_s_adjusted', F2, 'Hz', '--b');
+% frfBode(Gux2ydir2, ss_ux_off.freq_s_adjusted', F2, 'Hz', '--m');
+% frfBode(Gux2zdir2, ss_ux_off.freq_s_adjusted', F2, 'Hz', '--y');
 %%
-model_path = strrep(FC_path_ux, '.csv', '.mat');
+model_path = 'xy-axis_sines_info_intsamps_quickFourierCoef_11-11-2018xydrive-01.mat';
+names = {'ux2x', 'uy2x';
+         'ux2y', 'uy2y';
+         'ux2z', 'uy2z'}
 
 try 
   load(model_path)
 end
 
-modelFit.frf.G_uz2stage = G_ux2xdir;
+modelFit.frf.all_axes  = H;
 modelFit.frf.w_s       = freqs*2*pi;
 modelFit.frf.freqs_Hz  = freqs;
 modelFit.frf.Ts        = Ts;
 modelFit.frf.freq_s    = freqs;
-modelFit.G_zdir        = sys_log;
-modelFit.G_reduce      = sys_log3;
-modelFit.Dinv          = Dinv;
+modelFit.frf.names     = names;
+modelFit.G_all_axes    = sys;
+save_data = true
 
 if save_data
         save(model_path, 'modelFit');

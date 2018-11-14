@@ -12,8 +12,8 @@ refTrajName      = 'ref_traj_track.csv';
 outputDataName = 'exp01outputBOTH.csv';
 % Build data paths
 
-addpath(fullfile(getCsRoot(), 'functions'));
-addpath(fullfile(getCsRoot(), 'functions', 'state_space_x'));
+addpath(fullfile(getCsRoot(), 'matlab-code', 'functions'));
+addpath(fullfile(getCsRoot(), 'matlab-code', 'functions', 'state_space_x'));
 
 
 % ---- Paths for shuffling data to labview and back. ------

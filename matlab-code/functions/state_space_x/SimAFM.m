@@ -29,7 +29,7 @@ classdef SimAFM
     isfxp;
     nw;
     nf;
-    
+    simulink_model;
   end
 
   methods
