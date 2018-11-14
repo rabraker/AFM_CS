@@ -8,14 +8,14 @@ Ts = 40e-6;
 
 
 
-% cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-6-2018-02.csv';
-% sub_dir = '5microns/11-06-2018';
-% data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', sub_dir);
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-13-2018-03.csv';
+sub_dir = '5microns/11-13-2018';
+data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', sub_dir);
 
-% cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-10-2018-02.csv';
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-10-2018CZ-01.csv';
-sub_dir = 'step-exps';
-data_root = fullfile(PATHS.exp(), sub_dir);
+% % cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-10-2018-02.csv';
+% cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-10-2018CZ-01.csv';
+% sub_dir = 'step-exps';
+% data_root = fullfile(PATHS.exp(), sub_dir);
 chan_map = ChannelMap([1:5]);
 % -------------------
 fname = fullfile(PATHS.sysid, 'x-axis_sines_info_intsamps_zaxisFourierCoef_10-29-2018-01.mat');
@@ -57,25 +57,24 @@ ax4 = gca();
 cs_exp.plot_all_cycles(ax1, ax2, ax3, ax4);
 %%
 
-G = models.modelFit.G_zdir;
-[z, p,k] = zpkdata(G, 'v')
-
-zdrift = z(end-1:end);
-pdrift = p(1:2);
-
-gdrift = zpk(zdrift, pdrift, 1, G.Ts);
-gvib = ss(minreal(G/gdrift));
-
-figure(10); clf
-ax1 = gca()
-figure(11); clf
-ax2 = gca()
-
-cs_exp.fit_gdrift_per_cycle(ax1, ax2, gdrift, gvib);
-
+% % G = models.modelFit.G_zdir;
+% % [z, p,k] = zpkdata(G, 'v')
+% % 
+% % zdrift = z(end-1:end);
+% % pdrift = p(1:2);
+% % 
+% % gdrift = zpk(zdrift, pdrift, 1, G.Ts);
+% % gvib = ss(minreal(G/gdrift));
+% % 
+% % figure(10); clf
+% % ax1 = gca()
+% % figure(11); clf
+% % ax2 = gca()
+% % 
+% % cs_exp.fit_gdrift_per_cycle(ax1, ax2, gdrift, gvib);
+% % 
 
 %%
-
 
 verbose = false;
 if verbose
@@ -93,6 +92,14 @@ I = cs_exp.Img_raw;
 fprintf('finished processing raw CS data...\n');
 
 fprintf('nperc=%.3f\n', sum(cs_exp.pix_mask(:))/cs_exp.npix^2);
+%%
+ht = cs_exp.feature_height;
+figure(10+figbase)
+ax = gca();
+figure(11+figbase)
+axx = gca();
+imshow_dataview(cs_exp.Img_raw-mean(cs_exp.Img_raw(:)), [-ht, ht], ax, axx)
+
 %%
 bp = true;
 % ********* SMP *************
@@ -137,6 +144,11 @@ imshow_sane(cs_exp.Img_smp1d, ax5, cs_exp.width, cs_exp.width, [-ht, ht])
 title(ax5, 'SMP reconstruction');
 drawnow
 
+fun = @ cs_exp.solve_basis_pursuit;
+
+batch('fun')
+
+
 if bp
     cs_exp.solve_basis_pursuit();
 
@@ -154,7 +166,19 @@ figure(15+figbase)
 axx = gca();
 imshow_dataview(cs_exp.Img_smp1d - mean(cs_exp.Img_smp1d(:)), [-ht, ht], ax, axx)
 
-%%
+
+% 
+% for k=1:length(cs_exp.idx_state_s.scan)
+%   idx_k = cs_exp.idx_state_s.scan{k};
+%   xmin_k = max(self.x(idx_k));
+%   ymin_k = max(self.y(idx_k));
+%   xmin_meas = max([xmin_meas, xmin_k]); % brackets necessary
+%   ymin_meas = min([ymin_meas, ymin_k]); % brackets necessary
+% end
+
+
+
+
 axes(ax6)
 s = metadata2text(cs_exp.meta_exp, Ts)
 s = sprintf('%s\nperc=%.3f', s, sum(sum(pixelifsampled))/cs_exp.npix/cs_exp.npix);
@@ -163,40 +187,40 @@ disp(s)
 ax6.Visible = 'off';
 
 t1 = text(0,.5, s, 'Units', 'normalized');
-%%
-pixmat2 = cs_exp.Img_bp;
-save('Z:\afm-cs\tuesday-figs\11-5-2016\cs_img_slowdown.mat', 'pixmat2')
+%
+% pixmat2 = cs_exp.Img_bp;
+% save('Z:\afm-cs\tuesday-figs\11-5-2016\cs_img_slowdown.mat', 'pixmat2')
 
 %%
-figure(12)
-ax = gca();
-figure(13)
-axx = gca();
-imshow_dataview(cs_exp.Img_raw, [-ht, ht], ax, axx)
+% figure(12)
+% ax = gca();
+% figure(13)
+% axx = gca();
+% imshow_dataview(cs_exp.Img_raw, [-ht, ht], ax, axx)
 
 % text(0,-1.2, s, 'Units', 'normalized')
 %%
-savedata = 1;
-if savedata
-   img_data.cs_im = I;
-   img_data.bp_im = bp_im;
-
-   img_data.smp_im = Ir_smp;
-   img_data.pixelifsampled = pixelifsampled;
-   
-   img_data.width = width;
-   img_data.meta = ExpMetaData;
-   img_data.Ts = Ts;
-   img_data_file_name = strrep(cs_exp_data_name, '.csv', '_img-data.mat');
-   img_data_path = fullfile(data_root, img_data_file_name);
-   
-   save(img_data_path, 'img_data')
-    
-end
-%
-% fig_root = 'C:\Users\arnold\Documents\labview\afm_imaging\matlab-code\figures';
-cs_exp_fig_name = strrep(cs_data_path, '.csv', '-fig.fig')
-
-fig_path = fullfile(cs_exp_fig_name);
-saveas(f5, fig_path)
+% savedata = 1;
+% if savedata
+%    img_data.cs_im = I;
+%    img_data.bp_im = bp_im;
+% 
+%    img_data.smp_im = Ir_smp;
+%    img_data.pixelifsampled = pixelifsampled;
+%    
+%    img_data.width = width;
+%    img_data.meta = ExpMetaData;
+%    img_data.Ts = Ts;
+%    img_data_file_name = strrep(cs_exp_data_name, '.csv', '_img-data.mat');
+%    img_data_path = fullfile(data_root, img_data_file_name);
+%    
+%    save(img_data_path, 'img_data')
+%     
+% end
+% %
+% % fig_root = 'C:\Users\arnold\Documents\labview\afm_imaging\matlab-code\figures';
+% cs_exp_fig_name = strrep(cs_data_path, '.csv', '-fig.fig')
+% 
+% fig_path = fullfile(cs_exp_fig_name);
+% saveas(f5, fig_path)
 

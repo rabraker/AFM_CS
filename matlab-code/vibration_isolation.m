@@ -119,6 +119,10 @@ h3.DisplayName = 'yon, x-disconnected';
 [Z2, freqs] = power_spectrum(ze2(1:N), Ts);
 [Z3, freqs] = power_spectrum(ze3(1:N), Ts);
 legend([h1, h2, h3])
+
+%%
+var(ze1(1:N))
+cov(ze1(1:N))
 %%
 clc
 figure(9); clf
