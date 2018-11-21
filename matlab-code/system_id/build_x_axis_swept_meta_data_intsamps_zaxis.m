@@ -32,7 +32,7 @@ clear
 addpath('functions')
 
 % File name
-InputFileName = 'x-axis_sines_info_intsamps_quick.csv';
+InputFileName = 'x-axis_sines_info_intsamps_quick.json';
 
 
 
@@ -166,6 +166,16 @@ fprintf('Max of sin arg: %d\n', NTsWomax);
 %                      Create MetaData file
 % ------------------------------------------------------------------------%
 
+opt.FileName = metapath;
+opt.FloatFormat = '%.12f';
+meta_data = struct('freqs_Hz', freqs_Hz(:)', 'numAve_s', numAve_s(:)', 'num_periodsMT', M_s(:)',...
+  'Nsamp_total', Nsamp_total(:)', 'Nsettle_s', Nsettle_s(:)', 'Ncollect_s', Ncollect_s(:)', ...
+  'Ts', Ts, 'Amp', Amp);
+savejson('', meta_data, opt)
+fprintf('Copy and paste the following into LabView:\n\n')
+fprintf('Input File Name: %s\n', InputFileName);
+fprintf('Input Folder: %s\n', root);
+%%
 meta_data = zeros(length(freqs_Hz), 7);
 
 meta_data(:,1) = freqs_Hz;
