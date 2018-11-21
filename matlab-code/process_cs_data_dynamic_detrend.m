@@ -8,9 +8,9 @@ Ts = 40e-6;
 
 size = '5microns';
 
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-13-2018-03.csv';
+cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-17-2018-02.csv';
 
-data_root = PATHS.cs_image_data(size, '11-13-2018');
+data_root = PATHS.cs_image_data(size, '11-17-2018');
 
 % % cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-10-2018-02.csv';
 % cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-10-2018CZ-01.csv';
@@ -54,7 +54,7 @@ Fig_x = figure(40+figbase); clf
 ax3 = gca();
 Fig_y = figure(50+figbase); clf
 ax4 = gca();
-% cs_exp.plot_all_cycles(ax1, ax2, ax3, ax4);
+cs_exp.plot_all_cycles(ax1, ax2, ax3, ax4);
 %%
 
 % % G = models.modelFit.G_zdir;
