@@ -268,7 +268,7 @@ classdef SimAFM
       end
       
       if Ndrift_p1 > 0
-        fprint_row(fid, '%12f', ABCD_vec);
+        fprint_row(fid, '%.12f', ABCD_vec);
       end
       fclose(fid);
       
@@ -290,14 +290,14 @@ classdef SimAFM
       Nsat  = length(self.dp);
       Ndrift = length(pole(self.gdrift_inv));
       if Nhyst > 1
-        hyst_vec = [self.wp(:); self.rp(:)];
+        hyst_vec = double([self.wp(:)', self.rp(:)']);
       else
         Nhyst = 0;
         hyst_vec = [];
       end
       
       if Nsat > 1
-        sat_vec = [self.wsp(:); self.dp(:)];
+        sat_vec = double([self.wsp(:)', self.dp(:)']);
       else
         Nsat = 0;
         sat_vec = [];
@@ -306,8 +306,9 @@ classdef SimAFM
         Ndrift_p1 = Ndrift + 1;
         [a,b,c, d] = ssdata(balreal(self.gdrift_inv));
         ABCD = [a, b; c, d];
-        % reshape into a column vector along rows.
-        ABCD_vec = reshape(ABCD', [], 1);
+        % reshape into a row vector along rows.
+        % We need rows, otherwise JSON parsing in labview will fail.
+        ABCD_vec = reshape(ABCD', [], 1)';
       else
         Ndrift_p1 = 0;
         ABCD_vec = [];
@@ -320,9 +321,11 @@ classdef SimAFM
       % ----------- Open File and write data -----------------------------
       control_data = struct('Ns', Ns, 'umax', umax, 'du_max', double(self.du_max),...
         'Nbar', double(self.Nbar), 'Nhyst', Nhyst, 'Nsat', Nsat, 'Ndrift_p1', Ndrift_p1,...
-        'hyst_vec', hyst_vec, 'sat_vec', sat_vec(:)', 'ABCD_vec', ABCD_vec(:)',...
+        'hyst_vec', hyst_vec, 'sat_vec', sat_vec, 'ABCD_vec', ABCD_vec,...
         'AllMatrix_vec', AllMatrix(:)');
-      savejson('xx', control_data, data_path)
+      opt.FloatFormat = '%.12f';
+      opt.FileName = data_path;
+      savejson('', control_data, opt)
       
     end % write control data
    end %methods
