@@ -31,6 +31,6 @@ if find(size(upper)==(max(size(upper))))<2
   upper=upper';
 end
 % h = fill([x fliplr(x)],[upper fliplr(lower)],colour)
-h = patch([x fliplr(x)], [upper fliplr(lower)], -1, 'FaceColor', color, 'EdgeColor', 'none')
+h = patch([x fliplr(x)], [upper fliplr(lower)], -1, 'FaceColor', color, 'EdgeColor', 'none');
 
 end
