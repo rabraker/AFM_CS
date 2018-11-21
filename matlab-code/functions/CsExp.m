@@ -36,7 +36,7 @@ classdef CsExp < handle
       dat_meas = csvread(cs_paths.data_path);
       tmp = load(cs_paths.meta_path);  % Provides ExpMetaData
       self.meta_exp = tmp.ExpMetaData;
-      tmp = load(cs_paths.meta_in_path); % Provides CsExpMetaIn
+      tmp = load(cs_paths.parent_meta_path); % Provides CsExpMetaIn
       self.meta_in = tmp.CsExpMetaIn;
 
       self.Ts = Ts;
