@@ -39,6 +39,14 @@ classdef AFM
     % Unit conversion of volts 2 microns for z-axis
       volts = 1/AFM.volts2nm_z(); 
     end
+    function map = nametrans()
+      keySet ={ 'AI-0', 'AI-1', 'AI-2', 'AI-3',...
+        'Input-0', 'Input-1', 'Input-2', 'Input-3',...
+        'DAC control', 'Reference'};
+      valSet = {'y_X', 'y_Y', 'y_Z', 'null',...
+        'X', 'Y', 'Z', 'null', 'u_', 'ref_'};
+      map = containers.Map(keySet, valSet);
+    end
     
   end
   
