@@ -72,10 +72,10 @@ legend([h1, h2, h3, h4])
 [Z4, freqs] = power_spectrum(ze4, Ts);
 
 figure(9); clf
-semilogx(freqs, Z1);
+semilogx(freqs, log10(Z1));
 hold on
-semilogx(freqs, Z2)
-semilogx(freqs, Z3)
+semilogx(freqs, log10(Z2))
+semilogx(freqs, log10(Z3))
 % semilogx(freqs, Z4)
 
 legend([h1, h2, h3])
@@ -176,6 +176,14 @@ M = floor(size(Z_, 1)/N);
 
 Z = Z_(1:N*M);
 
+
+
+%%
+
+[ZZ, freqs] = power_spectrum(Z-mean(Z), Ts);
+figure(10)
+hold on
+semilogx(freqs, log10(ZZ), 'k')
 
 Z_mat = reshape(Z, [], M);
 
