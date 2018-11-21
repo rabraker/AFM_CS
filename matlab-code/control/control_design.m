@@ -1,7 +1,10 @@
+clc
 
 rand_fname = fullfile(PATHS.sysid, 'rand_noise_zaxis_10-30-2018_01.mat');
 models = load(rand_fname);
 G0 = models.modelFit.G_zdir;
+
+Ts = G0.Ts;
 p = pole(G0); %p(2) = [];
 z = zero(G0); %z(end) = [];
 G2 = zpk(z, p, -1, Ts);

@@ -22,7 +22,7 @@ root = '/media/labserver/afm-cs/z-scope';
 %   'data-out_KI_p00.csv',...
 %   'data-out_KI_p05.csv'};
 f2 = 'data-out_KI_p01.csv';
-fname = 'data-out_KI_p00.csv';
+fname = 'data-out_KI_p1.csv';
 dat_k = csvread(fullfile(root, f2));
 dat_k = csvread(fullfile(root, fname));
 
@@ -166,8 +166,7 @@ title('uz')
 %%
 Cc = Cdd*0; Cc(end) = 1;
 [Sens, H_dc_d, H_ud] = loops(G, Gwz, Lz, K, Cc, sys_obs)
-
-%%
+%
 bode(H_dc_d)
 
 % %%
