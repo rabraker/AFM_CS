@@ -147,20 +147,15 @@ drawnow
 
 if bp
     cs_exp.solve_basis_pursuit();
-
-    % imshow_sane(PixelVectorToMatrix(Ir_bp,[n m]), ax4, cs_exp.width, cs_exp.width);
-    
-    
     imshow_sane(cs_exp.Img_bp, ax4, cs_exp.width, cs_exp.width, [-ht, ht]);
-
     title(ax4, 'BP reconstruction');
 end
-
+%%
 figure(14+figbase)
 ax = gca();
 figure(15+figbase)
 axx = gca();
-imshow_dataview(cs_exp.Img_smp1d - mean(cs_exp.Img_smp1d(:)), [-ht, ht], ax, axx)
+imshow_dataview(cs_exp.Img_bp - mean(cs_exp.Img_bp(:)), [-ht, ht], ax, axx)
 
 
 % 
@@ -183,9 +178,32 @@ disp(s)
 ax6.Visible = 'off';
 
 t1 = text(0,.5, s, 'Units', 'normalized');
-%
+
 % pixmat2 = cs_exp.Img_bp;
 % save('Z:\afm-cs\tuesday-figs\11-5-2016\cs_img_slowdown.mat', 'pixmat2')
+
+
+acc_10_bp = get_acc_cs_img(10)
+figure(214)
+ax1 = gca();
+
+figure(2)
+ax2 = gca();
+
+acc_10_bp.thresh
+%%
+imshow_dataview(acc_10_bp.bp_im_normalized, [-ht, ht], ax1, ax2)
+%%
+figure(230)
+imshow(1-cs_exp.pix_mask)
+%%
+figure(240)
+imshow(1-cs_exp.meta_in.pix_mask)
+figure(250)
+imshow(cs_exp.meta_in.pix_mask - cs_exp.pix_mask, [-1, 1])
+%%
+sum(cs_exp.meta_in.pix_mask(:))/512^2
+sum(cs_exp.pix_mask(:))/512^2
 
 %%
 % figure(12)
