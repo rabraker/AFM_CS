@@ -449,9 +449,6 @@ classdef CsExp < handle
       time_bp = toc;
       fprintf('BP Time: %f\n', time_bp);
 
-      self.Img_bp = detrend_plane(self.Img_bp);
-      
-      
     end
     
     
