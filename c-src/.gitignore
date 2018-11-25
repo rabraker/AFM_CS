@@ -1,0 +1,12 @@
+bode_fit
+include/test_data.h
+src/test_data.c
+plcdemos.h
+x04*
+mathgl_test.c
+plplot_simple.c
+plplot-5.13.0.pdf
+cmpfit
+mglt
+makefile-x04
+
