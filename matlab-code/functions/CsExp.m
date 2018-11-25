@@ -1,7 +1,9 @@
 classdef CsExp < handle
   properties
     x;
+    x_positive;
     y;
+    y_positive;
     uz;  
     ze;
     t;
@@ -57,23 +59,7 @@ classdef CsExp < handle
       self.y = dat_meas(:, channel_map.y);
       self.y = self.y; %- min(self.y); % move to positive orthant.
       
-      % Move x-y data to the positive othant. Need to do this based on
-      % MEASUREMENT DATA, because with pre-scan, we may be purposefully outside
-      % e.g., to the left of the y-axis. Moving everything to positive orthant
-      % will leave us with a strip of "unmeasured" data in the final image.
-      xmin_meas = [];
-      ymin_meas = []; % n.b. min([ [], 9]) = 9.
-      for k=1:length(self.idx_state_s.scan)
-        idx_k = self.idx_state_s.scan{k};
-        xmin_k = min(self.x(idx_k));
-        ymin_k = min(self.y(idx_k));
-        xmin_meas = min([xmin_meas, xmin_k]); % brackets necessary
-        ymin_meas = min([ymin_meas, ymin_k]); % brackets necessary
-      end
-      
-      self.x = self.x - xmin_meas;
-      self.y = self.y - ymin_meas;
-      
+    
       self.t = (0:length(self.x)-1)'*gg.Ts;
       self.uz = lsim(gg, (dat_meas(:, channel_map.uz)), self.t);
       self.ze = dat_meas(:, channel_map.ze);
@@ -90,7 +76,26 @@ classdef CsExp < handle
       self.state_times = state_ticks*self.Ts;
       self.time_total = sum(self.state_times);
     end
-
+    
+    function xy_positive(self)
+      % Move x-y data to the positive othant. Need to do this based on
+      % MEASUREMENT DATA, because with pre-scan, we may be purposefully outside
+      % e.g., to the left of the y-axis. Moving everything to positive orthant
+      % will leave us with a strip of "unmeasured" data in the final image.
+      xmin_meas = [];
+      ymin_meas = []; % n.b. min([ [], 9]) = 9.
+      for k=1:length(self.idx_state_s.scan)
+        idx_k = self.idx_state_s.scan{k};
+        xmin_k = min(self.x(idx_k));
+        ymin_k = min(self.y(idx_k));
+        xmin_meas = min([xmin_meas, xmin_k]); % brackets necessary
+        ymin_meas = min([ymin_meas, ymin_k]); % brackets necessary
+      end
+      
+      self.x_positive = self.x - xmin_meas;
+      self.y_positive = self.y - ymin_meas;
+    end
+    
     function plot_all_cycles(self, ax1, ax2, ax3, ax4)
     % plot_time(self, ax1, ax2)
       indc = {'k',        'r', [0, .75, .75], 'b', [.93 .69 .13], ;
@@ -155,79 +160,7 @@ classdef CsExp < handle
 
     end
     
-    function self = fit_gdrift_per_cycle(self, ax1, ax2, go, gvib)
-      indc = {'k',        'r', [0, .75, .75], 'b', [.93 .69 .13], ;
-       'xy-move', 'tip down', 'tip settle',  '$\mu$-path scan', 'tip up',};
-      
-      state_seq = {'move', 'tdown', 'tsettle', 'scan', 'tup'};
-      hold(ax1, 'on')
-      hold(ax2, 'on')
-%       title(ax1, 'uz')
-%       title(ax2, 'z-err')
-      grid(ax1, 'on')
-      grid(ax2, 'on')
-      [z, p, k] = zpkdata(go, 'v');
-      theta0 = [z;p;k*2];
-      np = length(p);
-      ub = ones(2*np+1);
-      ub(end) = Inf;
-    
-      for idx_cs_seq = 1:length(self.idx_state_s.move);
-        
-          idx_down = self.idx_state_s.tdown{idx_cs_seq};
-          idx_settle = self.idx_state_s.tsettle{idx_cs_seq};
-          idx_scan = self.idx_state_s.scan{idx_cs_seq};
-          scan_start_idx = length(idx_down) + length(idx_settle) + 1;
-          
-          uz_ = self.uz([idx_down, idx_settle]);
-          ze_ = self.ze([idx_down, idx_settle]);
-          t_  = [idx_down, idx_settle;]*self.Ts;
-          
-          
-          uz_whole = self.uz([idx_down, idx_settle, idx_scan]);
-          ze_whole = self.ze([idx_down, idx_settle, idx_scan]);
-          t_whole  = [idx_down, idx_settle, idx_scan]*self.Ts;
-          
-          u0 = uz_(1);
-          ze0 = ze_(1);
-          uz_ = uz_ - u0;
-          ze_ = ze_ - ze0;
-          
-          
-          
-          
-          fun = @(theta) fit_gdrift(theta, gvib, ze_, uz_, t_, np);
-          
-          theta = lsqnonlin(fun, theta0, 0.9*ub, ub);
-          gdrift = zpk(theta(np+1:end-1), theta(1:np), theta(end), self.Ts);
-          z_fit1 = lsim(gdrift*gvib, uz_whole-u0, t_whole)
-          z_fit2 = -lsim(gdrift*gvib, uz_whole-u0, t_whole) + u0;
-          
-          k = idx_down(1);
-          plot(ax1, t_whole(idx_down-k+1), z_fit2(idx_down-k+1), 'color', indc{1,2}, 'LineStyle', '--')          
-          plot(ax1, t_whole(idx_settle-k+1), z_fit2(idx_settle-k+1), 'color', indc{1,3}, 'LineStyle', '-')
-          plot(ax1, t_whole(idx_scan-k+1), z_fit2(idx_scan-k+1), 'color', indc{1,4}, 'LineStyle', '--')
-          
-          plot(ax1, t_whole(idx_down-k+1), uz_whole(idx_down-k+1), 'color', indc{1,2}, 'LineStyle', '-')          
-          plot(ax1, t_whole(idx_settle-k+1), uz_whole(idx_settle-k+1), 'color', indc{1,3}, 'LineStyle', '-')
-          plot(ax1, t_whole(idx_scan-k+1), uz_whole(idx_scan-k+1), 'color', indc{1,4}, 'LineStyle', '-')
 
-          plot(ax2, t_whole(idx_down-k+1), z_fit1(idx_down-k+1), 'color', indc{1,2}, 'LineStyle', '--')          
-          plot(ax2, t_whole(idx_settle-k+1), z_fit1(idx_settle-k+1), 'color', indc{1,3}, 'LineStyle', '-')
-          plot(ax2, t_whole(idx_scan-k+1), z_fit1(idx_scan-k+1), 'color', indc{1,4}, 'LineStyle', '--')
-
-          plot(ax2, t_whole(idx_down-k+1), ze_whole(idx_down-k+1)-ze0, 'color', indc{1,2}, 'LineStyle', '-')          
-          plot(ax2, t_whole(idx_settle-k+1), ze_whole(idx_settle-k+1)-ze0, 'color', indc{1,3}, 'LineStyle', '-')
-          plot(ax2, t_whole(idx_scan-k+1), ze_whole(idx_scan-k+1)-ze0, 'color', indc{1,4}, 'LineStyle', '-')
-          
-        keyboard
-      end
-
-%       linkaxes([ax1, ax2], 'x')
-%       plot(ax2, [self.t(1), self.t(end)], [.05, .05], '--k')
-%       plot(ax2, [self.t(1), self.t(end)], -[.05, .05], '--k')
-
-    end      
       
     function print_state_times(self)
       tmove = self.state_times(1);
@@ -241,43 +174,36 @@ classdef CsExp < handle
       fprintf('%.3f | %.3f  | %.3f   | %.3f  | %.3f |\n', tmove, tlower, tsettle, tscan, tup);
     end
 
-    function [x_k, y_k, uz_k, ze_k, t_k] = get_tup_k(self, k)
+    function [x_k, y_k, uz_k, ze_k, t_k] = get_state_cycle_k(self, k, state)
+      idx_k = self.idx_state_s.(state){k};
       x_k = self.x(idx_k);
       y_k = self.y(idx_k);
       uz_k = self.uz(idx_k);
       ze_k = self.ze(idx_k);
       t_k = idx_k*self.Ts;
       
+    end    
+    
+    function [x_k, y_k, uz_k, ze_k, t_k] = get_tup_k(self, k)
+      [x_k, y_k, uz_k, ze_k, t_k] =self.get_state_cycle_k(k, 'tup');
     end
     function [x_k, y_k, uz_k, ze_k, t_k] = get_settle_k(self, k)
-      idx_k = self.idx_state_s.tsettle{k};
-
-      x_k = self.x(idx_k);
-      y_k = self.y(idx_k);
-      uz_k = self.uz(idx_k);
-      ze_k = self.ze(idx_k);
-      t_k = idx_k*self.Ts;
+      [x_k, y_k, uz_k, ze_k, t_k] =self.get_state_cycle_k(k, 'tsettle');
     end
       
     function [x_k, y_k, uz_k, ze_k, t_k] = get_down_k(self, k)
-      idx_k = self.idx_state_s.tdown{k};
-        
-      x_k = self.x(idx_k);
-      y_k = self.y(idx_k);
-      uz_k = self.uz(idx_k);
-      ze_k = self.ze(idx_k);
-      t_k = idx_k*self.Ts;    
+      [x_k, y_k, uz_k, ze_k, t_k] =self.get_state_cycle_k(k, 'tdown');
     end
       
-    function [x_k, y_k, uz_k, ze_k, t_k] = get_scan_k(self, k)
-      idx_k = self.idx_state_s.scan{k};
-        
-      x_k = self.x(idx_k);
-      y_k = self.y(idx_k);
-      uz_k = self.uz(idx_k);
-      ze_k = self.ze(idx_k);
-      t_k = idx_k*self.Ts;
-      
+    function [x_k, y_k, uz_k, ze_k, t_k] = get_scan_k(self, k, positive_xy)
+      if exist('positive_xy', 'var') && positive_xy
+        idx_k = self.idx_state_s.scan{k};
+        x_k = self.x_positive(idx_k);
+        y_k = self.y_positive(idx_k);
+        [~, ~, uz_k, ze_k, t_k] =self.get_state_cycle_k(k, 'scan');
+      else
+        [x_k, y_k, uz_k, ze_k, t_k] =self.get_state_cycle_k(k, 'scan');
+      end
     end
     
     function [U_scan, U_z, U_orig] = dynamic_detrend(self, idx)
@@ -310,32 +236,33 @@ classdef CsExp < handle
       tend_last = 0;
       microns_per_volt = AFM.volts2mic_xy; 
       pix_per_volt = (self.npix/self.width)*microns_per_volt;
+      if isempty(self.x_positive) || isempty(self.y_positive)
+        self.xy_positive();
+      end
+      if verbose && ~exist('figs', 'var')
+          figs{1} = figure;
+          figs{2} = figure;
+          figs{3} = figure;
+      end
       if verbose
-        if ~exist('figs', 'var')
-          error('verbose=true but did not recieve figs')
-        end
-        
-        [Fig1, ax1] = parse_fig_ax(figs{1});
-        [Fig2, ax2] = parse_fig_ax(figs{2});
-        [Fig3, ax3] = parse_fig_ax(figs{3});
+        [~, ax1] = parse_fig_ax(figs{1});
+        [~, ax2] = parse_fig_ax(figs{2});
+        [~, ax3] = parse_fig_ax(figs{3});
       end
       
       % Reset the pix_mask
       self.pix_mask = self.pix_mask*0;
       for k = 1:length(self.idx_state_s.scan)
         % Get the data for the current mu-path.
-        [X_raw, Y_raw] = self.get_scan_k(k);
+        [X_raw, Y_raw] = self.get_scan_k(k, true);
         Y_raw = Y_raw*pix_per_volt;
         X_raw = X_raw*pix_per_volt;
      
         [U_scan, U_z, U_orig] = self.dynamic_detrend(k);
-%         U_scan = U_scan(500:end);
-%         Y_raw = Y_raw(500:end);
-%         X_raw = X_raw(500:end);
         
         if max(U_scan) - min(U_scan) > 0.4 % throw out rediculous data.
-          %fprintf('skipping\n')
-%           continue
+          fprintf('skipping cycle %d\n', k)
+          continue
         end
         [y_idx, x_idx, U_k] = self.mu_data2pix(X_raw, Y_raw, U_scan);
         self.Img_raw(y_idx, x_idx) = U_k;
@@ -505,3 +432,77 @@ classdef CsExp < handle
   
   
 end
+
+
+
+
+% %     function self = fit_gdrift_per_cycle(self, ax1, ax2, go, gvib)
+% %       indc = {'k',        'r', [0, .75, .75], 'b', [.93 .69 .13], ;
+% %        'xy-move', 'tip down', 'tip settle',  '$\mu$-path scan', 'tip up',};
+% %       
+% %       state_seq = {'move', 'tdown', 'tsettle', 'scan', 'tup'};
+% %       hold(ax1, 'on')
+% %       hold(ax2, 'on')
+% % %       title(ax1, 'uz')
+% % %       title(ax2, 'z-err')
+% %       grid(ax1, 'on')
+% %       grid(ax2, 'on')
+% %       [z, p, k] = zpkdata(go, 'v');
+% %       theta0 = [z;p;k*2];
+% %       np = length(p);
+% %       ub = ones(2*np+1);
+% %       ub(end) = Inf;
+% %     
+% %       for idx_cs_seq = 1:length(self.idx_state_s.move);
+% %         
+% %           idx_down = self.idx_state_s.tdown{idx_cs_seq};
+% %           idx_settle = self.idx_state_s.tsettle{idx_cs_seq};
+% %           idx_scan = self.idx_state_s.scan{idx_cs_seq};
+% %           scan_start_idx = length(idx_down) + length(idx_settle) + 1;
+% %           
+% %           uz_ = self.uz([idx_down, idx_settle]);
+% %           ze_ = self.ze([idx_down, idx_settle]);
+% %           t_  = [idx_down, idx_settle;]*self.Ts;
+% %           
+% %           
+% %           uz_whole = self.uz([idx_down, idx_settle, idx_scan]);
+% %           ze_whole = self.ze([idx_down, idx_settle, idx_scan]);
+% %           t_whole  = [idx_down, idx_settle, idx_scan]*self.Ts;
+% %           
+% %           u0 = uz_(1);
+% %           ze0 = ze_(1);
+% %           uz_ = uz_ - u0;
+% %           ze_ = ze_ - ze0;
+% %           
+% %           fun = @(theta) fit_gdrift(theta, gvib, ze_, uz_, t_, np);
+% %           
+% %           theta = lsqnonlin(fun, theta0, 0.9*ub, ub);
+% %           gdrift = zpk(theta(np+1:end-1), theta(1:np), theta(end), self.Ts);
+% %           z_fit1 = lsim(gdrift*gvib, uz_whole-u0, t_whole)
+% %           z_fit2 = -lsim(gdrift*gvib, uz_whole-u0, t_whole) + u0;
+% %           
+% %           k = idx_down(1);
+% %           plot(ax1, t_whole(idx_down-k+1), z_fit2(idx_down-k+1), 'color', indc{1,2}, 'LineStyle', '--')          
+% %           plot(ax1, t_whole(idx_settle-k+1), z_fit2(idx_settle-k+1), 'color', indc{1,3}, 'LineStyle', '-')
+% %           plot(ax1, t_whole(idx_scan-k+1), z_fit2(idx_scan-k+1), 'color', indc{1,4}, 'LineStyle', '--')
+% %           
+% %           plot(ax1, t_whole(idx_down-k+1), uz_whole(idx_down-k+1), 'color', indc{1,2}, 'LineStyle', '-')          
+% %           plot(ax1, t_whole(idx_settle-k+1), uz_whole(idx_settle-k+1), 'color', indc{1,3}, 'LineStyle', '-')
+% %           plot(ax1, t_whole(idx_scan-k+1), uz_whole(idx_scan-k+1), 'color', indc{1,4}, 'LineStyle', '-')
+% % 
+% %           plot(ax2, t_whole(idx_down-k+1), z_fit1(idx_down-k+1), 'color', indc{1,2}, 'LineStyle', '--')          
+% %           plot(ax2, t_whole(idx_settle-k+1), z_fit1(idx_settle-k+1), 'color', indc{1,3}, 'LineStyle', '-')
+% %           plot(ax2, t_whole(idx_scan-k+1), z_fit1(idx_scan-k+1), 'color', indc{1,4}, 'LineStyle', '--')
+% % 
+% %           plot(ax2, t_whole(idx_down-k+1), ze_whole(idx_down-k+1)-ze0, 'color', indc{1,2}, 'LineStyle', '-')          
+% %           plot(ax2, t_whole(idx_settle-k+1), ze_whole(idx_settle-k+1)-ze0, 'color', indc{1,3}, 'LineStyle', '-')
+% %           plot(ax2, t_whole(idx_scan-k+1), ze_whole(idx_scan-k+1)-ze0, 'color', indc{1,4}, 'LineStyle', '-')
+% %           
+% %         keyboard
+% %       end
+% % 
+% % %       linkaxes([ax1, ax2], 'x')
+% % %       plot(ax2, [self.t(1), self.t(end)], [.05, .05], '--k')
+% % %       plot(ax2, [self.t(1), self.t(end)], -[.05, .05], '--k')
+% % 
+% %     end      
