@@ -1,0 +1,74 @@
+% [ self] = bin_raster_really_slow(self, line_detrender)
+% 
+% Bins the raw raster data based on x,y, and uz. The data is binned
+% and averaged according to the actual values x, converted to
+% pixels. This means that it is possible, due to noise, for the
+% data to be binned non-contiguously.
+%
+% This method will populate the properties of a RasterExp
+% instance of self.pix_mat and self.pix_mask.
+% The pix_mask is a mask, similar to the CS mask, which will have
+% ones where we actually have data and zeros elsewhere. This may be
+% usefull for detrending the image.
+%
+% If you wish to detrend each line, provide a handle to function to
+% do so. The prototype for such a function is 
+% [x] = line_detrender_local(x)
+
+function [ self] = bin_raster_really_slow(self, line_detrender)
+                                         
+  % nperiods, samps_per_period, volt2pix,
+  % if size(xyu_dat, 1) ~= nperiods*samps_per_period
+  %   s = sprintf('Expected length(xyu_dat) == nperiods*samps_per_period')
+  %   s = sprintf('%s \n but have length(xyu_dat)=%d, nperiods*samps_per_period = %d',...
+  %     s, length(xyu_dat), nperiods*samps_per_period)
+  %   error(s)
+  % end
+  if ~exist('line_detrender', 'var') || isempty(line_detrender)
+    line_detrender = @(x) line_detrender_local(x);
+  end
+  xpix = self.npix; 
+  ypix = self.npix; % TODO: make this work with rectangular image.
+    
+  % Get the indeces corresponding to trace data only.
+  trace_inds = self.get_trace_indeces();
+    
+  xdat_trace = self.x(trace_inds);
+  ydat_trace = self.y(trace_inds);
+  udat_trace = self.uz(trace_inds);
+  
+  % Make the image be at (0,0, --) and convert to pixel coordinates.
+  xdat_trace = (xdat_trace - min(xdat_trace))*self.volts2pix;
+  ydat_trace = (ydat_trace - min(ydat_trace))*self.volts2pix;
+  % make
+  
+  self.pix_mask = zeros(xpix, ypix);
+  self.pix_mat = zeros(xpix,ypix);
+  
+  samps_per_period = self.samps_per_period;
+  for j_row = 0:ypix-1
+    ind_y = j_row*(samps_per_period/2)+1:(j_row+1)*(samps_per_period/2);
+    x_dat_j = xdat_trace(ind_y)';
+    U_dat_j_init = udat_trace(ind_y)';
+    
+    [U_dat_j] = line_detrender(U_dat_j_init);
+    
+    for i_col = 0:xpix-1
+      ind_x = find(x_dat_j >= i_col & x_dat_j < i_col+1);
+      u_mean_ij = mean(U_dat_j(ind_x));
+      if ~isnan(u_mean_ij)
+        self.pix_mat(j_row+1, i_col+1) = u_mean_ij;
+        self.pix_mask(j_row+1, i_col+1) = 1;
+      else
+        %             keyboard
+      end
+      
+    end
+    
+  end
+
+end
+
+function [x] = line_detrender_local(x)
+    return
+end

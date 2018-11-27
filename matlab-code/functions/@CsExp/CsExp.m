@@ -77,6 +77,9 @@ classdef CsExp < handle
       self.time_total = sum(self.state_times);
     end
     
+    [sig_psd, freqs, k] = psd_from_intervals(self, signal, state, ...
+                                             starts, ends)
+    
     function [CS_idx, start_idx, end_idx] = find_cycle_idx(self, time)
     % find the CS-cycle index corresponding to time. A single cycle is defined
     % as xymove --> tip-down--> tip-settle-->scan-->tip-up.

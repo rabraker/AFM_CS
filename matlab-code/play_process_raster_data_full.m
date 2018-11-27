@@ -25,18 +25,24 @@ raster_paths = get_raster_paths(dat_root, dat_name)
 % meta_in_path = fullfile(dat_root, sub_dir,  meta_name);
 % meta_out_path = strrep(dat_path, '.csv', '-meta.mat');
 
-tic
+
+Ts = 40e-6;
+npix = 512;
+rast_exp = RasterExp(raster_paths, npix, width);
 
 
-fprintf('Loading Meta file...\n%s\n', raster_paths.meta_path)
-load(raster_paths.meta_path);
-fprintf('Loading Data file...\n%s\n', raster_paths.data_path)
-datmat = csvread(raster_paths.data_path);
-
-parent_dat = csvread(raster_paths.parent_path);
-
-xyref = reshape(parent_dat', 2, [])';
-xref = xyref(:,1);
+% fprintf('Loading Meta file...\n%s\n', raster_paths.meta_path)
+% load(raster_paths.meta_path);
+% fprintf('Loading Data file...\n%s\n', raster_paths.data_path)
+% datmat = csvread(raster_paths.data_path);
+% 
+% parent_dat = csvread(raster_paths.parent_path);
+% xyref = reshape(parent_dat', 2, [])';
+% xref = xyref(:,1);
+% samps_per_period = size(parent_dat,1)/2 % twice as many in here for x & y.
+% samps_per_line = samps_per_period/2
+% 
+% datmat = datmat([1:npix*samps_per_period], :);
 
 % figure(1); plot(datmat(:,1));
 % ax1 = gca
@@ -45,23 +51,18 @@ xref = xyref(:,1);
 % figure(3); plot(datmat(:,4));
 % ax4 = gca;
 % linkaxes([ax1, ax3, ax4])
-Ts = 40e-6;
-samps_per_period = size(parent_dat,1)/2 % twice as many in here for x & y.
-samps_per_line = samps_per_period/2
 
-nperiods = 512;
-pix = nperiods;
-datmat = datmat([1:nperiods*samps_per_period], :);
-
+%%
 % visualize tracking error.
+
 if 1
     np = 3;
-    xx = datmat(:,1);
-    x_np = xx(1:np*length(xref));
+    
+    x_np = rast_exp.x(1:np*length(rast_exp.xref));
     x_np = x_np - min(x_np);
     figure(200); clf; hold on
-    t = [0:1:length(xref)*np-1]'*Ts;
-    xref_np = repmat(xref, np, 1);
+    t = [0:1:length(rast_exp.xref)*np-1]'*rast_exp.Ts;
+    xref_np = repmat(rast_exp.xref, np, 1);
     p1 = plot(t, xref_np*volts2microns);
     p1.DisplayName = '$x_{ref}$';
     p2 = plot(t, x_np*volts2microns);
@@ -75,15 +76,17 @@ if 1
     set(leg1, 'FontSize', 14, 'interpreter', 'latex', 'orientation', 'horizontal')
     leg1.Position=[0.6436    0.8590    0.2611    0.0640];
 end
-%%
+
 figure(2)
 subplot(2,1,1)
 ax1 = gca();
 N1 = 314;
 N2 = N1+4;
-plot(datmat(N1*samps_per_line+1:N2*samps_per_line,3))
+rast_exp.plot_n_periods('ze', gca, N1, N2)
+% plot(datmat(N1*samps_per_line+1:N2*samps_per_line,3))
 subplot(2,1,2)
-plot(datmat(N1*samps_per_line+1:N2*samps_per_line,4))
+rast_exp.plot_n_periods('uz', gca, N1, N2)
+% plot(datmat(N1*samps_per_line+1:N2*samps_per_line,4))
 ax2 = gca();
 
 linkaxes([ax1, ax2], 'x')
@@ -131,28 +134,25 @@ plot(zes)
 
 %%
 clc
-width = 5;
-% volts2micron = 50/10;
-micron2pix = pix/width;
-volts2pix = volts2microns * micron2pix;
+
 % [pixmat2, pixelifsampled] = bin_raster_really_slow([datmat(:,[1,2]), zz], pix, samps_per_period, volts2pix);
-[pixmat2, pixelifsampled] = bin_raster_really_slow(datmat(:,[1,2,4]), pix,...
-  samps_per_period, volts2pix);
+rast_exp.bin_raster_really_slow();
 
-% pixmat2 = detrend_plane(pixmat2);
+pixmat2 = rast_exp.pix_mat;
+% x = [1:512];
+% y = x;
+% [xx, yy, zz] = prepareSurfaceData(x, y, pixmat2);
+% %%
+% pixmat3 = pixmat2*0;
+% f= fit([xx, yy], zz, 'poly23')
+% for k=1:512
+%   pixmat3(k, :) = pixmat2(k,:) - f(k, x');
+% end
+% [xx, yy, zzz] = prepareSurfaceData(x, y, pixmat3);
+% figure, plot([xx, yy], zzz)
 
-x = [1:512];
-y = x;
-[xx, yy, zz] = prepareSurfaceData(x, y, pixmat2);
-%%
-pixmat3 = pixmat2*0;
-f= fit([xx, yy], zz, 'poly23')
-for k=1:512
-  pixmat3(k, :) = pixmat2(k,:) - f(k, x');
-end
-[xx, yy, zzz] = prepareSurfaceData(x, y, pixmat3);
-figure, plot([xx, yy], zzz)
-%%
+
+
 thresh = (20/7)*(1/1000)*20;
 pixmat2 = pixmat2 - mean(pixmat2(:));
 F10 = figure(5+2); clf
