@@ -77,6 +77,31 @@ classdef CsExp < handle
       self.time_total = sum(self.state_times);
     end
     
+    function [CS_idx, start_idx, end_idx] = find_cycle_idx(self, time)
+    % find the CS-cycle index corresponding to time. A single cycle is defined
+    % as xymove --> tip-down--> tip-settle-->scan-->tip-up.
+    % very niave search through everything. Would be faster to bisect.
+
+      for CS_idx=1:length(self.idx_state_s.tup)
+        % first state is xy-move, last is tip-up. Thus, it is sufficient to check if
+        % time is between the first time of move and last time of tup.
+        idx_mov = self.idx_state_s.move{CS_idx};
+        idx_tup = self.idx_state_s.tup{CS_idx};
+        t_mov = self.t(idx_mov);
+        t_up = self.t(idx_tup);
+        if t_mov(1) <= time && time <= t_up(end)
+          start_idx = idx_mov(1);
+          end_idx = idx_tup(end);
+          return
+        end
+      end
+      % if we get here, we didnt find it.
+      CS_idx = [];
+      start_idx = [];
+      end_idx = [];
+      warning('time not found\n');
+    end
+
     function xy_positive(self)
       % Move x-y data to the positive othant. Need to do this based on
       % MEASUREMENT DATA, because with pre-scan, we may be purposefully outside
