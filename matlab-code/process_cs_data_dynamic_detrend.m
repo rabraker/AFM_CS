@@ -2,11 +2,14 @@ clc
 clear
 
 % initialize paths.
-% init_paths();
+init_paths();
 
 Ts = 40e-6;
 
 size = '5microns';
+% cs_exp_data_name_s{1} = 'cs-traj-512pix-9perc-500nm-5mic-01Hz_250prescan_out_11-26-2018newDinv-03.csv';
+
+% data_root = PATHS.cs_image_data(size, '11-26-2018');
 
 % This one is pretty decent. move   |  lower  |  settle  | scan   | up 
 % 4.885 | 1.376  | 10.100   | 28.671  | 0.643 |
@@ -30,6 +33,7 @@ G = -models.modelFit.G_zdir;
 p = pole(G);
 z = zero(G);
 %%
+close all
 gg = zpk(z(end-1:end), p(1:2), 1, G.Ts);
 % gpz = zpk(p(end-1:end), z(9:10), 1, G.Ts);
 % D = zpk(0, 1, 0.025, G.Ts);
@@ -39,6 +43,7 @@ gg = zpk(z(end-1:end), p(1:2), 1, G.Ts);
 % gg = zpk([], [], 1, Ts);
 % gg = gg/dcgain(gg);
 % ---------------------
+% gg = [];
 cs_paths = get_cs_paths(data_root, cs_exp_data_name_s{1});
 
 hole_depth = (20);
