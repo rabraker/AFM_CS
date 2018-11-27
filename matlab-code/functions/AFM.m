@@ -3,7 +3,10 @@ classdef AFM
   % z-axis parameters.
   
   methods (Static)
-    
+    function ts = Ts()
+      % Standard sample time.
+      ts = 40e-6;
+    end
     function mic = volts2mic_xy()
       % mic = volts2mic_xy()
       % Unit conversion of volts 2 microns for xy-stage

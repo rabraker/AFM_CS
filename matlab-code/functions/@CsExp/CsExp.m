@@ -60,8 +60,13 @@ classdef CsExp < handle
       self.y = self.y; %- min(self.y); % move to positive orthant.
       
     
-      self.t = (0:length(self.x)-1)'*gg.Ts;
-      self.uz = lsim(gg, (dat_meas(:, channel_map.uz)), self.t);
+      self.t = (0:length(self.x)-1)'*AFM.Ts;
+      if exist('gg', 'var') && isa(gg, 'lti')
+        self.uz = lsim(gg, (dat_meas(:, channel_map.uz)), self.t);
+      else
+        self.uz = dat_meas(:, channel_map.uz);
+      end
+      self.ze = dat_meas(:, channel_map.ze);
       self.ze = dat_meas(:, channel_map.ze);
 
       
@@ -76,7 +81,7 @@ classdef CsExp < handle
       self.state_times = state_ticks*self.Ts;
       self.time_total = sum(self.state_times);
     end
-    
+     
     [sig_psd, freqs, k] = psd_from_intervals(self, signal, state, ...
                                              starts, ends)
     
