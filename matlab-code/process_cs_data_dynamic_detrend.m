@@ -2,20 +2,26 @@ clc
 clear
 
 % initialize paths.
-init_paths();
+% init_paths();
 
 Ts = 40e-6;
 
 size = '5microns';
 
-cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-17-2018-02.csv';
+% This one is pretty decent. move   |  lower  |  settle  | scan   | up 
+% 4.885 | 1.376  | 10.100   | 28.671  | 0.643 |
+% Total Imaging time: 45.68
+% cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-17-2018-02.csv';
+% data_root = PATHS.cs_image_data(size, '11-17-2018');
 
-data_root = PATHS.cs_image_data(size, '11-17-2018');
 
-% % cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-10-2018-02.csv';
-% cs_exp_data_name_s{1} = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_v2_out_11-10-2018CZ-01.csv';
-% sub_dir = 'step-exps';
-% data_root = fullfile(PATHS.exp(), sub_dir);
+%move   |  lower  |  settle  | scan   | up 
+% 4.035 | 0.971  | 9.658   | 22.607  | 0.428 |
+% Total Imaging time: 37.70
+cs_exp_data_name_s{1} = 'cs-traj-512pix-9perc-500nm-5mic-01Hz_250prescan_out_11-24-2018-03.csv';
+data_root = PATHS.cs_image_data(size, '11-24-2018');
+
+
 chan_map = ChannelMap([1:5]);
 % -------------------
 fname = fullfile(PATHS.sysid, 'x-axis_sines_info_intsamps_zaxisFourierCoef_10-29-2018-01.mat');
@@ -42,37 +48,18 @@ cs_exp = CsExp(cs_paths, chan_map, Ts, hole_depth, gg);
 cs_exp.print_state_times();
 fprintf('Total Imaging time: %.2f\n', cs_exp.time_total)
 
-figbase = 100;
-
-Fig_uz = figure(20+figbase); clf
-
-ax1 = gca();
-Fig_ze = figure(30+figbase); clf
-ax2 = gca();
-
-Fig_x = figure(40+figbase); clf
-ax3 = gca();
-Fig_y = figure(50+figbase); clf
-ax4 = gca();
-cs_exp.plot_all_cycles(ax1, ax2, ax3, ax4);
+% % something screwed up. Was supposed to only have 250 pre-scan samples, but
+% % they are in the settle.
+% for k=1:length(cs_exp.idx_state_s.tsettle)
+%   idx_k = cs_exp.idx_state_s.tsettle{k}(end-200:end);
+%   cs_exp.idx_state_s.tsettle{k}(end-200:end) = [];
+%   cs_exp.idx_state_s.scan{k} = [idx_k, cs_exp.idx_state_s.scan{k}];
+% end
 %%
+figbase = 20;
 
-% % G = models.modelFit.G_zdir;
-% % [z, p,k] = zpkdata(G, 'v')
-% % 
-% % zdrift = z(end-1:end);
-% % pdrift = p(1:2);
-% % 
-% % gdrift = zpk(zdrift, pdrift, 1, G.Ts);
-% % gvib = ss(minreal(G/gdrift));
-% % 
-% % figure(10); clf
-% % ax1 = gca()
-% % figure(11); clf
-% % ax2 = gca()
-% % 
-% % cs_exp.fit_gdrift_per_cycle(ax1, ax2, gdrift, gvib);
-% % 
+[~, axs] = make_traj_figs(figbase);
+cs_exp.plot_all_cycles(axs{:});
 
 %%
 
@@ -150,7 +137,7 @@ if bp
     imshow_sane(cs_exp.Img_bp, ax4, cs_exp.width, cs_exp.width, [-ht, ht]);
     title(ax4, 'BP reconstruction');
 end
-%%
+
 figure(14+figbase)
 ax = gca();
 figure(15+figbase)
@@ -158,7 +145,7 @@ axx = gca();
 imshow_dataview(cs_exp.Img_bp - mean(cs_exp.Img_bp(:)), [-ht, ht], ax, axx)
 
 
-% 
+ 
 % for k=1:length(cs_exp.idx_state_s.scan)
 %   idx_k = cs_exp.idx_state_s.scan{k};
 %   xmin_k = max(self.x(idx_k));
@@ -183,6 +170,7 @@ t1 = text(0,.5, s, 'Units', 'normalized');
 % save('Z:\afm-cs\tuesday-figs\11-5-2016\cs_img_slowdown.mat', 'pixmat2')
 
 
+%% Compare to ACC
 acc_10_bp = get_acc_cs_img(10)
 figure(214)
 ax1 = gca();
@@ -191,7 +179,7 @@ figure(2)
 ax2 = gca();
 
 acc_10_bp.thresh
-%%
+
 imshow_dataview(acc_10_bp.bp_im_normalized, [-ht, ht], ax1, ax2)
 %%
 figure(230)
@@ -238,3 +226,18 @@ sum(cs_exp.pix_mask(:))/512^2
 % fig_path = fullfile(cs_exp_fig_name);
 % saveas(f5, fig_path)
 
+function [figs, axs] = make_traj_figs(figbase)
+  Fig_uz = figure(20+figbase); clf
+  
+  ax1 = gca();
+  Fig_ze = figure(30+figbase); clf
+  ax2 = gca();
+  
+  Fig_x = figure(40+figbase); clf
+  ax3 = gca();
+  Fig_y = figure(50+figbase); clf
+  ax4 = gca();
+  
+  figs = {Fig_uz, Fig_ze, Fig_x, Fig_y};
+  axs = {ax1, ax2, ax3, ax4};
+end
