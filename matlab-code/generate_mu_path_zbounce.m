@@ -4,7 +4,7 @@
 
 
 clear, clc
-close all
+
 addpath('classes')
 addpath('functions')
 
@@ -26,9 +26,9 @@ TsTicks = 1600;
 Ki_x = 0.01;
 
 if 1
-    width = 20;  % microns
+    width = 5;  % microns
     pix =512;  % image resolution.
-    mu_length = 20;  % 1000 nm. length of the horizontal mu-path. 
+    mu_length = .5;  % 500 nm. length of the horizontal mu-path. 
     sub_sample_frac = 0.20;  % Percent of pixels to subsample. 
 end
 % Unit conversions.
@@ -59,7 +59,7 @@ ME = MeasEntityMu.factory([volts_per_sample*0, 0]);
 N_mve = 1;
 % ************************************************
 
-XR = zeros(30,1);
+XR = zeros(100,1);
 YR = XR;
 
 % '------------------correct by overscan for ramp ramp set ---------------
@@ -67,7 +67,7 @@ N = mu_Nsamples;
 x_rate = volts_per_sample*0;
 
 
-N_extra = 0;
+N_extra = 500;
 mu_Nsamples_extra = N+N_extra;
 meta_cell = repmat({mu_Nsamples_extra}, 1, length(XR));
 MT = MasterTrajster(XR*0, YR*0, meta_cell, MoveEntityStatic.factory(N_mve), ME);
@@ -80,20 +80,20 @@ xlabel('x [v]')
 ylabel('y [v]')
 grid on
 
-fname = 'cs-traj-z-bounce.csv';
+fname = 'cs-traj-z-bounce_500nmequiv.csv';
 
 % create meta file name
 % target_dir = sprintf('%dmicrons/parents', width)
 if ispc
-  data_root = 'Z:\afm-cs';
+  data_root = 'Z:\afm-cs\z-bounce\parents';
 else
-  data_root = '/media/labserver/afm-cs';
+  data_root = '/media/labserver/afm-cs/z-bounce/parents';
 end
 
 meta_in = strrep(fname, '.csv', '.mat');
 meta_data_path = fullfile(data_root, meta_in);
 
-
+%%
 
 
 tip_velocity = width/(0.5*(1/raster_freq));

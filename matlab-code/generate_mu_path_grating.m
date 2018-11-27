@@ -93,13 +93,13 @@ meta_cell = repmat({mu_Nsamples_extra}, 1, length(XR));
 
 % clc
 mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, Ts,...
-  'overscan_samples', N_extra, 'pre_pad_samples', 500);
+  'overscan_samples', N_extra, 'pre_pad_samples', 250);
 mpt.connect_mu_paths(0.064);
 vec = mpt.as_vector();
 
 
 perc = floor(actual_sub_sample_frac*100);
-fname = sprintf('cs-traj-%dpix-%dperc-%dnm-%dmic-%.2dHz_v2.csv',npix, perc, mu_length*1000,width, raster_freq);
+fname = sprintf('cs-traj-%dpix-%dperc-%dnm-%dmic-%.2dHz_250prescan.csv',npix, perc, mu_length*1000,width, raster_freq);
 target_dir = sprintf('%dmicrons/parents', width);
 data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', target_dir);
 
@@ -109,22 +109,6 @@ fprintf('File name:\n%s\n', fname)
 
 %%
 mpt.write_data(fpath_csv)
-%%
-% 
-% MT = MasterTrajster(XR, YR, meta_cell, MoveEntityStatic.factory(N_mve), ME);
-% MT.visualize_sampling;
-% 
-% xlabel('x [v]')
-% ylabel('y [v]')
-% grid on
-
-% create meta file name
-
-target_dir = sprintf('%dmicrons/parents', width)
-data_root = fullfile(getdataroot, 'cs-data', target_dir)
-if exist(data_root, 'file') ~=2
-    mkdir(fullfile(getdataroot, 'cs-data'), target_dir)
-end
 
     
 

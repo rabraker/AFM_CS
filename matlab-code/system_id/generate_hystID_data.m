@@ -4,8 +4,8 @@ dry_run = false;
 saveon = false;
 
 Ts = 40e-6;
-if 0
-  u_max = 1.75;
+if 1
+  u_max = .3;
   n_space = 8000;
   n_up = 5;
   step_sz = u_max/n_up;
@@ -45,14 +45,14 @@ if 0
   grid on
 
 else
-  u_max = 1.75;
-  n_space = 16000;
+  u_max = .2;
+  n_space = 40000;
   n_up = 5;
   
   To = Ts*n_space;
   wo = 2*pi/To;
   t_vec = (0:n_up*n_space-1)'*Ts;
-  u_vec = sign(sin(wo*t_vec))*.75 + .5;
+  u_vec = sign(sin(wo*t_vec))*.1 + .1;
 
 end
 
@@ -90,9 +90,9 @@ if saveon +1
   hystData.u_exp = u_exp;
   hystData.y_exp = yx_exp;
   hystData.umax = umax;
-  hystData.impulse_idx = impulse_idx;
+%   hystData.impulse_idx = impulse_idx;
   % hystData.u_reset = u_reset;
-  data_path = fullfile(PATHS.sysid, ['hysteresis/hystID_data_', date(), '_03.mat']);
+  data_path = fullfile(PATHS.sysid, ['hysteresis/hystID_data_stairs', date(), '_01.mat']);
   fprintf('\n\n--------------------------\n');
   fprintf('data path: %s\n', data_path);
   save(data_path, 'hystData')
