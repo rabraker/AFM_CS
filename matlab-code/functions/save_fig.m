@@ -1,0 +1,50 @@
+
+
+function save_fig(fig, fpath_no_ext, for_presentation)
+
+  if for_presentation
+    ext = '.pdf';
+    bg = fig_color_presentation();
+  else
+    ext = '.svg';
+    bg = fig_color();
+  end
+
+  % Check to see if fpath has a file extension:
+  expr = '[.A-Za-z]{4,4}$';
+  idx = regexp(fpath_no_ext, expr);
+  if ~isempty(idx)
+    ext_old = fpath_no_ext(idx:end);
+    fpath = [fpath_no_ext(1:idx-1), ext];
+    warning('File extension detected. Replacing %s with %s\n', ext_old, ext)
+  else
+    fpath = [fpath_no_ext, ext];
+  end
+
+  
+  
+  % set the figure to have the right background and not be insane.  
+  set(fig, 'InvertHardcopy', 'off', 'Color', bg);
+
+  % set the axes to have the right background. Not sure if the figure can have
+  % children besides axes...
+  childs = get(fig, 'Children');
+  for k=1:length(childs)
+    if isa(childs(k), 'matlab.graphics.axis.Axes') || isa(childs(k), 'matlab.graphics.illustration.Legend')
+      set(childs(k), 'Color', bg);
+    else
+      fprintf('Dont know what to do with child of type %s\n', class(childs(k)));
+    end
+  end
+
+  if strcmp(ext, '.pdf')
+    print(fig, '-dpdf', fpath)
+  elseif strcmp(ext, '.svg')
+    saveas(fig, fpath)
+  else
+    warning('Something went wrong. Dont know what to do with extenstion %s\n', ext)
+  end
+
+
+
+end
