@@ -23,7 +23,20 @@ LRC_ptos_tac/
 MAC_project.zip
 Program Files (x86)/
 
-
+ltximg/
+\#*
+.\#*
+notes.html
+test.html
+test.org
+*.avi
+*.mp4
+*.svg
+*.png
+*.pdf
+*.jpg
+*.jpeg
+*.odp\#
 
 *.dll
 *.wdb

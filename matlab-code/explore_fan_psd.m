@@ -2,6 +2,7 @@
 % connected, or not.
 clear
 clc
+fig_root = '~/matlab/afm-cs/matlab-code/notes/figures';
 root = '/media/labserver/afm-cs/z-scope/psd-test-fan';
 root_nb = '/media/labserver/afm-cs/z-scope/psd-test-fan/9-18-2018';
 
@@ -34,15 +35,30 @@ rnt_nb = LvPSDTime(fpath_nobung_tm);
 %%
 % -------------------- Step 0 ---------------------------------------------
 % figure(10)
-F10 = mkfig(10, 5, 4); clf
-ax10 = axes('Units', 'inches', 'Position', [.6, .5, 4.25 4.2]);
+clc
+freqs = psd_ext.freqs;
+
+real_idx = 30;
+end_idx = 21799;
+z_idx = 3;
+fan_idx = 4;
+idx1 = 2486:3143;
+
+tvec = (0:1:rnt_ext.num_points-1)'*rnt_ext.Ts;
+% tend = tvec(end_idx);
+% fan_v_int = detrend(rnt_int.data(fan_idx, :, real_idx));
+% fan_v_ext = detrend(rnt_ext.data(fan_idx, :, real_idx));
+
+F10 = mkfig(10, 5, 5.35, true); clf
+ax10 = axes('Units', 'inches', 'Position', [.6, .5, 4.25 4.5]);
+ax10.Color = fig_color;
 ht1 = plot(tvec, detrend(rnt_nb.data(z_idx, :, real_idx)));
 hold on
 ht2 = plot(tvec, detrend(rnt_int.data(z_idx, :, real_idx)));
 
 ht3 = plot(tvec, detrend(rnt_ext.data(z_idx, :, real_idx)));
 title('deflection', 'FontSize', 14)
-ylim([-0.05, 0.05])
+ylim([-0.07, 0.04])
 xlim([tvec(1), tvec(end_idx)])
 hold on
 xlabel('time [s]', 'FontSize', 14)
@@ -50,22 +66,29 @@ ylabel('deflection [v]', 'FontSize', 14)
 ylm = ylim;
 grid on
 
-F11 = mkfig(11, 5,4); clf
+F11 = mkfig(11, 5, 5.35, true); clf
 % ax33 = axes( 'Units', 'inches', 'position', [4.8479 3.6354 3.4496 2.6146]);
-ax11 = axes('Units', 'inches', 'Position', [.6, .5, 4.25 4.2]);
+ax11 = axes('Units', 'inches', 'Position', [.6, .5, 4.35 4.5]);
+
 % hold on, grid on, ylim(ylm); xlim(xlm);
 
-h1 = semilogx(freqs, psd_nobung.psd(:, idx_z));
+h1 = semilogx(freqs, psd_nobung.psd(:, z_idx));
 hold on, grid on,
-h2 = semilogx(freqs, psd_int.psd(:, idx_z));
+h2 = semilogx(freqs, psd_int.psd(:, z_idx));
 
-h3 = semilogx(freqs, psd_ext.psd(:, idx_z)); 
-ylim([-120, -40])
+h3 = semilogx(freqs, psd_ext.psd(:, z_idx)); 
+ylim([-110, -40])
+xlim([4.4729, 3000])
 h1.DisplayName = 'Step 0: un-modified';
 h2.DisplayName = 'Step 1: isolate from building';
 h3.DisplayName = 'Step 1: + electrical isolation';
 
+ht1.DisplayName = 'Step 0: un-modified';
+ht2.DisplayName = 'Step 1: isolate from building';
+ht3.DisplayName = 'Step 1: + electrical isolation';
 
+
+ax11.Color=fig_color;
 title('z-deflection')
 lower = [-75, -75];
 upper = [-40, -40];
@@ -78,30 +101,30 @@ ylabel('power spectral density')
 leg1 = legend([h1, h2, h3]);
 set(leg1, 'FontSize', 14, 'Position', [0.1361 0.1586 0.5938 0.1504], 'box', 'off')
 
+leg2 = legend([ht1, ht2, ht3]);
+set(leg2, 'FontSize', 14, 'Position', [0.1361 0.1197 0.5938 0.1504], 'box', 'off')
 
-%%
-h2.Visible = 'off';
-ht2.Visible = 'off';
-h3.Visible = 'off';
-ht3.Visible = 'off';
+% ax11_2 = axes('Units', 'inches', 'Position', [3.0208 2.8854 1.8979 2.0833],...
+%   'XTick', [], 'YTick', []);
+
+% h2.Visible = 'off';
+% ht2.Visible = 'off';
+% h3.Visible = 'off';
+% ht3.Visible = 'off';
+% % h.Visible = 'off';
+% leg1.Visible = 'off';
+
+
+% h2.Visible = 'on';
+% ht2.Visible = 'on';
 % h.Visible = 'off';
-leg1.Visible = 'off';
+leg1 = legend([h1, h2, h3]);
+set(leg1, 'FontSize', 14, 'Position', [0.1361 0.0963 0.5938 0.1504], 'box', 'off')
 
-export_fig(F10, '~/gradschool/rob_ss_prez/figures/initial_dfl_time0.pdf', '-q101')
-
-print(F11, '-dpdf', '~/gradschool/rob_ss_prez/figures/initial_dfl_psd0.pdf')
+save_fig(F10, fullfile(fig_root, 'dfl_time'), false);
+save_fig(F11, fullfile(fig_root, 'dfl_psd'), false);
 
 %%
-
-h2.Visible = 'on';
-ht2.Visible = 'on';
-h.Visible = 'off';
-leg1 = legend([h1, h2]);
-set(leg1, 'FontSize', 14, 'Position', [0.1361 0.1586 0.5938 0.1504], 'box', 'off')
-
-saveas(F10, '~/gradschool/rob_ss_prez/figures/initial_dfl_time1.svg')
-saveas(F11, '~/gradschool/rob_ss_prez/figures/initial_dfl_psd1.svg')
-
 lower = [-65, -65];
 upper = [-40, -40];
 h = ciplot(lower, upper, [300, 450],'g');
@@ -110,8 +133,8 @@ alpha(h, '.25')
 leg1 = legend([h1, h2]);
 set(leg1, 'FontSize', 14, 'Position', [0.1361 0.1586 0.5938 0.1504], 'box', 'off')
 
-saveas(F10, '~/gradschool/rob_ss_prez/figures/initial_dfl_time2.svg')
-saveas(F11, '~/gradschool/rob_ss_prez/figures/initial_dfl_psd2.svg')
+print(F10, '-dpdf', '~/gradschool/rob_ss_prez/figures/initial_dfl_time2.pdf')
+print(F11, '-dpdf', '~/gradschool/rob_ss_prez/figures/initial_dfl_psd2.pdf')
 
 %%
 h3.Visible = 'on';
@@ -127,8 +150,8 @@ alpha(h, '.25')
 leg1 = legend([h1, h2, h3]);
 set(leg1, 'FontSize', 14, 'Position', [0.1361 0.1586 0.5938 0.1504], 'box', 'off')
 
-saveas(F10, '~/gradschool/rob_ss_prez/figures/initial_dfl_time3.svg')
-saveas(F11, '~/gradschool/rob_ss_prez/figures/initial_dfl_psd3.svg')
+print(F10, '-dpdf', '~/gradschool/rob_ss_prez/figures/initial_dfl_time3.pdf')
+print(F11, '-dpdf', '~/gradschool/rob_ss_prez/figures/initial_dfl_psd3.pdf')
 
 %%
 figure(1); clf
@@ -174,22 +197,32 @@ ax11 = axes('Units', 'inches', 'Position', [0.7000 3.6354 3.4496 2.6146]);
 h1 = semilogx(freqs, psd_int.psd(:, idx_x));
 hold on, grid on, ylim(ylm); xlim(xlm);
 h2 = semilogx(freqs, psd_ext.psd(:, idx_x));
-h3 = semilogx(freqs, psd_nobung.psd(:, idx_x));
+% h3 = semilogx(freqs, psd_nobung.psd(:, idx_x));
 
 title('x-sensor');
 ylabel('[dB]');
 h1.DisplayName = 'with nPoint fan voltage';
 h2.DisplayName = 'with external fan voltage';
-h3.DisplayName = 'no-bungee';
-leg1 = legend([h1, h2]);
-set(leg1, 'FontSize', 12)
+% h3.DisplayName = 'no-bungee';
+
+lower = [-120, -120];
+upper = [-40, -40];
+h = ciplot(lower, upper, [327, 437],'g');
+alpha(h, '.25')
+
+
 
 % subplot(2,2,3)
 ax22 = axes('Units', 'inches', 'Position', [0.7000 0.5521 3.4496 2.6146]);
 semilogx(freqs, psd_int.psd(:, idx_y));
 hold on, grid on, ylim(ylm); xlim(xlm);
 semilogx(freqs, psd_ext.psd(:, idx_y));
-semilogx(freqs, psd_nobung.psd(:, idx_y));
+% semilogx(freqs, psd_nobung.psd(:, idx_y));
+lower = [-120, -120];
+upper = [-40, -40];
+h = ciplot(lower, upper, [327, 437],'g');
+alpha(h, '.25')
+
 title('y-sensor');
 xlabel('frequency [Hz]');
 ylabel('[dB]');
@@ -199,12 +232,12 @@ ax33 = axes( 'Units', 'inches', 'position', [4.8479 3.6354 3.4496 2.6146]);
 semilogx(freqs, psd_int.psd(:, idx_z))
 hold on, grid on, ylim(ylm); xlim(xlm);
 semilogx(freqs, psd_ext.psd(:, idx_z));
-semilogx(freqs, psd_nobung.psd(:, idx_z));
+% semilogx(freqs, psd_nobung.psd(:, idx_z));
 title('z-deflection')
-lower = [-95, -95];;
+lower = [-120, -120];;
 upper = [-40, -40];
-h = ciplot(lower, upper, [327, 437],'g');
-alpha(h, '.25')
+hz = ciplot(lower, upper, [327, 437],'g');
+alpha(hz, '.25')
 
 ax55 = axes( 'Units', 'inches', 'position', [7.02083 5.01250 1.2812 1.2500]);
 semilogx(freqs, psd_int.psd(:, idx_z))
@@ -213,7 +246,7 @@ semilogx(freqs, psd_ext.psd(:, idx_z));
 xlim([327, 437]);
 ylim([-90, -40]);
 set(ax55, 'XTickLabel', [], 'YTickLabel', []);
-lower = [-95, -95];;
+lower = [-120, -120];
 upper = [-40, -40];
 h = ciplot(lower, upper, [327, 437],'g');
 alpha(h, '.25')
@@ -226,9 +259,17 @@ hold on, grid on, ylim(ylm); xlim(xlm);
 semilogx(freqs, psd_ext.psd(:, idx_fan));
 xlabel('frequency [Hz]');
 title('nPoint fan voltage');
+lower = [-95, -95];;
+upper = [-40, -40];
+h = ciplot(lower, upper, [327, 437],'g');
+alpha(h, '.25')
 
-saveas(F3, '~/matlab/website/fan_noise_psd.svg')
-saveas(F3, '~/gradschool/rob_ss_prez/figures/fan_noise_psd.svg')
+
+leg1 = legend([h1, h2]);
+set(leg1, 'FontSize', 12)
+
+print(F3, '-dpdf', '~/matlab/website/fan_noise_psd.pdf')
+print(F3, '-dpdf', '~/gradschool/rob_ss_prez/figures/fan_noise_psd.pdf')
 %%
 
 
@@ -291,13 +332,13 @@ text([0.103], [-0.035], s1)
 
 
 ax2 = axes('Units', 'inches', 'Position', [4.7 2.5 wd ht1]);
-h0 = plot(tvec, detrend(rnt_nb.data(z_idx, :, real_idx)));
+% h0 = plot(tvec, detrend(rnt_nb.data(z_idx, :, real_idx)));
 hold on
 h3 = plot(tvec, detrend(rnt_int.data(z_idx, :, real_idx)));
 
 h4 = plot(tvec, detrend(rnt_ext.data(z_idx, :, real_idx)));
 title('deflection')
-ylim([-0.05, 0.05])
+ylim([-0.025, 0.025])
 xlim([tvec(1), tvec(end_idx)])
 hold on
 xlabel('time [s]')
@@ -329,8 +370,8 @@ set(ax3, 'XTickLabel', [])
 title('deflection detail')
 
 
-saveas(f2, '~/matlab/website/fan_noise_time.svg')
-saveas(f2, '~/gradschool/rob_ss_prez/figures/fan_noise_time.svg')
+print(f2, '-dpdf', '~/matlab/website/fan_noise_time.pdf')
+
 %%
 
 
