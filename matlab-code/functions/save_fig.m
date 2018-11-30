@@ -11,7 +11,9 @@ function save_fig(fig, fpath_no_ext, for_presentation)
   end
 
   % Check to see if fpath has a file extension:
-  expr = '[.A-Za-z]{4,4}$';
+  % Cant see how to match a period. Docs say \x{N} will match character with 
+  % hexedecimal of value N. A period is 2E in Hex...
+  expr = '\x{2E}[A-Za-z]{4,4}$';
   idx = regexp(fpath_no_ext, expr);
   if ~isempty(idx)
     ext_old = fpath_no_ext(idx:end);

@@ -9,7 +9,16 @@ axes('FontName','Times New Roman') % Set axis font style
 box('on'); % Define box around whole figure
 hold on;
 
-set(F, 'Units', 'Inches', 'Position', [0, 0, width, height],...
+% First, set units to inches. Then get the (x0,y0) position, and only reset the
+% width and height. Because it is annoying to always have the figure start at
+% (0,0).
+set(F, 'Units', 'inches');
+pos = get(F, 'Position');
+
+lft = pos(1);
+bt = pos(2);
+
+set(F, 'Units', 'Inches', 'Position', [lft, bt, width, height],...
     'PaperUnits', 'Inches', 'PaperSize', [width, height],...
     'InvertHardcopy', 'off');
 
