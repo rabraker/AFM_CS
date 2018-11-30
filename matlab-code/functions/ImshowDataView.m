@@ -13,7 +13,7 @@ classdef ImshowDataView
                
     end
     
-    function h_im = imshow(IM, thresh, ax1, ax2, fun)
+    function h = imshow(IM, thresh, ax1, ax2, fun)
       if nargin < 5
         fun = @(event_obj) ImshowDataView.plotter(event_obj, ax1, ax2);
       end
@@ -27,6 +27,10 @@ classdef ImshowDataView
       
       h_im.UserData =struct('fun', fun,...        
                             'line', []);
+                          
+      if nargout >0
+        h = h_im;
+      end
       
     end
     
