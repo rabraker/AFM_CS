@@ -1,0 +1,172 @@
+#+TITLE: Notes Improving raster scanning and CS scanning
+#+SETUPFILE: ~/.emacs.d/org-templates/level-0.org
+#+PROPERTY: TEMPLATE page_math
+#+PROPERTY: URL projects/mpc_j.html 
+#+PROPERTY: SAVE_AS projects/mpc_j.html
+#+OPTIONS: tex:t
+#+STARTUP: latexpreview
+#+TODO: TODO(t) WAITING(w@/!) | DONE(d@/!) CANCELED(c@/!) STARTED(s@/!) DEFERRED(ef@/!)
+#+STARTUP: fold
+#+STARTUP: lognotestate t
+#+SEQ_TODO: TODO STARTED WAITING DELEGATED APPT | DONE DEFERRED CANCELLED
+
+
+* Eliminiating Noise and disturbances
+I have gotten really good results building the vibration isolator and eliminating the fan electrical disturbance. This is illustrated in figs [[fig:no_iso]] and [[fig:with_iso]].
+#+HTML: <figure>
+#+caption: Raster image without vibration isolation and with fan plugged in
+#+name: fig:no_iso
+#+ATTR_ORG: :width 300
+[[file:figures/raster_nobungee.svg]]
+
+#+caption: Raster scan with the vibration isolator and with the fan run from an external power supply. 
+#+name: fig:with_iso
+[[file:figures/raster_bungee.svg]]
+#+HTML: </figure>
+I think, at least for raster scanning, that most of the benefit is from the vibration isolation. I should redo this experiment to test the fan situation. I suspect it makes the most impact for CS imaging. 
+
+#+HTML: <figure>
+#+Caption: Time series.
+#+name: fig:dfl_time
+[[file:figures/dfl_time.svg]]
+
+#+Caption: PSDs showing the difference the two modifications make.
+#+name: fig:dfl_psd
+[[file:figures/dfl_psd.svg]]
+#+HTML: </figure>
+
+Figures [[fig:dfl_time]] and [[fig:dfl_psd]] illustrate the difference. The blue time series in Fig. [[fig:dfl_time]] shows what the deflection signal in our AFM looks like with the controll loops turned off, the XY-stage turned on, and the cantilevar merely resting on the surface. It is really noisy and has large periodic content. The blue curve in [[fig:dfl_psd]] shows the PSD estimate (taken from 50 realizations) of the deflection signal in the same scenario. 
+
+The light green shaded region is the most problemetic and is due to vibrations in the building and support table the AFM sits on. This is a well known problem and commercial solutions exist to mitigate it. They are expensive, which include both active and possive solutions. The idea behind passive vibration isolation is to insert a mechanical low pass filter between the driving vibration and the AFM itself. 
+
+Once the principle is understood, it is faily easy to build one for about $50. The one I built is shown in Fig. [[fig:isolator]]. The principle is shown in in Fig. [[fig:schem_iso]]. 
+
+#+HTML: <figure>
+#+Caption: My home-built vibration isolation chamber
+#+name: fig:isolator
+#+ATTR_HTML: :width 300
+[[file:figures/my_isolator.jpg]]
+
+#+Caption: Mechanical schematic of vibration isolator.
+#+name: fig:schem_iso
+#+ATTR_HTML: :width 200
+[[file:figures/mass-spring-damper.png]]
+#+HTML: </figure>
+
+We imagine the floor $z$ moving and transfering that motion through the springs (ie, bungee cords) into the motion $X$ of the AFM suport (ie, the concrete block). The transfer function from $Z$ to position $X$ is
+\begin{equation}
+    X(s) = \frac{\frac{\gamma}{m}s + \frac{k}{m}}{s^{2} + \frac{\gamma}{m}s + \frac{k}{m}} Z(s).
+\end{equation}
+
+We want to move the cuttoff frequency of this LPF as low as possible. To do that, we make $m$ as large as we can, since $\omega = \sqrt{k/m}$. Hence, the books sitting on the platform. One disadvantage of this type of system is that when we increase $m$, we decrease the damping. Thus, we can get a resonance. 
+
+Nonetheless, this thing seems to work really well. The orange curves in Figs [[fig:dfl_time]] and [[fig:dfl_psd]] are the results when using this isolation chamber. Although we have improved things considerably, the deflection signal is still rather noisy. This is due to the spike in the PSD at 380Hz. That spike is so sharp because, if we zoom on the orangetimeseries, we see almost a perfect sinusoid of 380 Hz.
+
+Note also that the PSDs show resonances. These are from the xy-stage, which is turned on. These resonances show up in the deflection PSD because noise in xy-power amplifer perturbs the stage. To understand this, we need to understandd sample tilt, which is illustrated in the following video clip.
+
+#+HTML: <video width="600" height="200" autoplay loop>
+#+HTML: <source src="figures/sample_tilt.mp4" type="video/mp4">
+#+HTML: Your browser does not support the video tag.
+#+HTML: </video> 
+
+If we imagine that noise is white, then the position of the stage colored and shows up in the deflection signal largely through sample tilt. Some of what we see may also be to bending modes and runout in the xy-stage, though this is impossible to differentiate from tilt via just the deflection signal (at least, I don't know how). 
+
+It turns out that the spike at 380 Hz in the PSD is caused by the cooling fan inside the xy stage power amplifier. If we unplug that fan, we get the yellow timeseries in Fig. [[fig:dfl_time]] and PSD in [[fig:dfl_psd]], which is a vast improvement over the original instrument. 
+
+* Implications for CS scanning
+When raster scanning over a flat area, the control signal is now very, very flat. THis is shown by the orangecurves in [[fig:with_iso]]. I don't seem to be able to replicate that with CS-scanning. There seem to be multiple complicating factors.
+
+1. When we do the descent, we excite the (extremely slow) drift modes in the z-piezo. This means that the $u_{z}$ control signal is still drifting even though the absolute z-position is relatively constant. Without a z-sensor, we introduce these dynamics into the CS image data. I have had some success eliminating this affect by modeling the drift and running the *entire* $u_{z}$ signal through the drift model in a post-processing step. This does not completely remove the affect though. 
+
+   That middling success may be because, in the current implementation, each step up is different, depending on if the previous CS cycle ended in a whole or on the flats. This is a problem because, as I learned when modeling drift and hysteresis for x-direction, a linear drift models parameters should really change depending on how large the move is.
+   
+   It may therefore be better to to move up by a constant amount. I don't like stepping the control signal up because that tends to excite a lot of modes. What I could to is to keep the current method of reseting the $z$ reference when we step up, but by a larger than desired amount. Then, we keep moving up until some pre-determined $u_{z}$ threshhold is met.
+
+   This scenario would be we would always start the descent from a known control value. However, there is no way to know if we will end up in a hole or on the flats. Thus, we cannot completely eliminate this affect. however, I think it would be best to normalize the drift model to the assumption that we end up on the flats, since that is where the affect seems most noticable.
+
+2. It may be that putting $g_{drift}^{-1}$ in the loop, rather than using it in post-processing, will improve things.
+
+2. On some descents, I still get oscillations. The frequency of the oscillations (from memory) seems to be either around the 215 Hz resonance, or much higher at around 600 Hz. I need to carefully compare the amplitude of these oscillations to what I see raster scanning on the flats. This occures despite the $D(z)^{-1}$ controller  which inverts the pz pair at 215 Hz. 
+
+   I do not understand why sometimes that inversion works and sometimes it seems not too.
+
+3. It is evident that the cantilevar is still interacting with the surface during the xy-move when we do not completely pull away. I seem to have some success turning of the PI controller during the xy-move. This prevents the controller from reacting to that interaction. Because the frequency content of the incoming (surface) disturbance is high (because we are moving fast), if we leave the PI controller on, we inject a high frequency signal into the loop. 
+
+   Note that, if we were to keep applying the same reference at the end of the xy-move, then turning the PI loop back on would usually mean injecting a step command into the loop because the deflection signal will have changed between the beginning and end of the xy-move. I don't think this is a problem because when we turn the PI loop back on, we will also be changing the reference. Thus, we are already committed to injecting a step command into the loop. 
+
+4. It may be that CS scanning will work much better on a larger image. Say 20 or 40 microns rather than 5. The reasoning is that for a larger image, the \(\mu\)-paths will become longer. This implies that the proportion of the \(\mu\)-path scan affected by the drift transient should be a much smaller fraction of the total scan length, and hence its affect on the image quality should be reduced. 
+
+#+HTML: <figure>
+#+caption: PSD of raster scan lines and CS scan paths over the flat area. Note the large peak in the CS curve at 215 Hz. 
+#+name: fig:with_iso
+[[file:figures/CS_raster_flats_PSD.svg]]
+#+caption: This is caption two.
+[[file:figures/CS_raster_flats_PSD_withFRF.svg]]
+#+HTML: </figure>
+
+
+
+# #+caption: PSD of raster scan lines and CS scan paths over the flat area. Note the large peak in the CS curve at 215 Hz. Also shown are the primary FRFs for the x-dir, y-dir, and z-dir.
+# #+ATTR_HTML: :height 400
+# #+name: fig:with_iso
+# [[file:figures/CS_raster_flats_PSD_withFRF.svg]]
+
+It is evident that the primary oscillations in the CS scan data correspond to the z-dir resonance at 215 Hz. The other two major peaks in the CS data are at 380 and 508 Hz. These appear to correspond to the (bending ?) modes of the x and y axes, respectively. 
+
+
+Next step is to to the same analysis scanning over mica or a larger flat section. This will tell us if the trouble is that we are running into stuff during the move.
+kkk
+
+
+
+* Comparing Experimental to Simulation
+I have been struggling to completely remove the the piezo dynamics from the CS scans. Those dynamics show up in two primary ways. 
+
+1. Slow drift from the piezo. I have been able to remove most of this.
+2. Oscillations at 215 Hz during the scanning portion of the cycle. It is evident that these oscillations are much larger when scanning over a flat portion of the sample than they are with raster scanning. 
+
+To remove the drift, I fit a simple drift model and run the *entire* z-piezo control signal through that model. This is a post-processing step. It may be better to do that online, but I haven't gotten around to it yet. 
+
+There is an resonance (complex pole-zero pair) in the z dynamics at about 215 Hz. In both the raster and CS scanning, I cancell that resonance. This lets me use a larger PI gain than I could otherwise. In both cases, the signal taken to represent the image is the control output of the integrator, before it goes into the inverse compensator. 
+
+This inversion seems to work really well for raster scanning. In CS scanning, it works about the same as raster maybe a quarter of the time. In other cycles, the mode still gets excited. I don't understand why this.
+
+I have been assuming that much of the graininess I see in the CS images is from those dynamics. If you look at a single row of the reconstructed images, it certainly looks like dynamics showing up. I tested this in a few ways. 
+
+Perhaps the direct way to test this is to do CS reconstruction based on *perfect* data. The top left panel of Figure [[fig:cs_sim]] shows such an image. For that image, I generated a square, 512 x 512 matrix of all ones. Then, at the same size and guage as the CS20-NG grating, I filled in circles of zeros. I then subsampled that matrix with the same mask used in the experimental CS image. The basis-pursuit reconstruction is shown in the second panel on the left. 
+
+The right column of panels shows experimental results. The top panel is a 1 Hz raster scan. The second panel is a CS image. 
+
+In both columns, the bottom panel shows the row of pixels marked by the orangeline above. This demonstrates that much of the graininess and "oscillations" are actually from the reconstruction. 
+
+TODO: Demonstrate this hypothesis
+In fact, the red portion of the experimental curve shows the actually measured data.
+We conclude then, at least as far as the actual image goes, there is no point to reducing the present dynamics any further. 
+
+
+#+caption: (left: simulation. right: experiment) Top panels shows the matrix used to represent the CS-20NG. Middle panel shows the CS reconstruction. The top right panel shows a raster scan and the right middle panel shows an experiment CS reconstruction. The bottom panels show the data in a single row of pixels.
+#+name: fig:cs_sim
+file:figures/cs_compare_sim_sim.svg
+
+
+The second, less direct way, is we can compare the frequency content of lines over flat areas to raster images. 
+
+
+* Footnotes
+
+[fn:1] Before 
+
+
+
+* Speed Comparison Tasks
+:PROPERTIES:
+:UNNUMBERED: t
+:HTML_CONTAINER_CLASS: todosection
+:END:
+# set with C-c C-x p
+
+
+
+# $$
+# ref_{max} = [1, 2, 3, 4.8]
+# $$
