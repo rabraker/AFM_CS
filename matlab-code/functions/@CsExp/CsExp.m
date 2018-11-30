@@ -272,6 +272,9 @@ classdef CsExp < handle
       if isempty(self.x_positive) || isempty(self.y_positive)
         self.xy_positive();
       end
+      if nargin <2
+        verbose = false;
+      end
       if verbose && ~exist('figs', 'var')
           figs{1} = figure;
           figs{2} = figure;
