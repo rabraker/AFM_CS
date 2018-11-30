@@ -69,6 +69,7 @@ Note also that the PSDs show resonances. These are from the xy-stage, which is t
 #+HTML: Your browser does not support the video tag.
 #+HTML: </video> 
 
+It is through this mechanism that dynamics in xy-stage show up in the PSD of the deflection when the stage is powered on.
 If we imagine that noise is white, then the position of the stage colored and shows up in the deflection signal largely through sample tilt. Some of what we see may also be to bending modes and runout in the xy-stage, though this is impossible to differentiate from tilt via just the deflection signal (at least, I don't know how). 
 
 It turns out that the spike at 380 Hz in the PSD is caused by the cooling fan inside the xy stage power amplifier. If we unplug that fan, we get the yellow timeseries in Fig. [[fig:dfl_time]] and PSD in [[fig:dfl_psd]], which is a vast improvement over the original instrument. 
