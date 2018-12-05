@@ -37,7 +37,25 @@ test.org
 *.jpg
 *.jpeg
 *.odp\#
+*.out
+*.synctex.gz
+*.log
+auto/
 
+GPATH
+GRTAGS
+GTAGS
+cJSON
+cJSON.c
+cJSON.h
+cgsolve
+test_l1magic
+test_data/
+src_unused/
+cgsolve_tmp.m
+l1qc_newton_tmp.m
+
+*.o
 *.dll
 *.wdb
 *.wdb
