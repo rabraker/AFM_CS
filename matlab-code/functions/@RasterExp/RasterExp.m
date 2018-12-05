@@ -2,7 +2,8 @@ classdef RasterExp <handle
   
   
   properties
-    paths;
+    raster_paths;
+    channel_map;
     % parent_data;
     xref;
     yref;
@@ -15,6 +16,7 @@ classdef RasterExp <handle
 
     samps_per_period;
     samps_per_line;
+    gg;
     
     uz;
     ze;
@@ -22,52 +24,102 @@ classdef RasterExp <handle
     y;
     pix_mat;
     pix_mask;
+    UserData;
   end
   
   methods
-    function self= RasterExp(raster_paths, npix, width)
+    function self= RasterExp(raster_paths, varargin)
     % [datmat, samps_period, samps_line] 
-      self.paths = raster_paths;
+      self.raster_paths = raster_paths;
+      default_chan_map = ChannelMap([1:4, NaN]);
+      optP = inputParser();
+      optP.addParameter('reload_raw', false, @(s)islogical(s));
+      optP.addParameter('channel_map', default_chan_map);
+      optP.addParameter('gg', []);
+      optP.addParameter('load_full', false, @(s)islogical(s));
       
-      fprintf('Loading Meta file...\n%s\n', raster_paths.meta_path)
-      meta_data = load(raster_paths.meta_path);
-      self.meta_data = meta_data.Cluster;
-      self.Ts = meta_data.Cluster.raster_scan_params.TsTicks/ ...
-                (40e6);
+      optP.parse(varargin{:});
+      opts = optP.Results;
       
-      fprintf('Loading Data file...\n%s\n', raster_paths.data_path)
-      datmat = csvread(raster_paths.data_path);
-      
-      % Load parent data.
-      parent_dat = csvread(raster_paths.parent_path);
-      xyref = reshape(parent_dat', 2, [])';
-      self.xref = xyref(:,1);
-      self.yref = xyref(:,1);
-      % Compute unit conversions
-      micron2pix = npix/width;
-      volts2pix = AFM.volts2mic_xy  * micron2pix;
-      
-      self.npix = npix;
-      self.volts2pix = volts2pix;
-      self.micron2pix = micron2pix;
-      self.samps_per_period = size(parent_dat,1)/2; % twice as many in here for x & y.
-      self.samps_per_line = self.samps_per_period/2;
-      if floor(self.samps_per_line)~= self.samps_per_line
-        warning('Non integer number of samples per line = %f.', ...
-                self.samps_per_line)
+      % Check to see if an already processed mat file exists.
+      mat_exists = exist(raster_paths.data_path_mat, 'file');
+      if ~opts.reload_raw && mat_exists
+        fprintf('loading from mat file...\n')
+        self = self.load_mat(raster_paths.data_path_mat, opts.load_full);
+        fprintf('done\n')
+      else
+        fprintf('loading from raw data...\n')
+        self = self.load_raw_data(raster_paths, opts);
+        fprintf('done\n')
+      end      
+
+    end
+    
+    % Methods defined in other files
+    self = load_raw_data(self, raster_paths, npix, width, opts)
+    [ self] = bin_raster_really_slow(self, line_detrender)
+    trace_inds = get_trace_inds(self)
+    
+    function save(self, force_save)
+    % Serialize to a .mat file to the location contained
+    % in raster_paths.data_path_mat.
+    
+      if nargin <2
+        force_save = false;
+      end
+
+      % Remove empty fields, so we don't overwrite data we potentially didn't
+      % load with empty.
+      if ~force_save && ~self.raw_data_loaded()
+        warning(['Not saving data because the raw data is not loaded',...
+          'and force_save flag is false. Saving as an append operation',...
+          'is very time consuming so is disabled by default.'])
+        return
       end
       
-      % Pull out data. First, drop anything extra that got collected.
-      datmat = datmat([1:npix*self.samps_per_period], :);
-      self.x = datmat(:, 1);
-      self.y = datmat(:, 2);
-      self.ze = datmat(:, 3);
-      self.uz = datmat(:, 4);
+      % Go ahead and save it.
+      warning('off', 'MATLAB:structOnObject');
+      self_struct = struct(self);
+      if ~self.raw_data_loaded() % weve been instructed to save anyway
+        for fld=fieldnames(self_struct)'
+          
+          if isempty(self_struct.(fld{1}))
+            self_struct = rmfield(self_struct, fld{1});
+          end
+        end
+        save(self.raster_paths.data_path_mat, '-struct', 'self_struct', '-append');
+      else
+        save(self.raster_paths.data_path_mat, '-struct', 'self_struct');
+      end
+      warning('on', 'MATLAB:structOnObject');
     end
-    %%
-    [ self] = bin_raster_really_slow(self, line_detrender)
+
+    function self = load_mat(self, data_path_mat, load_full)
+    % Load ourself from the location contained in data_path_mat. If
+    % load_full=false (the default), then the original time-series
+    % data, x,y,uz,ze, x_positive,y_positive will not be loaded.
+    % This is to speed things up when we just want to work with the
+    % already processed images.
+
+    % I tried use the matfile() function. This saves us zero time. I cant
+    % figure out how to do this without creating an extra structure
+    % and passing that into or out of self. This is wastful...
+    %%%       self_mat = matfile(data_path_mat);
     
-    trace_inds = get_trace_inds(self)
+      to_load_list = properties(self);
+      if ~load_full
+        no_loads = {'x', 'y', 'uz', 'ze'};
+        to_load_list = setdiff(to_load_list, no_loads);
+      end
+
+      data = load(data_path_mat, to_load_list{:});
+
+      for prop = to_load_list'
+        self.(prop{1}) = data.(prop{1});
+      end
+
+    end
+    
     
     function plot_n_periods(self, signal, ax, N0, N1)
     % plot_n_periods(self, signal, ax, N0, N1)
@@ -96,4 +148,12 @@ classdef RasterExp <handle
       x_row = x_row * (self.npix/x_row(end) );
     end
   end
+  
+  methods (Access = 'private')
+    function flag = raw_data_loaded(self)
+      flag = ~isempty(self.x) || ~isempty(self.y)...
+        || ~isempty(self.uz) || ~isempty(self.ze);
+    end
+  end
+    
 end

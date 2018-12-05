@@ -16,7 +16,11 @@
 % [x] = line_detrender_local(x)
 
 function [ self] = bin_raster_really_slow(self, line_detrender)
-                                         
+  if isempty(self.x) || isempty(self.y) || isempty(self.ze) || isempty(self.uz)
+    warning(['Raw dat properties are empty. To process raw data, load',...
+      'the raw data with the load_full flag. Skipping'])
+    return
+  end
   % nperiods, samps_per_period, volt2pix,
   % if size(xyu_dat, 1) ~= nperiods*samps_per_period
   %   s = sprintf('Expected length(xyu_dat) == nperiods*samps_per_period')
