@@ -1,6 +1,16 @@
 
 
 function save_fig(fig, fpath_no_ext, for_presentation)
+% save a figure as either pdf (for_presentation=true) or svg
+% (for_presentation=false). In both cases, the background color will be set to
+% the color defined in the function fig_color_presentation() and fig_color()
+% respectively. 
+%
+% for_presentation is optional, default is false.
+
+  if nargin <3
+    for_presentation = false;
+  end
 
   if for_presentation
     ext = '.pdf';

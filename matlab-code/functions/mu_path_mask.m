@@ -7,8 +7,10 @@
 %    square image.
 %    mu_pix:  (int) length of mu-path in pixels
 %    sub_sample_frac: (double) sub sampling fraction, e.g., 0.1 for 10%
-%    width:           (double) width in microns of the image
-%    microns2vols:    (double) conversion from microns 2 volts, typically 1/5
+%    width:           (double) Optional, default=1. Width in microns 
+%                     of the image
+%    microns2vols:    (double) Optional, default=1. Conversion from 
+%                     microns 2 volts, typically 1/5
 %    for our stage.
 %
 % Outputs
@@ -22,6 +24,10 @@
 function [pixelifsampled, XR, YR] = mu_path_mask(pix, mu_pix, sub_sample_frac,...
     width, microns2volts)
   
+  if nargin < 4
+    width = 1;
+    microns2volts = 1;
+  end
   
   pix_per_micron = pix/width;
   pixelifsampled = zeros(pix, pix);
