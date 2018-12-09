@@ -1,67 +1,71 @@
 
-npix = 512;
-img_mat = ones(npix,npix);
 
 % Holes are on a  500 nm pitch, and we scan 5 microns, so 10 holes.
 % Thus, assuming the holes are half the pitch, each hole is 250 nm and the
 % space between is 250 nm. Thus, 1/20th of the image width.
 %
-hole_width = npix/20
-pitch = npix/10;
-
-m_pitch = ceil(pitch);
-n_hole = ceil(hole_width);
-
-% First lets, create a prototype hole. Then we will insert it into the master
-% image periodically.
-sq = ones(n_hole,n_hole);
-% circle radius
-r = n_hole/2;
-% center
-xc = n_hole/2;
-yc = n_hole/2;
-
-
-for x_pt=1:n_hole
-  for y_pt=1:n_hole
-    
-    rad_pt = sqrt( (x_pt - xc)^2 + (y_pt - yc)^2 );
-    
-    if rad_pt <= r
-      sq(y_pt, x_pt) = 0; % make it black
-    end
-  end
-end
-
-
-figure(14);
-
-imshow(sq, [0, 1])
-
-
-x_start = 20;
-y_start = 20;
+npix = 512;
+x_start = 26;
+y_start = 26;
+img_mat = make_CS20NG(x_start, y_start);
 
 figure(14); clf
 imshow(img_mat, [0, 1])
-x_lft = x_start;
-while x_lft+n_hole < npix +n_hole
-  y_tp = y_start;
-  while y_tp+n_hole <= npix + n_hole
-    img_mat(y_tp:y_tp+n_hole-1, x_lft:x_lft+n_hole-1) = sq;
-    
-    y_tp = y_tp + m_pitch;
-%     imshow(img_mat, [0, 1])
-%     drawnow();
-%     pause
-  end
-  
-  x_lft = x_lft + m_pitch;
-  
-end
-img_mat = img_mat(1:npix, 1:npix);
-figure(14); clf
-imshow(img_mat, [0, 1])
+
+clc
+cs_sim = CsSim(img_mat*thresh, cs_exp1.pix_mask);
+cs_sim.solve_bp();
+%%
+figure(10);
+ax1 = subplot(3,1,[1,2])
+ax2 = subplot(3,1,3)
+%%
+img_tmp = dct(cs_sim.Img_bp);
+img_tmp = idct(img_tmp, 'Type', 4);
+imshow_dataview(img_tmp, [-.020, 0.06], ax1, ax2);
+
+%%
+img_tmp = cs_sim.Img_bp;
+%%
+Img_ = dct( PixelMatrixToVector(cs_sim.Img_bp));
+Img = idct2( PixelVectorToMatrix(Img_, [512,512]));
+figure(2)
+imshow(Img, [0, 0.06])
+%%
+cs_sim.Img_bp = Img;
+figure(1)
+ax1 = subplot(3,1,[1,2])
+ax2 = subplot(3,1,3)
+mn = min(cs_sim.Img_bp(:));
+mx = max(cs_sim.Img_bp(:));
+imshow_dataview(cs_sim.Img_bp, [0, 0.06], ax1, ax2);
+%%
+figure(3)
+img_dct = dct2(cs_sim.Img_original);
+mn = min(log10(abs(img_dct(:))))
+mx = max(log10(abs(img_dct(:))));
+
+imagesc(log10(abs(img_dct))); %, [mn, mx])
+
+figure(4)
+
+mesh(log10(abs(img_dct)))
+%%
+yidx = 397;
+
+row_og = cs_sim.Img_original(yidx,:);
+row_rec = cs_sim.Img_bp(yidx, :);
+
+figure(5); clf
+hold on
+idx_1 = [1:512];
+idx_2 = [1:1024];
+idx_3 = [513:1024];
+plot(idx_1, row_og)
+plot(idx_1, row_rec)
+
+plot(idx_3, fliplr(row_og), '--b')
+plot(-fliplr(idx_1), fliplr(row_og), '--b')
 
 %%
 % Now, load some cs data. Use the pix_mask, and reconstruct.
@@ -113,9 +117,8 @@ cs_exp3 = CsExp(cs_paths3,  'feature_height', hole_depth, 'gg', gg, 'reload_raw'
 cs_exp3.print_state_times();
 fprintf('Total Imaging time: %.2f\n', cs_exp3.time_total)
 cs_exp3.process_cs_data();
-%%
-cs_exp3.solve_basis_pursuit(true);
-%%
+cs_exp3.solve_basis_pursuit();
+
 
 cs_exp1.save()
 cs_exp2.save()
@@ -127,7 +130,7 @@ cs_sim_path = '~/matlab/afm-cs/matlab-code/notes/data/cs_sim_CS20NG.mat';
 if 0
   cs_sim = CsSim(img_mat*thresh, cs_exp1.pix_mask);
   cs_sim.solve_bp();
-  cs_sim.Img_bp = cs_sim.Img_bp - mean(cs_sim.Img_bp(:));
+%   cs_sim.Img_bp = cs_sim.Img_bp - mean(cs_sim.Img_bp(:));
   save(cs_sim_path, 'cs_sim')
 else
   load(cs_sim_path);
