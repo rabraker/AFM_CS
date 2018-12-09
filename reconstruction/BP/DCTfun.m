@@ -1,5 +1,5 @@
 function [ output ] = DCTfun( z,E )
 
-    output = dct2(addzeros(z,E));
+    output = dct(addzeros(z,E));
 
 end
