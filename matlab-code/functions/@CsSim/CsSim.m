@@ -21,6 +21,24 @@ classdef CsSim < handle
       self.Img_sub_sampled = pix_mask.*Img_original;
     end
 
+    function bp_vec =  solve_bp_other(self, A, At)
+      
+      [n m] = size(self.Img_sub_sampled);
+      
+      tic
+      I_vector = PixelMatrixToVector(self.Img_sub_sampled);
+
+      pix_mask_vec = PixelMatrixToVector(self.pix_mask);
+      % y, set of measurements. have to remove all the spots we didn't sample.
+      I_vector = I_vector(pix_mask_vec>0.5); 
+
+      bp_vec = l1qc_logbarrier(At(I_vector), A, At, I_vector, 0.01);
+      bp_vec = real(bp_vec);
+      
+      time_bp = toc;
+      
+      fprintf('BP Time: %f\n', time_bp);
+    end
     
     function solve_bp(self, recalc, use_2d)
       

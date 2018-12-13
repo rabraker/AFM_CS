@@ -9,11 +9,11 @@
 % And finally, what happens when we do the same CS schemes based on the
 % 10%thresholded DCT as "master"
 %
-
+clear
 Tfig_path = @(fname) PATHS.tuesday_fig_path('12-11-2018', fname);
 
 
-%% Task 1: DCT of full sim image. Threshold and reconstruct with usual pix mask. 
+% Task 1: DCT of full sim image. Threshold and reconstruct with usual pix mask. 
 % Look up the results on K-sparsity. Does it make sense to make it k-sparse in
 % the sense that if k= 0.1 * 512^2?
 
@@ -25,27 +25,34 @@ img_mat = make_CS20NG(x_start, y_start);
 
 imshow(img_mat, [0,1])
 
-%% Task 2: With same threshold, use 4 pix masks
+% Task 2: With same threshold, use 4 pix masks
 % -1. Fully random (mulength = 1)
 % -2. Mu length = .25 of usual
 %   ''  .5
 %   ''  .75  of usual
 
 mu_pix = 52;
+npix = 512;
 frac_s = [0.05, 0.12, 0.25, .35];
+new_fracs = frac_s*0;
+
 cs_sims = cell(1, length(frac_s));
 parfor iter = 1:length(frac_s)
   pix_mask = mu_path_mask(npix, mu_pix, frac_s(iter));
   
+  % Actual sampling fraction doesn't necessarily match what we asked for.
+  new_fracs(iter) = sum(pix_mask(:))/npix^2;
+  
   cs_sim_iter = CsSim(img_mat, pix_mask);
   cs_sim_iter.solve_bp;
   cs_sims{iter} = cs_sim_iter;
+  
 end
 
 % NOW SET, MU-PIX TO 1 PIXEL.
-iter = 1;
-mu_pix = 1;
-%%
+% iter = 1;
+% mu_pix = 1;
+
 cs_sims_2 = cell(1, length(new_fracs));
 parfor iter = 1:length(frac_s)
 %   pix_mask = mu_path_mask(npix, mu_pix, frac_s(iter));
@@ -61,6 +68,62 @@ parfor iter = 1:length(frac_s)
   cs_sim_iter.solve_bp;
   cs_sims_2{iter} = cs_sim_iter;
 end
+%%
+
+figure(10)
+ax1 = subplot(3,1,[1,2]);
+ax2 = subplot(3,1,3);
+
+imshow_dataview(cs_sims{2}.Img_bp, [0, 1], ax1, ax2);
+
+figure(11)
+ax3 = subplot(3,1,[1,2]);
+ax4 = subplot(3,1,3);
+imshow_dataview(cs_sims_2{2}.Img_bp, [0, 1], ax3, ax4);
+%%
+clc
+cs_s = cs_sims{2};
+pix_mask_vec = PixelMatrixToVector(cs_s.pix_mask);
+
+qmf = MakeONFilter('Symmlet',8);
+lev = floor(log2(log(npix^2)))+1;
+
+% At = @(x) FWT_TI(addzeros(x, pix_mask_vec), lev, qmf);
+
+At = @(x) IWT_PO(x, L, qmf);
+% inv_txfm = @(x) FWT_PO(x, 
+% inv_txfm = @(x)Inv_FHT(x);
+% At = @(x) FHT(addzeros(x, pix_mask_vec));
+% A = @(x) Iwv(x, pix_mask_vec, inv_txfm);
+
+
+img_bp_other = cs_s.solve_bp_other(A, At)
+%%
+
+E_idx = PixelMatrixToVector(cs_s.pix_mask);
+E_idx = E_idx(E_idx >0.5);
+
+AATfun = @(mode, m, n, x, Idx_col, dim)bpsolve_fun(mode, m, n, x, Idx_col, dim, E_idx); 
+y_meas = PixelMatrixToVector(cs_s.Img_sub_sampled);
+img_vec_dct = SolveBP(AATfun, y_meas(E_idx), npix^2, 0);
+
+img_ = PixelVectorToMatrix(idct(img_vec_dct, [npix, npix]));
+
+%%
+
+v = dct(PixelMatrixToVector(img_bp_other));
+v = FHT(v);
+v_filt = TIDenoise(v', 'S');
+
+Img_filt = PixelVectorToMatrix(v_filt, [npix, npix]);
+
+
+%%
+figure(12)
+ax5 = subplot(3,1,[1,2])
+ax6 = subplot(3,1,3)
+imshow_dataview(Img_filt, [0, 1], ax5, ax6);
+%%
 
 
 %%
@@ -68,7 +131,7 @@ end
 f22 = figure(22); clf
 [ha] = tight_subplot(2, 4, [.03, .005 ], .027, .005);
 
-new_fracs = frac_s*0; %
+% new_fracs = frac_s*0; %
 for k=1:length(frac_s)
   mu_pix = 52;
   ax_iter = ha(k);
@@ -77,8 +140,8 @@ for k=1:length(frac_s)
   colormap('gray')
   set(ax_iter, 'YTick', [], 'XTick', [])
   
-  sample_frac = sum(cs_sims{k}.pix_mask(:))/npix^2;
-  new_fracs(k) = sample_frac;
+  sample_frac = new_fracs(k); 
+%   new_fracs(k) = sample_frac;
   ssim_iter = ssim(img_mat, cs_sims{k}.Img_bp);
   psnr_iter = psnr(img_mat, cs_sims{k}.Img_bp);
   
@@ -254,6 +317,12 @@ end
 saveas(f32, Tfig_path('cs_sim_mu_path_vs_singlepix_thresh.fig'))
 save_fig(f32, PATHS.note_fig('cs_sim_mu_path_vs_singlepix_thresh'));
 
+
+function [ output ] = Iwv(z,E, inv_txfm)
+    output = inv_txfm(z);
+    output = output(E>0.5);
+
+end
 
 
 
