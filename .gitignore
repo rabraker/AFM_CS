@@ -23,6 +23,7 @@ LRC_ptos_tac/
 MAC_project.zip
 Program Files (x86)/
 
+svg-inkscape/
 ltximg/
 \#*
 .\#*
@@ -32,6 +33,8 @@ test.org
 *.avi
 *.mp4
 *.svg
+*.tif
+
 *.png
 *.pdf
 *.jpg
