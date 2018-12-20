@@ -64,6 +64,13 @@ f = sum(u) - (1/tau)*(sum(log(-fu1)) + sum(log(-fu2)) + log(-fe));
 
 niter = 0;
 done = 0;
+if largescale 
+  fprintf('Newton-iter | Functional | Newton decrement |  Stepsize  |  cg-res | cg-iter | backiter | s \n');
+else
+  fprintf('Newton-iter | Functional | Newton decrement |  Stepsize  |  H11P RCOND | backiter | s \n');
+end
+
+
 while (~done)
   
   if (largescale), atr = At(r); else  atr = A'*r; end
@@ -120,7 +127,8 @@ while (~done)
     s = beta*s;
     backiter = backiter + 1;
     if (backiter > 32)
-      disp('Stuck on backtracking line search, returning previous iterate.  (See Section 4 of notes for more information.)');
+      fprintf(['Stuck on backtracking line search, returning previous iterate.',...
+        '(See Section 4 of notes for more information.)\n']);
       xp = x;  up = u;
       return
     end
@@ -134,14 +142,25 @@ while (~done)
   stepsize = s*norm([dx; du]);
   niter = niter + 1;
   done = (lambda2/2 < newtontol) | (niter >= newtonmaxiter);
-  
-  disp(sprintf('Newton iter = %d, Functional = %8.3f, Newton decrement = %8.3f, Stepsize = %8.3e', ...
-    niter, f, lambda2/2, stepsize));
-  if (largescale)
-    disp(sprintf('                CG Res = %8.3e, CG Iter = %d', cgres, cgiter));
+
+  if largescale
+  %            NI         fcnl         dec            sz     cgr       cgI        BI       s  
+  fprintf('     %3d       %8.3g       %08.3g       % 8.3e   %08.3g     %3d       %2d       %.3g \n',...
+    niter, f, lambda2/2, stepsize, cgres, cgiter, backiter, s);
   else
-    disp(sprintf('                  H11p condition number = %8.3e', hcond));
+  %            NI         fcnl         dec            sz     rcond        BI       s  
+  fprintf('     %3d       %8.3g       %08.3g       % 8.3e   %08.3g       %2d       %.3g \n',...
+    niter, f, lambda2/2, stepsize, hcond, backiter, s);
   end
+  
+%   fprintf(['Newton iter = %d, Functional = %8.3f, Newton decrement = %8.3f, ',...
+%     'Stepsize = %8.3e\n'], niter, f, lambda2/2, stepsize);
+%   fprintf('                 Backiter = %d, s = %.4e\n', backiter, s);
+%   if (largescale)
+%     fprintf('                CG Res = %8.3e, CG Iter = %d\n', cgres, cgiter);
+%   else
+%     fprintf('                  H11p condition number = %8.3e\n', hcond);
+%   end
       
 end
 
