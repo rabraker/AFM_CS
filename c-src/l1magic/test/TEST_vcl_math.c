@@ -27,6 +27,7 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
 #include "cJSON.h"
 #include "json_utils.h"
 #include "vcl_math.h"
+#include "check_utils.h"
 
 /* Tolerances and things */
 #include "test_constants.h"
@@ -114,6 +115,51 @@ START_TEST(test_vcl_logsum)
 }
 END_TEST
 
+START_TEST(test_vcl_daxpy)
+{
+  double alpha = 2.0;
+  double *x = malloc_double(12);
+  double *y = malloc_double(12);
+  double *y_tmp = malloc_double(12);
+  double *z_exp = malloc_double(12);
+  for (int i =0; i<12; i++){
+    x[i] = 1.0;
+    y[i] = 2.0;
+    z_exp[i] = 4.0; //1*2 + *2 = 4;
+  }
+
+
+  cblas_dcopy(12, y, 1, y_tmp, 1);
+  vcl_daxpy(3, alpha, x, y_tmp);
+  ck_assert_double_array_eq_tol(3, z_exp, y_tmp, TOL_DOUBLE);
+
+  cblas_dcopy(12, y, 1, y_tmp, 1);
+  vcl_daxpy(8, alpha, x, y_tmp);
+  ck_assert_double_array_eq_tol(8, z_exp, y_tmp, TOL_DOUBLE);
+
+  cblas_dcopy(12, y, 1, y_tmp, 1);
+  vcl_daxpy(9, alpha, x, y_tmp);
+  ck_assert_double_array_eq_tol(9, z_exp, y_tmp, TOL_DOUBLE);
+
+  cblas_dcopy(12, y, 1, y_tmp, 1);
+  vcl_daxpy(10, alpha, x, y_tmp);
+  ck_assert_double_array_eq_tol(10, z_exp, y_tmp, TOL_DOUBLE);
+
+  cblas_dcopy(12, y, 1, y_tmp, 1);
+  vcl_daxpy(11, alpha, x, y_tmp);
+  ck_assert_double_array_eq_tol(11, z_exp, y_tmp, TOL_DOUBLE);
+
+  cblas_dcopy(12, y, 1, y_tmp, 1);
+  vcl_daxpy(12, alpha, x, y_tmp);
+  ck_assert_double_array_eq_tol(12, z_exp, y_tmp, TOL_DOUBLE);
+
+
+  free_double(x);
+  free_double(y);
+  free_double(z_exp);
+  free_double(y_tmp);
+}
+END_TEST
 
 
 
@@ -122,12 +168,13 @@ Suite *vcl_math_suite(void)
   Suite *s;
 
   TCase  *tc_mathfuns;
-  s = suite_create("vcl_suite");
+  s = suite_create("vcl_math");
 
 
   tc_mathfuns = tcase_create("vcl_math");
   tcase_add_test(tc_mathfuns, test_vcl_sum);
   tcase_add_test(tc_mathfuns, test_vcl_logsum);
+  tcase_add_test(tc_mathfuns, test_vcl_daxpy);
 
   /*Add test cases to the suite */
   suite_add_tcase(s, tc_mathfuns);

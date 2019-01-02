@@ -1,6 +1,11 @@
 #ifndef _L1QC_COMMON_
 #define _L1QC_COMMON_
 
+extern int N_aligned;
+
+
+#define ALIGNMENT_BYTES 64
+
 #ifdef __MATLAB__
 #include "mex.h"
 #define PRINT(...) mexPrintf(__VA_ARGS__);

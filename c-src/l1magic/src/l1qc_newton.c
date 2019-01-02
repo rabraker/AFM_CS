@@ -7,6 +7,8 @@
 #include "l1qc_common.h"
 #include "vcl_math.h"
 
+int N_aligned;
+
 
 void axpy_z(size_t N, double alpha, double * restrict x, double * restrict y, double * restrict z){
   /* Computes z = a * x + y. Similary to cblas_axpy, but for when you don't want to overwrite y.
@@ -197,8 +199,8 @@ int compute_descent(int N, double *fu1, double *fu2, double *atr, double fe,  do
   Hess_data h11p_data;
   double *sigx, *Dwork_4N;
   sigx =  Dwork_6N;
-  h11p_data.Dwork_1N = Dwork_6N + N;
-  Dwork_4N = Dwork_6N + 2*N;
+  h11p_data.Dwork_1N = Dwork_6N + N_aligned;
+  Dwork_4N = Dwork_6N + 2*N_aligned;
 
   get_gradient(N, fu1, fu2, sigx, atr, fe, tau, gd);
 
@@ -280,10 +282,10 @@ LSStat line_search(int N, int M, double *x, double *u, double *r, double *b, dou
   //double rdot = 0.0;
   /* Divy up our work array */
   double *xp = DWORK_5N;
-  double *up = DWORK_5N + N;
-  double *rp = DWORK_5N + 2*N;
-  double *fu1p = DWORK_5N + 3*N;
-  double *fu2p = DWORK_5N + 4*N;
+  double *up = DWORK_5N + N_aligned;
+  double *rp = DWORK_5N + 2*N_aligned;
+  double *fu1p = DWORK_5N + 3*N_aligned;
+  double *fu2p = DWORK_5N + 4*N_aligned;
 
   for (iter=1; iter<=32; iter++){
     // /* xp = x + s*dx etc*/
@@ -416,8 +418,17 @@ LBResult l1qc_newton(int N, double *x, double *u, double *b,
   GradData gd = {.w1p=NULL, .dx=NULL, .du=NULL, .sig11=NULL,
                  .sig12=NULL, .ntgu=NULL, .gradf=NULL, .Adx=NULL};
 
+  // We expect that the work array will be split up. We must ensure that
+  // it is split up with aligned addresses. Routines which use DWORK_6N should
+  // do, e.g.,
+  // x1 = DWORK;
+  // x2 = DWORK + N_aligned;
+  int doubles_per_aligned_chunk = ALIGNMENT_BYTES / sizeof(double);
+  N_aligned = ceil(N/doubles_per_aligned_chunk) * doubles_per_aligned_chunk;
+
+
   double *atr = malloc_double(N);
-  double *DWORK_6N = malloc_double(6*N);
+  double *DWORK_6N = malloc_double(6*N_aligned);
   double *r = malloc_double(M);
   double *fu1 = malloc_double(N);
   double *fu2 = malloc_double(N);;

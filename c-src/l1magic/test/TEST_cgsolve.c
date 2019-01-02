@@ -6,6 +6,8 @@
 
  */
 
+int N_aligned;
+
 #define CK_FLOATING_DIG 20
 
 #include <stdlib.h>
@@ -78,8 +80,12 @@ int load_small_data(double **A, double **x, double **b, int *N, int *na,
 
 }
 
+void set_N_aligned(int N){
+  int doubles_per_aligned_chunk = ALIGNMENT_BYTES / sizeof(double);
+  N_aligned = (int) ceil((double)N / (double)doubles_per_aligned_chunk) * doubles_per_aligned_chunk;
+}
 
-START_TEST(test_cgsolve)
+START_TEST(test_cgsolve_small)
 {
   double tol =0.0; //= 1e-6;
   int max_iter;
@@ -92,12 +98,14 @@ START_TEST(test_cgsolve)
     ck_abort_msg("Errory Loading test data\n");
   }
 
+  set_N_aligned(N);
+
   cgp.verbose = 0;
   cgp.tol = tol;
   cgp.max_iter = max_iter;
 
   x = malloc_double(N);
-  Dwork = malloc_double(N*4);
+  Dwork = malloc_double(N_aligned*4);
 
   cgsolve(x, b, N, Dwork, Ax_sym, A, &cgr, cgp);
 
@@ -158,9 +166,12 @@ START_TEST(test_cgsolve_h11p){
   h11p_data.AtAx = dct_MtEt_EMx_new;
 
   dx = malloc_double(N);
-  DWORK_4N = malloc_double(4*N);
+  set_N_aligned(N);
+  DWORK_4N = malloc_double(4*N_aligned);
   if (!dx| !DWORK_4N){
     perror("error allocating memory\n");
+    status += 1;
+    goto exit;
   }
 
   dct_setup(N, M, pix_idx);
@@ -170,6 +181,9 @@ START_TEST(test_cgsolve_h11p){
 
   ck_assert_double_array_eq_tol(N, dx_exp, dx, TOL_DOUBLE*10);
 
+  goto exit;
+
+ exit:
   free_double(atr);
   free_double(sigx);
   free_double(w1p);
@@ -186,6 +200,9 @@ START_TEST(test_cgsolve_h11p){
   mkl_free_buffers();
 #endif
 
+  if (status > 0){
+    ck_abort();
+  }
 }
 END_TEST
 
@@ -249,7 +266,7 @@ Suite *cgsolve_suite(void)
   tc_hp11 = tcase_create("cg_hp11");
   tc_Ax = tcase_create("cg_Ax");
 
-  tcase_add_test(tc_small, test_cgsolve);
+  tcase_add_test(tc_small, test_cgsolve_small);
   tcase_add_test(tc_hp11, test_cgsolve_h11p);
   tcase_add_test(tc_Ax, test_cgsolve_Ax_sym);
 

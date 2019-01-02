@@ -48,6 +48,7 @@ https://en.wikipedia.org/wiki/Conjugate_gradient_method
 #include <math.h>
 #include <stdio.h>
 #include "cgsolve.h"
+#include "vcl_math.h"
 #include "l1qc_common.h"
 
 
@@ -69,9 +70,9 @@ int cgsolve(double *x, double *b, size_t n_b, double *Dwork,
 
   /* Divide up Dwork for tempory variables */
   r = Dwork;
-  d = Dwork + n_b;
-  bestx = Dwork + 2 * n_b;
-  q = Dwork + 3 * n_b;
+  d = Dwork + N_aligned;
+  bestx = Dwork + 2 * N_aligned;
+  q = Dwork + 3 * N_aligned;
 
   /* Init
   x = zeros(n,1)
@@ -103,14 +104,18 @@ int cgsolve(double *x, double *b, size_t n_b, double *Dwork,
     AX_func(n_b, d, q, AX_data);                 /* q = A * d */
 
     alpha = delta / cblas_ddot(n_b, d, 1, q, 1); /* alpha delta/(d'*q) */
+    // alpha = delta / vcl_ddot(n_b, d, q);           /* alpha delta/(d'*q) */
 
     cblas_daxpy(n_b, alpha, d, 1, x, 1);         /* x = alpha*d + x    */
+    // vcl_daxpy(n_b, alpha, d, x);                   /* x = alpha*d + x    */
 
     if ( (iter+1 %50 ) == 0){
-      AX_func(n_b, x, r, AX_data);               /* r = b - A(x);      */
+      AX_func(n_b, x, r, AX_data);                 /* r = b - A(x);      */
       cblas_daxpby(n_b, 1.0, b, 1, -1.0, r, 1);  /* r = b - A*x        */
+      //vcl_dxpby(n_b, b, -1.0, r);                  /* r = b - A*x        */
     }else{
       cblas_daxpy(n_b, -alpha, q, 1, r, 1);      /* r = - alpha*q + r; */
+      //vcl_daxpy(n_b, -alpha, q, r);               /* r = - alpha*q + r; */
     }
 
     delta_old = delta;
@@ -118,6 +123,7 @@ int cgsolve(double *x, double *b, size_t n_b, double *Dwork,
 
     beta = delta/delta_old;
     cblas_daxpby(n_b, 1.0, r, 1, beta, d, 1);    /* d = r + beta*d; */
+    //vcl_dxpby(n_b, r, beta, d);    /* d = r + beta*d; */
 
     res = sqrt(delta/delta_0);
     if (res < best_res) {
