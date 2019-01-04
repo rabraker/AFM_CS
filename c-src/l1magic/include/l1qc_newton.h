@@ -74,6 +74,8 @@ typedef struct LBResult{
 
 }LBResult;
 
+l1c_int get_N_aligned(int N);
+
 void axpy_z(l1c_int N, double alpha, double *x, double *y, double *z);
 
 double sum_abs_vec(l1c_int N, double *x);
@@ -87,12 +89,12 @@ double find_max_step(l1c_int N, GradData gd, double *fu1,
 
 LSStat line_search(l1c_int N, l1c_int M, double *x, double *u, double *r, double *b,
                    double *fu1, double *fu2, GradData gd,
-                   LSParams ls_params, double *DWORK_5N, double *fe, double *f, AxFuns Ax_funs);
+                   LSParams ls_params, l1c_int N_aligned, double *DWORK_5N, double *fe, double *f, AxFuns Ax_funs);
 
 void get_gradient(l1c_int N, double *fu1, double *fu2, double *sigx, double *atr,
                   double fe,  double tau, GradData gd);
 int compute_descent(l1c_int N, double *fu1, double *fu2, double *atr, double fe, double tau,
-                    GradData gd, double *Dwork_6N, CgParams cg_params, CgResults *cg_result,
+                    GradData gd,  l1c_int N_aligned, double *Dwork_6N, CgParams cg_params, CgResults *cg_result,
                     AxFuns AxFuns);
 
 void H11pfun(l1c_int N, double *z, double *y,  void *hess_data_in);

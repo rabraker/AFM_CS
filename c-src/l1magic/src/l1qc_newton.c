@@ -6,7 +6,11 @@
 #include "l1qc_common.h" //includes <stdio.h> or mex.h, as needed.
 #include "vcl_math.h"
 
-int N_aligned;
+
+l1c_int get_N_aligned(int N){
+  int doubles_per_aligned_chunk = ALIGNMENT_DOUBLE / sizeof(double);
+  return (l1c_int) ceil((double)N / (double)doubles_per_aligned_chunk) * doubles_per_aligned_chunk;
+}
 
 
 void axpy_z(l1c_int N, double alpha, double * restrict x, double * restrict y, double * restrict z){
@@ -174,8 +178,8 @@ void get_gradient(l1c_int N, double *fu1, double *fu2, double *sigx, double *atr
 }
 
 int compute_descent(l1c_int N, double *fu1, double *fu2, double *atr, double fe,  double tau,
-                    GradData gd, double *Dwork_6N, CgParams cg_params, CgResults *cg_result,
-                    AxFuns Ax_funs){
+                    GradData gd, l1c_int N_aligned, double *Dwork_6N, CgParams cg_params,
+                    CgResults *cg_result, AxFuns Ax_funs){
   /* inputs
    --------
    *fu1, *fu2, *atr, fe, tau
@@ -209,7 +213,7 @@ int compute_descent(l1c_int N, double *fu1, double *fu2, double *atr, double fe,
   h11p_data.sigx = sigx;
   h11p_data.AtAx = Ax_funs.AtAx;
 
-  cgsolve(gd.dx, gd.w1p, N, Dwork_4N,
+  cgsolve(N, gd.dx, gd.w1p, N_aligned, Dwork_4N,
           H11pfun, &h11p_data, cg_result, cg_params);
 
   for (i=0; i<N; i++){
@@ -271,7 +275,7 @@ double find_max_step(l1c_int N, GradData gd, double *fu1,
 
 
 LSStat line_search(l1c_int N, l1c_int M, double *x, double *u, double *r, double *b, double *fu1,
-                   double *fu2, GradData gd, LSParams ls_params, double *DWORK_5N,
+                   double *fu2, GradData gd, LSParams ls_params, l1c_int N_aligned, double *DWORK_5N,
                    double *fe, double *f, AxFuns Ax_funs){
   LSStat ls_stat = {.flx=0, .flu = 0, .flin=0, .step=0, .status=0};
   int iter=0;
@@ -422,8 +426,7 @@ LBResult l1qc_newton(l1c_int N, double *x, double *u, l1c_int M, double *b,
   // do, e.g.,
   // x1 = DWORK;
   // x2 = DWORK + N_aligned;
-  int doubles_per_aligned_chunk = ALIGNMENT_BYTES / sizeof(double);
-  N_aligned = ceil(N/doubles_per_aligned_chunk) * doubles_per_aligned_chunk;
+  l1c_int N_aligned = get_N_aligned(N);
 
 
   double *atr = malloc_double(N);
@@ -494,7 +497,7 @@ LBResult l1qc_newton(l1c_int N, double *x, double *u, l1c_int M, double *b,
       // dct_MtEty(r, atr); //atr = A'*r.
       Ax_funs.Aty(r, atr);
 
-      if(compute_descent(N, fu1, fu2, atr, fe,  params.tau, gd, DWORK_6N, cg_params,
+      if(compute_descent(N, fu1, fu2, atr, fe,  params.tau, gd, N_aligned, DWORK_6N, cg_params,
                          &cg_results, Ax_funs)){
         break;
       }
@@ -504,7 +507,7 @@ LBResult l1qc_newton(l1c_int N, double *x, double *u, l1c_int M, double *b,
       /* -------------- Line Search --------------------------- */
       ls_params.s = find_max_step(N, gd, fu1, fu2, M, r, params.epsilon);
 
-      ls_stat = line_search(N, M, x, u,r,b, fu1, fu2, gd, ls_params, DWORK_6N, &fe, &f, Ax_funs);
+      ls_stat = line_search(N, M, x, u,r,b, fu1, fu2, gd, ls_params, N_aligned, DWORK_6N, &fe, &f, Ax_funs);
       if (ls_stat.status > 0)
         break;
 

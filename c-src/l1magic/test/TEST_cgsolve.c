@@ -6,7 +6,6 @@
 
  */
 
-int N_aligned;
 
 #define CK_FLOATING_DIG 20
 
@@ -80,10 +79,6 @@ int load_small_data(double **A, double **x, double **b, l1c_int *N, l1c_int *na,
 
 }
 
-void set_N_aligned(int N){
-  int doubles_per_aligned_chunk = ALIGNMENT_BYTES / sizeof(double);
-  N_aligned = (int) ceil((double)N / (double)doubles_per_aligned_chunk) * doubles_per_aligned_chunk;
-}
 
 START_TEST(test_cgsolve_small)
 {
@@ -93,12 +88,12 @@ START_TEST(test_cgsolve_small)
   CgResults cgr;
 
   double *A, *x, *x_exp, *b, *Dwork;
-  l1c_int N=0, na= 0;
+  l1c_int N=0, N_aligned=0, na= 0;
   if (load_small_data(&A, &x_exp, &b, &N, &na, &max_iter, &tol)){
     ck_abort_msg("Errory Loading test data\n");
   }
 
-  set_N_aligned(N);
+  N_aligned = get_N_aligned(N);
 
   cgp.verbose = 0;
   cgp.tol = tol;
@@ -107,7 +102,7 @@ START_TEST(test_cgsolve_small)
   x = malloc_double(N);
   Dwork = malloc_double(N_aligned*4);
 
-  cgsolve(x, b, N, Dwork, Ax_sym, A, &cgr, cgp);
+  cgsolve(N, x, b,N_aligned, Dwork, Ax_sym, A, &cgr, cgp);
 
   ck_assert_double_array_eq_tol(N, x_exp, x, TOL_DOUBLE);
 
@@ -131,12 +126,13 @@ START_TEST(test_cgsolve_h11p){
   char fpath[] = "test_data/descent_data.json";
 
   Hess_data h11p_data;
-  double *atr, *sigx, *dx, *dx_exp, *w1p, *DWORK_4N;
-  double  fe,cgtol,tau = 0;
+  double *atr=NULL, *sigx=NULL, *dx=NULL, *dx_exp=NULL;
+  double *w1p=NULL, *DWORK_4N=NULL;
+  double fe=0.0, cgtol=0.0, tau = 0;
   CgResults cgr;
   CgParams cgp = {.verbose=0, .max_iter=0, .tol=0};
 
-  l1c_int N, M, cg_maxiter, status=0;
+  l1c_int N=0, M=0, N_aligned=0, cg_maxiter=0, status=0;
   l1c_int *pix_idx;
 
   if (load_file_to_json(fpath, &test_data_json)){
@@ -165,8 +161,10 @@ START_TEST(test_cgsolve_h11p){
   h11p_data.Dwork_1N = malloc_double(N);
   h11p_data.AtAx = dct_MtEt_EMx_new;
 
+  N_aligned = get_N_aligned(N);
+
   dx = malloc_double(N);
-  set_N_aligned(N);
+
   DWORK_4N = malloc_double(4*N_aligned);
   if (!dx| !DWORK_4N){
     perror("error allocating memory\n");
@@ -177,7 +175,7 @@ START_TEST(test_cgsolve_h11p){
   dct_setup(N, M, pix_idx);
   cgp.max_iter = cg_maxiter;
   cgp.tol = cgtol;
-  cgsolve(dx, w1p, N, DWORK_4N, H11pfun, &h11p_data, &cgr, cgp);
+  cgsolve(N, dx, w1p, N_aligned, DWORK_4N, H11pfun, &h11p_data, &cgr, cgp);
 
   ck_assert_double_array_eq_tol(N, dx_exp, dx, TOL_DOUBLE*10);
 

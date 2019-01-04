@@ -1,8 +1,6 @@
 #ifndef _L1QC_COMMON_
 #define _L1QC_COMMON_
 
-extern int N_aligned;
-
 #define ALIGNMENT_DOUBLE 64
 
 #ifdef __MATLAB__

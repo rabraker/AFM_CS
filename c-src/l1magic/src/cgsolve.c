@@ -55,7 +55,7 @@ This contains the conjugate gradient solver, cgsolve. The two small routines Ax 
  }
 */
 
-int cgsolve(double *x, double *b, l1c_int n_b, double *Dwork,
+int cgsolve(l1c_int n_b, double *x, double *b, l1c_int N_aligned, double *Dwork,
             void(*AX_func)(l1c_int n, double *x, double *b, void *AX_data), void *AX_data,
             CgResults *cg_result, CgParams cg_params){
 

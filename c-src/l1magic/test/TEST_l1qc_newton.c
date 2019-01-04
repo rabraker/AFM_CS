@@ -295,15 +295,15 @@ START_TEST(test_compute_descent)
   CgParams cgp;
   CgResults cgr;
 
-  double *fu1, *fu2, *atr, *dx_exp, *du_exp;
+  double *fu1=NULL, *fu2=NULL, *atr=NULL, *dx_exp=NULL, *du_exp=NULL;
   double *sig11_exp, *sig12_exp, *w1p_exp;
 
   double *DWORK_6N;
   double  fe,tau,cgres_exp,cgtol = 0;
 
   int status=0;
-  l1c_int N, Npix, cg_maxiter, cgiter_exp;
-  l1c_int *pix_idx;
+  l1c_int N=0, Npix=0, N_aligned=0, cg_maxiter=0, cgiter_exp=0;
+  l1c_int *pix_idx=NULL;
   AxFuns Ax_funs = {.Ax=dct_EMx_new,
                     .Aty=dct_MtEty,
                     .AtAx=dct_MtEt_EMx_new};
@@ -339,7 +339,9 @@ START_TEST(test_compute_descent)
     ck_abort();
   }
 
-  DWORK_6N = malloc_double(6*N);
+  N_aligned = get_N_aligned(N);
+
+  DWORK_6N = malloc_double(6*N_aligned);
   gd.w1p = malloc_double(N);
   gd.dx = malloc_double(N);
   gd.du = malloc_double(N);
@@ -363,7 +365,7 @@ START_TEST(test_compute_descent)
   /* Setup the DCT */
   dct_setup(N, Npix, pix_idx);
 
-  compute_descent(N, fu1, fu2, atr, fe, tau, gd, DWORK_6N, cgp, &cgr, Ax_funs);
+  compute_descent(N, fu1, fu2, atr, fe, tau, gd, N_aligned, DWORK_6N, cgp, &cgr, Ax_funs);
   //get_gradient(N, fu1, fu2, DWORK_5N, atr, fe, tau, gd);
   /* ----- Now check: if this fails, look at *relative* tolerance. Here, we check
      absolute tolerance, but for real data,  y_exp is huge 1e22. Should probably normalize
@@ -581,20 +583,21 @@ START_TEST(test_line_search)
   LSStat ls_stat = {.flx=0, .flu = 0, .flin=0, .step=0, .status=0};
   LSParams ls_params;
   GradData gd;
-  double *x, *u, *r, *b, *dx, *du, *gradf;
-  double tau, epsilon, alpha, beta, s_init; //loaded
+  double *x=NULL, *u=NULL, *r=NULL, *b=NULL;
+  double *dx=NULL, *du=NULL, *gradf=NULL;
+  double tau=0.0, epsilon=0.0, alpha=0.0, beta=0.0, s_init=0.0; //loaded
 
-  double *fu1p, *fu2p, fe, f, *DWORK_5N;
-  double *xp_exp, *up_exp, *rp_exp;
-  double *fu1p_exp, *fu2p_exp, fep_exp, fp_exp;
+  double *fu1p=NULL, *fu2p=NULL, *DWORK_5N=NULL;
+  double *xp_exp=NULL, *up_exp=NULL, *rp_exp=NULL;
+  double *fu1p_exp=NULL, *fu2p_exp=NULL;
   double flx_exp=0, flu_exp=0, flin_exp=0;
+  double fe=0.0, f=0.0, fep_exp=0.0, fp_exp=0.0;
 
   AxFuns Ax_funs = {.Ax=dct_EMx_new,
                     .Aty=dct_MtEty,
                     .AtAx=dct_MtEt_EMx_new};
 
-  //double sm;
-  l1c_int N,N2, M, status=0;
+  l1c_int N=0,N2=0, M=0, N_aligned=0, status=0;
   l1c_int *pix_idx=NULL;
   char fpath[] = "test_data/line_search_data.json";
 
@@ -639,6 +642,7 @@ START_TEST(test_line_search)
     perror("Error Loading json data in 'test_line_search()'. Aborting\n");
     ck_abort();
   }
+  N_aligned = get_N_aligned(N);
 
   ls_params = (LSParams){.alpha = alpha, .beta = beta,
                .tau = tau, .s = s_init, .epsilon = epsilon};
@@ -648,7 +652,7 @@ START_TEST(test_line_search)
   gd.gradf = gradf;
   // gd.Adx = Adx;
 
-  DWORK_5N = malloc_double(5*N);
+  DWORK_5N = malloc_double(5*N_aligned);
   if(!DWORK_5N){
     printf("Allocation failed\n");
   }
@@ -657,7 +661,7 @@ START_TEST(test_line_search)
   dct_setup(N, M, pix_idx);
 
   ls_stat = line_search(N, M, x, u, r, b, fu1p, fu2p, gd, ls_params,
-                        DWORK_5N, &fe, &f, Ax_funs);
+                        N_aligned, DWORK_5N, &fe, &f, Ax_funs);
 
   // /* ----- Now check -------*/
   ck_assert_double_eq_tol(fep_exp, fe, TOL_DOUBLE);
@@ -710,9 +714,11 @@ END_TEST
 
 START_TEST(test_f_eval)
 {
-  double *x, *u, *r, tau, epsilon; //loaded
-  double *fu1, *fu2, fe, f;
-  double *fu1_exp, *fu2_exp, fe_exp, f_exp;
+  double tau=0, epsilon=0, fe=0, f=0; //loaded
+  double *x=NULL, *u=NULL, *r=NULL;
+  double *fu1=NULL, *fu2=NULL;
+  double *fu1_exp=NULL, *fu2_exp=NULL;
+  double fe_exp=0, f_exp=0;
 
   l1c_int N=0, M=0, status=0;
   char fpath[] = "test_data/f_eval_data.json";
