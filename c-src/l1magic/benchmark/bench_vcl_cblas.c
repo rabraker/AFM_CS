@@ -2,165 +2,136 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include "omp.h"
 
 #include "mkl.h"
 #include "vcl_math.h"
 #include "l1qc_common.h"
 
+#include <stdint.h>
+#include <sys/timeb.h>
 
-double dot(const int N, double * restrict x, double * restrict y){
+// needs -lrt (real-time lib)
+// 1970-01-01 epoch UTC time, 1 mcs resolution (divide by 1M to get time_t)
+// uint64_t ClockGetTime()
+// {
+//   struct timespec ts;
+//   clock_gettime(CLOCK_REALTIME, &ts);
+//   return (uint64_t)ts.tv_sec * 1000000LL + (long)ts.tv_nsec / 1000LL;
+//   //return (uint64_t)ts.tv_nsec;
+// }
+
+double cddot(int N, double *x, double *y){
+  return cblas_ddot(N, x, 1, y, 1);
+}
+
+inline double dot(const int N, double * restrict x, double * restrict y){
   double *x_ = __builtin_assume_aligned(x, 64);
   double *y_ = __builtin_assume_aligned(y, 64);
-
   double total = 0.0;
+
+#pragma omp parallel
+  {
+#pragma omp for reduction(+:total)
   for (int i =0; i<N; i++){
     total += x_[i] * y_[i];
   }
-
+  }
   return total;
 }
 
-void axpy(const int N, const double alpha, double * restrict x, double * restrict y){
-  double *x_ = __builtin_assume_aligned(x, 64);
-  double *y_ = __builtin_assume_aligned(y, 64);
+// void axpy(const int N, const double alpha, double * restrict x, double * restrict y){
+//   double *x_ = __builtin_assume_aligned(x, 64);
+//   double *y_ = __builtin_assume_aligned(y, 64);
 
-  for (int i =0; i<N; i++){
-    y[i] = x_[i] * alpha + y_[i];
+//   for (int i =0; i<N; i++){
+//     y[i] = x_[i] * alpha + y_[i];
+//   }
+
+// }
+
+
+
+// double norm2(const int N, double * restrict x){
+//   double *x_ = __builtin_assume_aligned(x, 64);
+
+//   double total = 0.0;
+//   for (int i =0; i<N; i++){
+//     total += x_[i] * x[i];
+//   }
+
+//   return total;
+// }
+
+void load_xy(int N, double *x, double *y){
+  for (int i=0; i<N; i++){
+    x[i] = ((double) rand())/ (double)32767;
+    y[i] = ((double) rand())/ (double)32767;
   }
-
 }
-
-
-double norm2(const int N, double * restrict x){
-  double *x_ = __builtin_assume_aligned(x, 64);
-
-  double total = 0.0;
-  for (int i =0; i<N; i++){
-    total += x_[i] * x[i];
-  }
-
-  return total;
-}
-
-
 int main(){
-  int i=0, N = 50;
-  double *x, *y, *z;
-  int N_trials = 100;
-  double alpha = 3.0;
+  int i=0, N = 512*512;
+  double *x, *y;
+  int N_trials = 200*100; //200*163;
   x = malloc_double(N);
   y = malloc_double(N);
-  z = malloc_double(N);
 
   double d_vcl, d_mkl, d_naive;
+  int nProcessors = omp_get_max_threads();
+  printf("number of processors: %d \n", nProcessors);
+  // omp_set_num_threads(nProcessors);/
+  omp_set_num_threads(8);
+  int mkln = mkl_get_max_threads();
+  printf("mkl-nthreads: %d\n", mkln);
 
-  for (i=0; i<N; i++){
-    x[i] = (double) (rand()/32767);
-    y[i] = (double) (rand()/32767);
-  }
+  load_xy(N, x, y);
+  d_mkl = cblas_ddot(N, x, 1, y, 1);
 
   /*---------------------------- DOT-PRODUCT------------------ */
-  /* MKL dot*/
-  clock_t begin_mkl = clock();
-  for (i=1; i<=N_trials; i++){
-    d_mkl = cblas_ddot(N, x, 1, y, 1);
-  }
-  clock_t end_mkl = clock();
+  double begin_mkl =0, t_mkl=0;
+  double begin_naive=0, t_naive=0;
+  double begin_vcl=0, t_vcl=0;
+  printf("------------- dot-product -----------------------------------------\n");
+  printf("Method | trial  | Total Time     |  Mean Time     |     value     |\n");
 
-  /* niave dot*/
-  clock_t begin_naive = clock();
-  for (i=1; i<=N_trials; i++){
-    d_naive = dot(N, x, y);
+  for(int k=0; k<10; k++){
+    double Ntr = (double) N_trials;
+    if (1){
+      t_naive=0;
+      for (i=1; i<=N_trials; i++){
+        begin_naive = omp_get_wtime();
+        d_naive = dot(N-i, x, y);
+        t_naive += omp_get_wtime() - begin_naive;
       }
-  clock_t end_naive = clock();
+      double time_naive = (double)(t_naive );
+      printf(" naive     %d      %f       %.10e    %.6e\n", k, time_naive, time_naive/Ntr, d_naive);
+    }
 
-  /* VCL dot*/
-  clock_t begin_vcl = clock();
-  for (i=1; i<=N_trials; i++){
-    d_vcl = vcl_ddot(N, x, y);
-  }
-  clock_t end_vcl = clock();
+    if(1){
+      if (1){
+        t_vcl = 0;
+        for (i=1; i<=N_trials; i++){
+          begin_vcl = omp_get_wtime();
+          d_vcl = vcl_ddot(N-i, x, y);
+          t_vcl += omp_get_wtime() - begin_vcl;
+        }
+        double time_vcl = (double)(t_vcl);
+        printf("  VCL      %d      %f       %.10e    %.6e\n", k, time_vcl, time_vcl/Ntr, d_vcl);
 
-
-  double time_vcl = (double)(end_vcl - begin_vcl) / CLOCKS_PER_SEC;
-  double time_mkl = (double)(end_mkl - begin_mkl) / CLOCKS_PER_SEC;
-  double time_naive = (double)(end_naive - begin_naive) / CLOCKS_PER_SEC;
-  double Ntr = (double) N_trials;
-
-  printf("------------- dot-product-------------------------\n");
-  printf("VCL-dot: %f,   MKL-dot: %f,  naive-dot:%f\n", d_vcl, d_mkl, d_naive);
-  printf("Method | Total Time     |  Mean Time     |\n");
-  printf("  VCL     %f       %.10e\n", time_vcl, time_vcl/Ntr);
-  printf("  MKL     %f       %.10e\n", time_mkl, time_mkl/Ntr);
-  printf(" naive    %f       %.10e\n", time_naive, time_naive/Ntr);
-
-
-  /*-------------------------2NORM------------------ */
-  /* MKL dot*/
-  begin_mkl = clock();
-  for (i=1; i<=N_trials; i++){
-    d_mkl = cblas_ddot(N, x, 1, x, 1);
-  }
-  end_mkl = clock();
-
-  /* niave dot*/
-  begin_naive = clock();
-  for (i=1; i<=N_trials; i++){
-    d_naive = norm2(N, x);
+      t_mkl = 0;
+      for (i=1; i<=N_trials; i++){
+        begin_mkl = omp_get_wtime();
+        d_mkl = cblas_ddot(N-i, x, 1, y, 1);
+        t_mkl += omp_get_wtime() - begin_mkl;
       }
-  end_naive = clock();
+      double time_mkl = (double)(t_mkl);// / 1e6;
+      printf("  MKL      %d      %f       %.10e    %.6e\n", k, time_mkl, time_mkl/Ntr, d_mkl);
+    }
 
-  /* VCL dot*/
-  begin_vcl = clock();
-  for (i=1; i<=N_trials; i++){
-    d_vcl = vcl_dnorm2(N, x);
+    }
+    mkl_free_buffers();;
   }
-  end_vcl = clock();
 
-
-  time_vcl = (double)(end_vcl - begin_vcl) / CLOCKS_PER_SEC;
-  time_mkl = (double)(end_mkl - begin_mkl) / CLOCKS_PER_SEC;
-  time_naive = (double)(end_naive - begin_naive) / CLOCKS_PER_SEC;
-  Ntr = (double) N_trials;
-  printf("------------- 2-norm-------------------------\n");
-  printf("VCL-norm: %f,   MKL-norm: %f,  naive-norm:%f\n", d_vcl, d_mkl, d_naive);
-  printf("Method | Total Time     |  Mean Time     |\n");
-  printf("  VCL     %f       %.10e\n", time_vcl, time_vcl/Ntr);
-  printf("  MKL     %f       %.10e\n", time_mkl, time_mkl/Ntr);
-  printf(" naive    %f       %.10e\n", time_naive, time_naive/Ntr);
-
-  /*---------------------------- a*X + Y = Y------------------ */
-  /* MKL dot*/
-  begin_mkl = clock();
-  for (i=1; i<=N_trials; i++){
-    cblas_daxpy(N, alpha, x, 1, y, 1);
-  }
-  end_mkl = clock();
-
-  /* niave dot*/
-  begin_naive = clock();
-  for (i=1; i<=N_trials; i++){
-    axpy(N, alpha, x, y);
-      }
-  end_naive = clock();
-
-  /* VCL dot*/
-  begin_vcl = clock();
-  for (i=1; i<=N_trials; i++){
-    vcl_daxpy(N, alpha, x, y);
-  }
-  end_vcl = clock();
-
-
-  time_vcl = (double)(end_vcl - begin_vcl) / CLOCKS_PER_SEC;
-  time_mkl = (double)(end_mkl - begin_mkl) / CLOCKS_PER_SEC;
-  time_naive = (double)(end_naive - begin_naive) / CLOCKS_PER_SEC;
-  Ntr = (double) N_trials;
-  printf("------------- axpy-------------------------\n");
-
-  printf("Method | Total Time     |  Mean Time     |\n");
-  printf("  VCL     %f       %.10e\n", time_vcl, time_vcl/Ntr);
-  printf("  MKL     %f       %.10e\n", time_mkl, time_mkl/Ntr);
-  printf(" naive    %f       %.10e\n", time_naive, time_naive/Ntr);
-
+  free_double(x);
+  free_double(y);
 }

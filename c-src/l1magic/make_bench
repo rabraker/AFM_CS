@@ -22,17 +22,17 @@ CPP       = g++
 LD        = gcc
 
 
-OPT       = -O3 -msse3 -mavx2 -mfma
+OPT       = -O3 -march=native -mtune=native
 # DBG       = -g
 CFLAGS =  -I/opt/intel/compilers_and_libraries_2019.1.144/linux/mkl/include \
 		   -Iinclude \
 		   	-Iinclude/vcl \
-			$(OPT) $(DBG) -fPIC -Wall   -D_USEMKL_ -DMKL_ILP64 -m64
+			$(OPT) $(DBG) -fPIC -Wall -fopenmp  -D_USEMKL_ -DMKL_ILP64 -m64
 
 LDFLAGS =   -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_ilp64.a \
 			${MKLROOT}/lib/intel64/libmkl_gnu_thread.a  \
 			${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group \
-			 -lgomp -lpthread -lm -ldl
+			-lgomp -lpthread -lm -ldl -lrt -lstdc++
 
 $(info "OBJ: [$(OBJ)]")
 

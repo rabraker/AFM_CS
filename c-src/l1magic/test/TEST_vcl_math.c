@@ -115,7 +115,7 @@ START_TEST(test_vcl_logsum)
 }
 END_TEST
 
-START_TEST(test_vcl_daxpy)
+START_TEST(test_vcl_daxpy_simple)
 {
   double alpha = 2.0;
   double *x = malloc_double(12);
@@ -161,6 +161,105 @@ START_TEST(test_vcl_daxpy)
 }
 END_TEST
 
+START_TEST(test_vcl_daxpy_large)
+{
+  int N = 512*512;
+  double alpha = 2.0;
+  double *x = malloc_double(N);
+  double *y = malloc_double(N);
+  double *y_tmp = malloc_double(N);
+  double *z_exp = malloc_double(N);
+  for (int i =0; i<N; i++){
+    x[i] = ( (double)rand()) / (double)65534;
+    y[i] = ( (double)rand()) / (double)65534;
+  }
+
+
+  cblas_dcopy(N, y, 1, z_exp, 1);
+  cblas_daxpy(N, alpha, x, 1, z_exp, 1);
+
+  cblas_dcopy(N, y, 1, y_tmp, 1);
+  vcl_daxpy(N, alpha, x, y_tmp);
+  ck_assert_double_array_eq_tol(N, z_exp, y_tmp, TOL_DOUBLE_SUPER);
+
+  free_double(x);
+  free_double(y);
+  free_double(z_exp);
+  free_double(y_tmp);
+}
+END_TEST
+
+
+START_TEST(test_vcl_dxpby_large)
+{
+  int N = 512*512;
+  double beta = 2.0;
+  double *x = malloc_double(N);
+  double *y = malloc_double(N);
+  double *y_tmp = malloc_double(N);
+  double *z_exp = malloc_double(N);
+  for (int i =0; i<N; i++){
+    x[i] = ( (double)rand()) / (double)65534;
+    y[i] = ( (double)rand()) / (double)65534;
+  }
+
+
+  cblas_dcopy(N, y, 1, z_exp, 1);
+  cblas_daxpby(N, 1.0, x, 1, beta, z_exp, 1);
+
+  cblas_dcopy(N, y, 1, y_tmp, 1);
+  vcl_dxpby(N, x, beta, y_tmp);
+  ck_assert_double_array_eq_tol(N, z_exp, y_tmp, TOL_DOUBLE_SUPER);
+
+  free_double(x);
+  free_double(y);
+  free_double(z_exp);
+  free_double(y_tmp);
+}
+END_TEST
+
+
+START_TEST(test_vcl_ddot)
+{
+  int N = 512*512;
+  double *x = malloc_double(N);
+  double *y = malloc_double(N);
+  double dd_exp = 0, dd_act=0;
+  for (int i =0; i<N; i++){
+    x[i] = ( (double)rand()) / (double)65534;
+    y[i] = ( (double)rand()) / (double)65534;
+  }
+
+
+  dd_exp = cblas_ddot(N, x, 1, y, 1);
+  dd_act = vcl_ddot(N, x, y);
+
+  ck_assert_double_eq_tol(dd_exp, dd_act, TOL_DOUBLE_SUPER);
+
+  free_double(x);
+  free_double(y);
+}
+END_TEST
+
+
+START_TEST(test_vcl_dnorm2)
+{
+  int N = 512*512;
+  double *x = malloc_double(N);
+  double dd_exp = 0, dd_act=0;
+  for (int i =0; i<N; i++){
+    x[i] = ( (double)rand() ) / (double)65534;
+  }
+
+
+  dd_exp = cblas_ddot(N, x, 1, x, 1);
+  dd_act = vcl_dnorm2(N, x);
+
+  ck_assert_double_eq_tol(dd_exp, dd_act, TOL_DOUBLE_SUPER);
+
+  free_double(x);
+}
+END_TEST
 
 
 Suite *vcl_math_suite(void)
@@ -174,7 +273,11 @@ Suite *vcl_math_suite(void)
   tc_mathfuns = tcase_create("vcl_math");
   tcase_add_test(tc_mathfuns, test_vcl_sum);
   tcase_add_test(tc_mathfuns, test_vcl_logsum);
-  tcase_add_test(tc_mathfuns, test_vcl_daxpy);
+  tcase_add_test(tc_mathfuns, test_vcl_daxpy_simple);
+  tcase_add_test(tc_mathfuns, test_vcl_daxpy_large);
+  tcase_add_test(tc_mathfuns, test_vcl_dxpby_large);
+  tcase_add_test(tc_mathfuns, test_vcl_ddot);
+  tcase_add_test(tc_mathfuns, test_vcl_dnorm2);
 
   /*Add test cases to the suite */
   suite_add_tcase(s, tc_mathfuns);

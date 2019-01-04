@@ -96,8 +96,11 @@ int cgsolve(l1c_int n_b, double *x, double *b, l1c_int N_aligned, double *Dwork,
   cblas_dcopy((int)n_b, b, 1, r, 1);       /*r=b: copy b (ie, z_i_1) to r */
   cblas_dcopy((int)n_b, r, 1, d, 1);       /*d=r: copy r (ie, z_i_1) to d */
   delta = cblas_ddot(n_b, r, 1, r, 1);     /*delta = r'*r                 */
+  // delta = vcl_dnorm2(n_b, r);
 
   delta_0 = cblas_ddot(n_b, b, 1, b, 1);  /*delta_0 = b'*b                */
+  // delta_0 = vcl_dnorm2(n_b, b);
+
   best_res = sqrt(delta/delta_0);
 
   if (cg_params.verbose > 0){
@@ -114,20 +117,21 @@ int cgsolve(l1c_int n_b, double *x, double *b, l1c_int N_aligned, double *Dwork,
     // vcl_daxpy(n_b, alpha, d, x);                   /* x = alpha*d + x    */
 
     if ( (iter+1 %50 ) == 0){
-      AX_func(n_b, x, r, AX_data);                 /* r = b - A(x);      */
-      cblas_daxpby(n_b, 1.0, b, 1, -1.0, r, 1);  /* r = b - A*x        */
-      //vcl_dxpby(n_b, b, -1.0, r);                  /* r = b - A*x        */
+      AX_func(n_b, x, r, AX_data);                   /* r = b - A(x);      */
+      cblas_daxpby(n_b, 1.0, b, 1, -1.0, r, 1);    /* r = b - A*x        */
+      // vcl_dxpby(n_b, b, -1.0, r);                    /* r = b - A*x        */
     }else{
       cblas_daxpy(n_b, -alpha, q, 1, r, 1);      /* r = - alpha*q + r; */
-      //vcl_daxpy(n_b, -alpha, q, r);               /* r = - alpha*q + r; */
+      // vcl_daxpy(n_b, -alpha, q, r);               /* r = - alpha*q + r; */
     }
 
     delta_old = delta;
-    delta = cblas_ddot(n_b, r, 1, r, 1);         /* delta = r'*r; */
+    delta = cblas_ddot(n_b, r, 1, r, 1);
+    // delta = vcl_dnorm2(n_b, r);                 /* delta = r'*r; */
 
     beta = delta/delta_old;
     cblas_daxpby(n_b, 1.0, r, 1, beta, d, 1);    /* d = r + beta*d; */
-    //vcl_dxpby(n_b, r, beta, d);    /* d = r + beta*d; */
+    // vcl_dxpby(n_b, r, beta, d);    /* d = r + beta*d; */
 
     res = sqrt(delta/delta_0);
     if (res < best_res) {

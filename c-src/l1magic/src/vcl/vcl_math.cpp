@@ -52,25 +52,87 @@ extern "C" double vcl_sum(const int N, const double *x){
   return total;
 }
 
+// extern "C" double vcl_ddot(const int N, const double *x, const double *y){
+//   const int regularpart = N & (~(VECTORSIZE-1));
+//   // (AND-ing with -vectorsize-1 will round down to nearest
+//   // lower multiple of vectorsize. This works only if
+//   // vectorsize is a power of 2)
+
+//   int i=0,n=0;
+//   double total = 0.0;
+//   int ni=0;
+//   int NIS[] = {0,0,0,0,0,0,0,0};
+//   Vec4d xvec, yvec, sum_vec(0.0);
+
+// #pragma omp parallel
+//   {
+//     Vec4d Svec[8](0);
+// #pragma omp for
+//     for (n=0; n<8; n++){
+//       for(i=n *(regularpart /8 ); i<(n+1)*(regularpart/8); i+=VECTORSIZE){
+//         xvec.load_a(x+i);
+//         Svec[n] += xvec;
+//         NIS[n] +=4;
+//         //ni+=4;
+//       }
+//     }
+//     #pragma omp critical
+//     {
+//       for (n=0; n<8; n++){
+//         total += vcl::horizontal_add(Svec[n]);
+//         ni += NIS[n];
+//       }
+//     }
+
+//   }
+
+//   printf("total iterations: %d\n", ni);
+//   // for(; i<N; i++){
+//   //   total += x[i] * y[i];
+//   // }
+//   // total += vcl::horizontal_add(sum_vec);
+//   return total;
+// }
+
+
+double _vcl_ddot(const int N, const double *x, const double *y){
+  const int regularpart = N & (~(VECTORSIZE-1));
+  int i=0;
+  Vec4d xvec, yvec, sum_vec(0.0);
+
+    for(i=0; i<regularpart; i+=VECTORSIZE){
+      xvec.load(x+i);
+      yvec.load(y+i);
+      sum_vec += xvec * yvec;
+    }
+    return vcl::horizontal_add(sum_vec);
+}
+
+
 extern "C" double vcl_ddot(const int N, const double *x, const double *y){
   const int regularpart = N & (~(VECTORSIZE-1));
   // (AND-ing with -vectorsize-1 will round down to nearest
   // lower multiple of vectorsize. This works only if
   // vectorsize is a power of 2)
 
-  int i=0;
+  // int i=0;
+  int blocksize = regularpart >>3;
+  // int block_remain = N - (blocksize << 3);
+  // block_remain = block_remain ==0 ? blocksize : block_remain;
+  int block_len = blocksize;
   double total = 0.0;
-  Vec4d xvec, yvec, sum_vec(0.0);
-  for(i=0; i<regularpart; i+=VECTORSIZE){
-    xvec.load_a(x+i);
-    yvec.load_a(y+i);
-    sum_vec += xvec * yvec;
+
+  // printf("BR=%d, BS = %d\n", block_remain, blocksize);
+
+#pragma omp parallel
+  {
+#pragma omp for schedule(static, 1) reduction(+:total)
+      for(int i=0; i<8; i++){
+        //block_len = i+1==8 ? blocksize : block_remain;
+        total = _vcl_ddot(block_len, x+i*blocksize, y+i*blocksize);
+      }
   }
 
-  for(; i<N; i++){
-    total += x[i] * y[i];
-  }
-  total += vcl::horizontal_add(sum_vec);
   return total;
 }
 

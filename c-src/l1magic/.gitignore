@@ -6,4 +6,6 @@ doc/
 *.html
 readme.md
 test_l1qc
+bench
+benchmark/bench_vcl_cblas.c.bk
 

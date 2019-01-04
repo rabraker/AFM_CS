@@ -1,0 +1,6 @@
+* Agner, vector-class etc
+https://www.agner.org/optimize/
+
+* number of processors
+The function omp_get_max_threads() will return 2*num_processors when hyperthreading is enabled. 
+Somehow, intel knows better. On Zeus, this will mean 16 threads, which destroys performance. 
