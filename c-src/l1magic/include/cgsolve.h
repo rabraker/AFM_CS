@@ -2,27 +2,28 @@
 #define _CGSOLVE_
 
 #include <stddef.h>
-
+#include "l1qc_common.h"
+/** Struct containing artifacts of the cgsolve routine. */
 typedef struct CgResults_{
-  double cgres;
-  int cgiter;
+  double cgres; /**< Residual */
+  l1c_int cgiter;   /**< Number of completed iterations. */
+
 } CgResults;
 
 typedef struct CgParams_{
-  int verbose;
-  int max_iter;
-  double tol;
+  l1c_int verbose; /**< If 0, print nothing, if >0, print status every verbose-th iteration. */
+  l1c_int max_iter;/**< Maximum number of solver iterations.*/
+  double tol;  /**< Solver tolerance.*/
 } CgParams;
 
 
-extern int cgsolve(double *x, double *b, size_t n_b,  double *Dwork,
-            void(*AX_func)(int n, double *x, double *b, void *AX_data),
+extern int cgsolve(double *x, double *b, l1c_int n_b,  double *Dwork,
+            void(*AX_func)(l1c_int n, double *x, double *b, void *AX_data),
             void *AX_data, CgResults *cg_result, CgParams cg_params);
 
-extern void dgemv_RowOrder(double *A, int m_A, int n_A, double *x, double *b);
 
-extern void Ax(int n, double *x, double *b, void *AX_data);
+extern void Ax(l1c_int n, double *x, double *b, void *AX_data);
 
-extern void Ax_sym(int n, double *x, double *b, void *AX_data);
+extern void Ax_sym(l1c_int n, double *x, double *b, void *AX_data);
 
 #endif

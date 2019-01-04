@@ -1,5 +1,6 @@
 #ifndef __VCL_MATH__
 #define __VCL_MATH__
+#include "l1qc_common.h"
 
 #ifdef __cplusplus
 extern "C" {

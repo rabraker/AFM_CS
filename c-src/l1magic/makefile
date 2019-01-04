@@ -34,6 +34,8 @@ endif
 
 # should check if this is set already
 MKLROOT        = /opt/intel/compilers_and_libraries_2019.1.144/linux/mkl
+# MKLROOT      = /opt/intel/compilers_and_libraries/linux/mkl
+MATLAB_R       = /usr/local/MATLAB/R2018b
 MATLAB         = matlab -nodesktop -nosplash -r
 TEST_DATA_ROOT = $(CURDIR)/test_data
 ML_BUILD_FCN   = L1qcTestData.build_all_test_data
@@ -53,8 +55,8 @@ ML_INTERFACE   = ./interfaces
 
 MEX_BUILD_DIR      = ./build/mex
 MEX_LIB_DIR        = ./lib/mex
-NATIVE_BUILD_DIR      = ./build
-NATIVE_LIB_DIR        = ./lib
+NATIVE_BUILD_DIR   = ./build
+NATIVE_LIB_DIR     = ./lib
 
 ifeq (${MAKECMDGOALS},mex)
 BUILD_DIR      = $(MEX_BUILD_DIR)
@@ -88,13 +90,23 @@ TEST_OBJ       = $(addprefix $(BUILD_DIR)/, $(notdir $(TEST_SRC:.c=.o)))
 OBJ            = $(APP_OBJ) $(TEST_OBJ)
 
 ifeq ($(DEBUG),1)
-DBG          = -DDBUG -ggdb
-OPT          =
-VCL_OPT      =
+DBG            = -DDBUG -ggdb
+OPT            =
+VCL_OPT        =
 else
-DBG          =
-OPT          = -O3 -msse3 -mavx2
-VCL_OPT      = -O3 -mavx2 -mfma
+DBG            =
+# OPT          = -O3 -msse3 -mavx2
+# VCL_OPT      = -O3 -mavx2 -mfma
+
+# N.B. If we compile with unsupported instruction set flags, we will get
+# a SIGILL error at runtime. For example, compiling on my desktop, which does not
+# support avx2, only avx, with -maxv2 will cause a SIGILL. Thus, instead of specifying
+# these flags explicitely, we can use -march=native -mtune=native. The result can be
+# checked with
+# gcc -dM -E -march=native -mtune=native - < /dev/null | egrep "AVX|SSE"
+# which will print out a list of defines for enabled instructions.
+OPT            = -O3 -march=native -mtune=native
+VCL_OPT        = -O3 -march=native -mtune=native
 endif
 # check header files are in /usr/local/include
 INCLUDE        = -I/usr/include                \
@@ -104,13 +116,14 @@ INCLUDE        = -I/usr/include                \
 # ---------- If making a mex file, add the needed includes and libs
 ifeq ($(MAKECMDGOALS),mex)
 MATLAB_CFLAGS  = -Wall -fPIC -D__MATLAB__ -fexceptions
-MATLAB_INCLUDE = -I/usr/local/MATLAB/R2018b/extern/include
-MATLAB_LDIR    = -L/usr/local/MATLAB/R2018b/bin/glnxa64 \
+MATLAB_INCLUDE = -I$(MATLAB_R)/extern/include
+MATLAB_LDIR    = -L$(MATLAB_R)/bin/glnxa64 \
 
 MATLAB_LIBS    = -lmex -lmat -lmx -lmwservices -lmwbuiltinsutil
 endif
 
-CFLAGS         =  $(OPT) $(DBG) -fPIC -Wall $(MAT_DEF)
+CFLAGS         =  $(OPT) $(DBG) -fPIC -Wall -Wextra -Wunused -Werror\
+                  -std=c11 -pedantic $(MAT_DEF)
 CPP_VCL_FLAGS  =  -Iinclude/vcl $(DBG) $(VCL_OPT) -fabi-version=0 -fPIC
 
 ifeq (${USE_MKL},1)
