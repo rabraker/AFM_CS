@@ -178,18 +178,18 @@ The second, less direct way, is we can compare the frequency content of lines ov
 
 
 ** The CS Halos <<sec:halos>>
-
-1. The haloing we get in experimental CS images is an artifact of CS, not my experimental implementation. We saw this in [[fig:cs_sim]]. We can also see this by taking the original image, converting to DCT, thresholding for the largest, say, $0.1*512^2$ coeficients, and conveting back to spatial domain. We still get the same halos, though not as noticable. This is illustrated in the following two figures.
-
    #+caption: Sorted DCT coefficients of the CS20-NG simulation image. The vertical dashed lines indicate the different threshholding fractions used in Figure~[[fig:cs20ng_thresh_img]].
    #+label: fig:cs20ng_dct
    #+ATTR_HTML: :height 350
    [[file:figures/cs20ng_sim_thresholds_mag.svg]]
 
-   #+caption:Result of thresholding DCT coeficients. The top left image (100\%) is the baseline, i.e., no thresholding.
+   #+caption:Result of thresholding DCT coeficients. The top left image (100%) is the baseline, i.e., no thresholding.
    #+label: fig:cs20ng_thresh_img
    [[file:figures/cs20ng_sim_thresholds_img.svg]]
    
+1. The haloing we get in experimental CS images is an artifact of CS, not my experimental implementation. We saw this in [[fig:cs_sim]]. We can also see this by taking the original image, converting to DCT, thresholding for the largest, say, $0.1*512^2$ coeficients, and conveting back to spatial domain. We still get the same halos, though not as noticable. This is illustrated in the following two figures.
+
+
    So really, that halo is some kind of periodicity that gets cancelled when we have all the coefficients. That strange and neat. I don't really see where that period is coming from though.
 
 2. [[http://feihu.eng.ua.edu/compressive.pdf][This presentation]] is a good overview of CS. One of the things they say is that 2D wavelets are better than DCT for images with sharp edges. This makes sense because DCT is based on DFT, and we expect coeficients to not decay very fast for sharp transitions.
@@ -200,15 +200,18 @@ The second, less direct way, is we can compare the frequency content of lines ov
 
 6. I have seen multiple places (Stack Exchange, that Tuma paper...) where people do their CS schemes on an already thresholded image. That is, they take a test image, take the dct, set N-k of the smallest  coefficients to zero, then convert back to spatial domain. This seems like an absurd thing to do if you want you results to bear any resemblence whatsoever to the real world.
 
+
+
+
 #+caption: Comparison of simulated BP reconstructions from our CS20-NG test image.
 #+label: fig:cs_sim_cp
 [[file:figures/cs_sim_mu_path_vs_singlepix.svg]]
 
-#+caption: Cs reconstructions using the 10\% threshholded image.
+#+caption: Cs reconstructions using the 10% threshholded image.
 #+label: fig:cs_sim_thresh
 [[file:figures/cs_sim_mu_path_vs_singlepix_thresh.svg]]
 
-Figure [[fig:cs_sim_thresh]] shows cs simulations using the 10\% thresholded image as the master. They look basically identical to above. 
+Figure [[fig:cs_sim_thresh]] shows cs simulations using the 10% thresholded image as the master. They look basically identical to above. 
 -- Need to check this.
 -- ALso, recompute both this and above with PSNR or SSIM metrics.
 
