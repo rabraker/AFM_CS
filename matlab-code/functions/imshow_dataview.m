@@ -1,6 +1,8 @@
 function imshow_dataview(IM, thresh, ax1, ax2)
   axes(ax1)
-  h_im = imshow(IM, thresh);
+  % h_im = imshow(IM, thresh);
+  h_im = imagesc(IM);
+  colormap('gray');
   ax1 = h_im.Parent;
   
   if exist('ax2', 'var')

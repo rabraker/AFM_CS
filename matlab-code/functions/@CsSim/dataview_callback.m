@@ -10,7 +10,7 @@ function output_txt = dataview_callback(self, event_obj, ax1, ax2)
 % It will plot, in dashed red, the original, unconstructed CS data.
 %
 %
-  
+  pos = get(event_obj,'Position');
   ind = get(event_obj, 'DataIndex');
   
   yidx = pos(2);
