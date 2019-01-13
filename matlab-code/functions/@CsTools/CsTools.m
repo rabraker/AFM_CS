@@ -4,9 +4,9 @@ classdef CsTools
   methods (Static)
     xp = l1qc_logbarrier(x0, A, At, b, epsilon, lbtol, mu, ...
                               cgtol, cgmaxiter, verbose);
-    [xp, up, niter] = l1qc_newton(x0, u0, A, At, b, epsilon, tau, newtontol,...
+    [xp, up, niter, cgtot_iter] = l1qc_newton(x0, u0, A, At, b, epsilon, tau, newtontol,...
       newtonmaxiter, cgtol, cgmaxiter, Tii, verbose)
-    [x, res, iter] = cgsolve(A, b, tol, maxiter, verbose);
+    [x, res, iter] = cgsolve(A, b, tol, maxiter, verbose, x0);
     
     
     vpix = pixmat2vec(Mat);

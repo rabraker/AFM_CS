@@ -42,7 +42,7 @@
 %
 
 
-function [xp, up, niter] = l1qc_newton(x0, u0, A, At, b, epsilon, tau, newtontol,...
+function [xp, up, niter, cgit_tot] = l1qc_newton(x0, u0, A, At, b, epsilon, tau, newtontol,...
     newtonmaxiter, cgtol, cgmaxiter, Tii, verbose) 
 
 
@@ -61,6 +61,9 @@ function [xp, up, niter] = l1qc_newton(x0, u0, A, At, b, epsilon, tau, newtontol
     fprintf('Newton-iter | Functional | Newton decrement |  Stepsize  |  cg-res | cg-iter | backiter |    s     |\n');
   end
   
+  dx = 0*x0;
+  cgit_tot = 0;
+  s = 1;
   for niter=1:newtonmaxiter
     
     % Gradient and Hessian parts.
@@ -75,7 +78,9 @@ function [xp, up, niter] = l1qc_newton(x0, u0, A, At, b, epsilon, tau, newtontol
     
     w1p = ntgz - sig12./sig11.*ntgu;
     h11pfun = @(z) sigx.*z - (1/fe)*At(A(z)) + 1/fe^2*(atr'*z)*atr;
-    [dx, cgres, cgiter] = CsTools.cgsolve(h11pfun, w1p, cgtol, cgmaxiter, 0);
+    [dx, cgres, cgiter] = CsTools.cgsolve_hs(h11pfun, w1p, cgtol, cgmaxiter, 0, dx*s);
+    cgit_tot=cgit_tot + cgiter;
+    
     if (cgres > 1/2)
       disp('Cannot solve system.  Returning previous iterate.  (See Section 4 of notes for more information.)');
       xp = x;  up = u;
