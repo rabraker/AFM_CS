@@ -50,11 +50,6 @@ function xp = l1qc_logbarrier(x0, A, At, b, opts)
     opts = struct();
   end
   opts = parse_opts(opts);
-  %   if (nargin < 5), lbtol = 1e-3; end
-%   if (nargin < 5), mu = 10; end
-%   if (nargin < 5), cgtol = 1e-8; end
-%   if (nargin < 5), cgmaxiter = 200; end
-%   if (nargin < 5), verbose = 1; end
   
   opts.newtontol = opts.lbtol;
   opts.newtonmaxiter = 50;
@@ -82,18 +77,15 @@ function xp = l1qc_logbarrier(x0, A, At, b, opts)
   % step will be about the origial norm
   tau = max((2*N+1)/sum(abs(x0)), 1);
   
-  lbiter = ceil((log(2*N+1)-log(lbtol)-log(tau))/log(mu));
+  lbiter = ceil((log(2*N+1)-log(opts.lbtol)-log(tau))/log(opts.mu));
   fprintf('Number of log barrier iterations = %d\n\n', lbiter);
   
   totaliter = 0;
-  
   for ii = 1:lbiter
-    
     [xp, up, ntiter] = CsTools.l1qc_newton(x, u, A, At, b, opts.epsilon, ...
       tau, opts.newtontol, opts.newtonmaxiter, opts.cgtol, ...
       opts.cgmaxiter, ii, opts.verbose);
     totaliter = totaliter + ntiter;
-    
     fprintf('\nLog barrier iter = %d, l1 = %.3f, functional = %8.3f, tau = %8.3e, total newton iter = %d\n', ...
       ii, sum(abs(xp)), sum(up), tau, totaliter);
     
@@ -101,18 +93,21 @@ function xp = l1qc_logbarrier(x0, A, At, b, opts)
     u = up;
     
     tau = opts.mu*tau;
-    
   end
+  fprintf('total cg-iter: %d\n', total_cg_iter);
+
 end
 
-function parse_opts(opts)
+function opts = parse_opts(opts)
   flds    = {'lbtol', 'mu', 'cgtol', 'cgmaxiter', 'verbose'};
   defaults  = [1e-3,    10,    1e-8,    200,        1];
   
+  k=1;
   for fld=flds
-    if ~isfield(opts, fld) || isempty(opts.(fld))
-      opts.(fld) = defaults(k);
+    if ~isfield(opts, fld{1}) || isempty(opts.(fld{1}))
+      opts.(fld{1}) = defaults(k);
     end
+    k=k+1;
   end
   
   
