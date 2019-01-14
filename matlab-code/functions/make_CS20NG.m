@@ -1,13 +1,17 @@
-function img_mat = make_CS20NG(x_start, y_start, npix)
+function img_mat = make_CS20NG(x_start, y_start, npix, nholes)
   
   % Make these options later
   if nargin <3
     npix = 512;
   end
 
-
-  hole_width = npix/20;
-  pitch = npix/10;
+  if nargin <4
+    hole_width = npix/20;
+    pitch = npix/10;
+  else
+    pitch = npix/nholes;
+    hole_width = npix/2/nholes;
+  end
   
   img_mat = ones(npix, npix);
   m_pitch = ceil(pitch);

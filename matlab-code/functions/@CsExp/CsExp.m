@@ -304,6 +304,11 @@ classdef CsExp < handle
     function solve_bp(self, recalc, use_2d)
     % Solve the Basis Pursuit problem in either 1d or 2d. If in 1D, use the mex
     % function. 
+    % Options
+    % -------
+    % recalc : (true|false), default false. Do not optimize if self.Img_bp is
+    %          non-empty and non-zero.
+    % use_2d : (true|false), default false. If true, compute using 2D-dct.
       if nargin <2
         recalc = false;
       end
