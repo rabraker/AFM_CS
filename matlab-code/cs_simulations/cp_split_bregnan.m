@@ -8,9 +8,10 @@ Tfig_path = @(fname) PATHS.tuesday_fig_path('12-11-2018', fname);
 
 % What is the difference between thresholding the 1D-dct and the 2D-dct??
 % clear
+npix = 256
 x_start = 26/2; 
 y_start = 26/2;
-img_mat = make_CS20NG(x_start, y_start, 256);
+img_mat = make_CS20NG(x_start, y_start, npix);
 
 figure(1)
 imshow(img_mat, [0,1])
@@ -18,7 +19,7 @@ imshow(img_mat, [0,1])
 clc
 
 mu_pix = 1;
-npix = size(img_mat, 1);
+
 
 E = CsTools.muPathMaskGen(15,npix, npix,0.15);
 pix_mask = CsTools.pixmat2vec(E);
@@ -55,10 +56,10 @@ b = xx(pix_idx);
 x0 = At(b);
 
 tic;
-opts = CsTools.l1qc_opts();
+opts = CsTools.l1qc_opts('warm_start_cg', 0);
 eta_rec = CsTools.l1qc(x0, b, pix_idx-1, opts);
 t_l1qc = toc();
-
+fprintf('mex time: %.3f\n', t_l1qc)
 %%
 % Xorig = img_mat;
 Xorig = CsTools.pixvec2mat(xx, npix);

@@ -28,7 +28,7 @@ classdef CsTools
       p.addParameter('mu', 10);
       p.addParameter('cgtol', 1e-8);
       p.addParameter('cgmaxiter', 200);
-      p.addParameter('warm_start_cg', 1);
+      p.addParameter('warm_start_cg', 0);
       p.addParameter('lbtol', 1e-3);
       p.addParameter('newton_tol', 1e-3);
       p.addParameter('newton_max_iter', 50);
