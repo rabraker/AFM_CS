@@ -81,13 +81,15 @@ function xp = l1qc_logbarrier(x0, A, At, b, opts)
   fprintf('Number of log barrier iterations = %d\n\n', lbiter);
   
   totaliter = 0;
+  total_cg_iter = 0;
   for ii = 1:lbiter
-    [xp, up, ntiter] = CsTools.l1qc_newton(x, u, A, At, b, opts.epsilon, ...
+    [xp, up, ntiter, cgiter_ii] = CsTools.l1qc_newton(x, u, A, At, b, opts.epsilon, ...
       tau, opts.newtontol, opts.newtonmaxiter, opts.cgtol, ...
       opts.cgmaxiter, ii, opts.verbose);
     totaliter = totaliter + ntiter;
-    fprintf('\nLog barrier iter = %d, l1 = %.3f, functional = %8.3f, tau = %8.3e, total newton iter = %d\n', ...
-      ii, sum(abs(xp)), sum(up), tau, totaliter);
+    total_cg_iter = total_cg_iter + cgiter_ii;
+    fprintf('\nLog barrier iter = %d, l1 = %.3f, functional = %8.3f, tau = %8.3e, total newton iter = %d, total cg ite: %d\n', ...
+      ii, sum(abs(xp)), sum(up), tau, totaliter, cgiter_ii);
     
     x = xp;
     u = up;
