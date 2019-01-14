@@ -1,3 +1,4 @@
+function [x, res, iter] = cgsolve(A, b, tol, maxiter, verbose, x0)
 % cgsolve.m
 %
 % Solve a symmetric positive definite system Ax = b via conjugate gradients.
@@ -20,12 +21,16 @@
 % Email: jrom@acm.caltech.edu
 % Created: October 2005
 %
-function [x, res, iter] = cgsolve(A, b, tol, maxiter, verbose)
 
+  if nargin < 6 || isempty(x0)
+    x = zeros(length(b), 1);
+  else
+    x = x0;
+  end
 
-  x = zeros(length(b),1);
-  r = b; % = b - A*x0, x0 = 0.
-  d = b;
+  
+  r = b - A(x);
+  p = b;
   delta = r'*r;
   delta_init = b'*b;
   
@@ -36,32 +41,35 @@ function [x, res, iter] = cgsolve(A, b, tol, maxiter, verbose)
     fprintf('cg: |Iter| Best resid | Current resid| alpha | beta   |   delta  |\n');
   end
  for iter = 1:maxiter
-    q = A(d);
-    alpha = delta/(d'*q);
-    x = x + alpha*d;
+    q = A(p);
+    alpha = delta/(p'*q);
+    x = x + alpha*p;
     
     if (mod(iter+1,50) == 0)
       r = b - A(x);
-    else
-      r = r - alpha*q;
+      p = r;
+      delta = r'*r;
+      continue;
     end
     
+    r = r - alpha*q;
     deltaold = delta;
     delta = r'*r;
     beta = delta/deltaold;
-    d = r + beta*d;
+    p = r + beta*p;
 
-    if (sqrt(delta/delta_init) < bestres)
+    rel_res = sqrt(delta/delta_init); % sqrt for norm.
+    if (rel_res < bestres)
       bestx = x;
-      bestres = sqrt(delta/delta_init);
+      bestres = rel_res;
     end
     
     if ((verbose) && (mod(iter,verbose)==0))
       %         iter              br             cr    alpha beta delta
       fprintf('  %d,   %.16e, %.16e, %.16e, %.16e, %.16e  \n', ...
-        iter, bestres, sqrt(delta/delta_init), alpha, beta, delta);
+        iter, bestres, rel_res, alpha, beta, delta);
     end
-    if (delta < tol^2*delta_init)
+    if (rel_res < tol)
       break;
     end
     

@@ -1,4 +1,4 @@
-% [eta, LBRes] = l1qc(x0, b, pix_idx, opts)
+% function [eta, LBRes] = l1qc(x0, b, pix_idx, opts)
 %
 % Solves the Denoising Basis Pursuit problem
 %
