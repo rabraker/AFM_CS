@@ -23,6 +23,7 @@ LRC_ptos_tac/
 MAC_project.zip
 Program Files (x86)/
 
+svg-inkscape/
 ltximg/
 \#*
 .\#*
@@ -32,12 +33,32 @@ test.org
 *.avi
 *.mp4
 *.svg
+*.tif
+
 *.png
 *.pdf
 *.jpg
 *.jpeg
 *.odp\#
+*.out
+*.synctex.gz
+*.log
+auto/
 
+GPATH
+GRTAGS
+GTAGS
+cJSON
+cJSON.c
+cJSON.h
+cgsolve
+test_l1magic
+test_data/
+src_unused/
+cgsolve_tmp.m
+l1qc_newton_tmp.m
+
+*.o
 *.dll
 *.wdb
 *.wdb

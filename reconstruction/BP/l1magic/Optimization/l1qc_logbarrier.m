@@ -88,14 +88,14 @@ end
 x = x0;
 u = (0.95)*abs(x0) + (0.10)*max(abs(x0));
 
-disp(sprintf('Original l1 norm = %.3f, original functional = %.3f', sum(abs(x0)), sum(u)));
+fprintf('Original l1 norm = %.3f, original functional = %.3f\n', sum(abs(x0)), sum(u));
 
 % choose initial value of tau so that the duality gap after the first
 % step will be about the origial norm
 tau = max((2*N+1)/sum(abs(x0)), 1);
                                                                                                                           
 lbiter = ceil((log(2*N+1)-log(lbtol)-log(tau))/log(mu));
-disp(sprintf('Number of log barrier iterations = %d\n', lbiter));
+fprintf('Number of log barrier iterations = %d\n\n', lbiter);
 
 totaliter = 0;
 
@@ -104,8 +104,8 @@ for ii = 1:lbiter
   [xp, up, ntiter] = l1qc_newton(x, u, A, At, b, epsilon, tau, newtontol, newtonmaxiter, cgtol, cgmaxiter);
   totaliter = totaliter + ntiter;
   
-  disp(sprintf('\nLog barrier iter = %d, l1 = %.3f, functional = %8.3f, tau = %8.3e, total newton iter = %d\n', ...
-    ii, sum(abs(xp)), sum(up), tau, totaliter));
+  fprintf('\nLog barrier iter = %d, l1 = %.3f, functional = %8.3f, tau = %8.3e, total newton iter = %d\n', ...
+    ii, sum(abs(xp)), sum(up), tau, totaliter);
   
   x = xp;
   u = up;

@@ -104,20 +104,6 @@ set(leg1, 'FontSize', 14, 'Position', [0.1361 0.1586 0.5938 0.1504], 'box', 'off
 leg2 = legend([ht1, ht2, ht3]);
 set(leg2, 'FontSize', 14, 'Position', [0.1361 0.1197 0.5938 0.1504], 'box', 'off')
 
-% ax11_2 = axes('Units', 'inches', 'Position', [3.0208 2.8854 1.8979 2.0833],...
-%   'XTick', [], 'YTick', []);
-
-% h2.Visible = 'off';
-% ht2.Visible = 'off';
-% h3.Visible = 'off';
-% ht3.Visible = 'off';
-% % h.Visible = 'off';
-% leg1.Visible = 'off';
-
-
-% h2.Visible = 'on';
-% ht2.Visible = 'on';
-% h.Visible = 'off';
 leg1 = legend([h1, h2, h3]);
 set(leg1, 'FontSize', 14, 'Position', [0.1361 0.0963 0.5938 0.1504], 'box', 'off')
 
@@ -129,10 +115,10 @@ lower = [-65, -65];
 upper = [-40, -40];
 h = ciplot(lower, upper, [300, 450],'g');
 alpha(h, '.25')
-
+%%
 leg1 = legend([h1, h2]);
 set(leg1, 'FontSize', 14, 'Position', [0.1361 0.1586 0.5938 0.1504], 'box', 'off')
-
+%%
 print(F10, '-dpdf', '~/gradschool/rob_ss_prez/figures/initial_dfl_time2.pdf')
 print(F11, '-dpdf', '~/gradschool/rob_ss_prez/figures/initial_dfl_psd2.pdf')
 
@@ -267,9 +253,9 @@ alpha(h, '.25')
 
 leg1 = legend([h1, h2]);
 set(leg1, 'FontSize', 12)
-
-print(F3, '-dpdf', '~/matlab/website/fan_noise_psd.pdf')
-print(F3, '-dpdf', '~/gradschool/rob_ss_prez/figures/fan_noise_psd.pdf')
+% 
+% print(F3, '-dpdf', '~/matlab/website/fan_noise_psd.pdf')
+% print(F3, '-dpdf', '~/gradschool/rob_ss_prez/figures/fan_noise_psd.pdf')
 %%
 
 
@@ -370,139 +356,38 @@ set(ax3, 'XTickLabel', [])
 title('deflection detail')
 
 
-print(f2, '-dpdf', '~/matlab/website/fan_noise_time.pdf')
-
+% print(f2, '-dpdf', '~/matlab/website/fan_noise_time.pdf')
 %%
+root_nb = '/media/labserver/afm-cs/z-scope/psd-test-fan/12-14-2018';
+
+fname_bung_psd = 'z_bungee_zy_off3.json';
+fname_nobung_psd = 'z_nobungee_zy_off3.json';
+
+fpath_bung = fullfile(root_nb, fname_bung_psd);
+fpath_nobung = fullfile(root_nb, fname_nobung_psd);
 
 
+psd_b = LvPSD(fpath_bung);
+psd_nb = LvPSD(fpath_nobung);
+%
 
+f15 = mkfig(15, 5, 5.35, true); clf
 
-
-
-
-
-
-
-
-
-
-
-
-%%
-clc
-Ts = rnt_ext.Ts;
-N = rnt_ext.num_realizations;
-Npts = rnt_ext.num_points;
-
-% psd_fan = zeros(ceil(Npts/2), rnt_fan.number_outputs);
-psd_fan = 0;
-psd_nofan = 0;
-psd_batteryfan = 0;
-
-for k=1:N
-  df_k = rnt_ext.data(3, :, k)';
-  df_k = df_k - mean(df_k);
-  win = window(@hann, Npts);
-  [psd_k, freqs] = power_spectrum(df_k, Ts, win);
-  
-
-%   [psd_k, freqs] = pwelch(df_k, [], 1, length(f)*2, 1/Ts, [], f, 'onesided', 'psd');
-% [psd_k, freqs] = pwelch(df_k, Npts, [], f, 1/Ts, 'onesided', 'psd');
-
-%   dnf_k = rnt_nofan.data(3, :, k)';
-%   dnf_k = dnf_k - mean(dnf_k);
-%   [psd_nofan_k, freqs] = pwelch(dnf_k, Npts, [], [], 1/Ts, 'onesided', 'Power');
-% 
-%   
-%   dbtf_k = rnt_batteryfan.data(3, :, k)';
-%   dbtf_k = dbtf_k - mean(dbtf_k);
-%   [psd_batteryfan_k, freqs] = pwelch(dbtf_k, Npts, [], [], 1/Ts, 'onesided', 'Power');
-% 
-  psd_fan = psd_fan + psd_k;
-%   psd_nofan = psd_nofan + psd_nofan_k;
-%   psd_batteryfan = psd_batteryfan + psd_batteryfan_k;
-%   
-%   
-end
-
-freqs = freqs(2:end);
-psd_est = (psd_fan(2:end)/N);
-
-figure(2); clf;
-
-semilogx(psd_ext.freqs, (psd_ext.psd(:,3)))
+h_b = semilogx(psd_b.freqs, psd_b.psd);
 hold on
-
-semilogx(freqs, 10*(log10(psd_est)) )
-
-% semilogx(freqs, 10*log10(psd_nofan/N))
-% semilogx(freqs, 10*log10(psd_batteryfan/N))
-
-% dat = csvread(fullfile(root, 'lv_psd_data.csv'),1);
-%%
-
-x = squeeze(rnt_ext.data(3, :, 1))';
-% win = rectwin(length(x));
-window(@hann, Npts);
-x_dft1 = power_spectrum(x, 1, win);
-
-x_dft2 = periodogram(x, win, length(x), 1);
-
-figure(2); clf;
-plot(10*log10(x_dft1))
-hold on
-plot(10*log10(x_dft2))
-
-%%
-
-figure
-plot(squeeze(rnt_ext.data(3, :, 1)))
-
-hold on
-plot(squeeze(rnt_int.data(3, :, 1)))
+h_nb = semilogx(psd_nb.freqs, psd_nb.psd);
 
 
-%%
-psd_nofan = [];
-psd_batteryfan = [];
-start_idx = 3;
-for k=1:rnt_ext.number_outputs
-  
-  datf_chan_k = squeeze(rnt_ext.data(k, :, :));
-  datnf_chan_k = squeeze(rnt_int.data(k, :, :));
-  datbtf_chan_k = squeeze(rnt_batteryfan.data(k, :, :));
-  
-  [psd_fan_k, ~] = pwelch(dat_chan_k, Npts, [], Npts, 1/Ts, 'onesided', 'Power');
-  psd_fan(:,k) = mean(psd_fan_k(start_idx:end,:), 2);
-  
-  [psd_nofan_k, ~] = pwelch(rnt_int.data(:, :, k)', Npts, [], Npts, 1/Ts, 'onesided', 'Power');
-  psd_nofan(:,k) = mean(psd_nofan_k(start_idx:end,:), 2);
-  
-  [psd_batteryfan_k, f] = pwelch(rnt_batteryfan.data(:, :, k)', Npts, [], Npts, 1/Ts, 'onesided', 'Power');
-  psd_batteryfan(:,k) = mean(psd_batteryfan_k(start_idx:end,:), 2);
-  
-  
-end
-freqs = f(start_idx:end);
+h_b.DisplayName = 'With Bungee';
+h_nb.DisplayName = 'No Bungee';
 
-
-%%
-
-figure(1), clf;
-for k=1:3
-subplot(3,1,k)
-
-h_fan = semilogx(freqs, 10*log10(psd_fan(:,k)) );
-
-hold on
-h_nofan = semilogx(freqs, 10*log10(psd_nofan(:,k)) );
-h_batteryfan = semilogx(freqs, 10*log10(psd_batteryfan(:, k)));
 grid on
-end
 
-h_fan.DisplayName = 'With standard npoint fan';
-h_nofan.DisplayName = 'Fan unplugged';
-h_batteryfan.DisplayName = 'Fan with 9v battery';
+xlim([psd_b.freqs(1), psd_b.freqs(end)])
+%%
 
-subplot(3,1,1)
-legend([h_fan, h_nofan, h_batteryfan])
+g1 = 10.^(psd_nb.psd/10);
+g2 = 10.^(psd_b.psd/10);
+g = 10*log10(abs(g2./g1));
+figure
+h_ = semilogx(psd_nb.freqs, g);

@@ -18,9 +18,10 @@ classdef ImshowDataView
         fun = @(event_obj) ImshowDataView.plotter(event_obj, ax1, ax2);
       end
       
-      axes(ax1)
-      h_im = imshow(IM, thresh);
-      ax1 = h_im.Parent;
+%       axes(ax1)
+      h_im = imagesc(ax1, IM);
+      colormap('gray');
+%       ax1 = h_im.Parent;
       
       % create a structure which contains the callback function
       % and an extra  field for the auxilary line handle.
