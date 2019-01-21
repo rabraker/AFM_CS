@@ -9,13 +9,15 @@ clc
 
 init_paths();
 
+
 clear size
 size_dir = '5microns';
-dat_root = PATHS.raster_image_data(size_dir, '11-13-2018');
-dat_name = 'raster_scan_512pix_5mic_01Hz_out_11-13-2018-01.csv';
+width = 5
+dat_root = PATHS.raster_image_data(size_dir, '1-16-2019');
+dat_name = 'raster_scan_512pix_5mic_01Hz_out_1-16-2019-01.csv';
 
 raster_paths = get_raster_paths(dat_root, dat_name)
-%%
+
 
 % meta_name = strrep(parent_name, '.csv', '-meta.mat');
 % fprintf('Using parent Data file\n%s\n', parent_name)
@@ -136,7 +138,7 @@ plot(zes)
 clc
 
 % [pixmat2, pixelifsampled] = bin_raster_really_slow([datmat(:,[1,2]), zz], pix, samps_per_period, volts2pix);
-rast_exp.bin_raster_really_slow();
+rast_exp.bin_raster_really_slow(@detrend);
 
 pixmat2 = rast_exp.pix_mat;
 % x = [1:512];
@@ -162,8 +164,8 @@ ax2 = gca();
 lo = min(min(pixmat2));
 hi = max(max(pixmat2));
 
-
-pixmat3 = detrend_plane(detrend2(pixmat2(10:end-10,10:end-25)));
+pixmat3 = pixmat2;
+% pixmat3 = detrend_plane(detrend2(pixmat2(10:end-10,10:end-25)));
 imshow_dataview(pixmat3 - mean(pixmat3(:)), [-thresh, thresh], ax1, ax2)
 
 figure,
