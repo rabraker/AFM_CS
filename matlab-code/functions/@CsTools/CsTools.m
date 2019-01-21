@@ -13,32 +13,13 @@ classdef CsTools
     
     Mpix = pixvec2mat(vpix, nrows);
     
-    [eta, LBRes] = l1qc(x0, b, pix_idx, opts);
-    
     pixelifsampled = muPathMaskGen(mupathLength,n,m,samplingRatio,RepeatSamplingFlag);
     
     [Ir] = bregman_split_delxy(I,E,epsy, epsx, mu, lam,gam,maxiter,tol)
     
     [Ir] = bregman_split(I,E, mu, gam,maxiter,tol);
     
-    function opts = l1qc_opts(varargin)
-    % Will build an options struct for l1qc.
-      p = inputParser();
-      p.addParameter('epsilon', 0.1);
-      p.addParameter('mu', 10);
-      p.addParameter('cgtol', 1e-8);
-      p.addParameter('cgmaxiter', 200);
-      p.addParameter('warm_start_cg', 0);
-      p.addParameter('lbtol', 1e-3);
-      p.addParameter('newton_tol', 1e-3);
-      p.addParameter('newton_max_iter', 50);
-      p.addParameter('verbose', 2);
-      
-      p.parse(varargin{:});
-      opts = p.Results();
-      
-    end
-    
+
     function [ b ] = Afun_dct(eta, pix_idx)
     % Given the CS equation
     % b = E * M * eta
