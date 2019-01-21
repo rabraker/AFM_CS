@@ -19,7 +19,7 @@ lft = pos(1);
 bt = pos(2);
 
 % experimental: keep top the same
- ht_diff = height - pos(4)
+ ht_diff = height - pos(4);
  wd_diff = width - pos(3);
 set(F, 'Units', 'Inches', 'Position', [lft-wd_diff, bt-ht_diff, width, height],...
     'PaperUnits', 'Inches', 'PaperSize', [width, height],...
