@@ -10,9 +10,11 @@
 #include "SOS.h"
 #include "mpfit.h"
 #include "fit_ZPK.h"
+
+#ifndef __MINGW32__
 #include "plotting.h"
-// #include "plConfig.h"
-// #include "plplot.h"
+#endif
+
 
 void print_status(int status);
 
@@ -21,37 +23,28 @@ void printresult(mp_result *result);
 void print_frd(FRF_Data frd);
 
 
+int main(){
+#define len_theta  5
 
-void main(){
-  int i, status, len_theta;
-  // double complex G;
-  // double omega = 10;
+  int i=0, status=0;
+
   double Ts = 40e-6;
-  double theta[5] = {0.678648984004927, -1.995999123944854, 0.998919373769841, -1.996142567427762, 0.998941969049303};
-  len_theta = 5;
-  FRF_Data frd;
+  double result[9];
+  double theta[len_theta] = {0.678648984004927, -1.995999123944854, 0.998919373769841,
+                             -1.996142567427762, 0.998941969049303};
+
+  double complex *resp = malloc( LEN_omegas * sizeof( double complex));
+  double complex *resp_fit =malloc( LEN_omegas * sizeof( double complex));
 
 
-  double complex *resp;
-  double complex *resp_fit;
-  resp = malloc( LEN_omegas * sizeof( double complex));
-  resp_fit = malloc( LEN_omegas * sizeof( double complex));
-
-  for (i=0; i < LEN_omegas; i++){
+  for (i=0; i< LEN_omegas; i++){
     resp[i] = resp_real[i] + resp_imag[i]*I;
   }
+  status = fit_sos(LEN_omegas, omegas, resp_real, resp_imag, len_theta, theta, result);
 
-  frd.N = LEN_omegas;
-  frd.Resp = resp;
-  frd.omegas = omegas;
-  frd.Ts = Ts;
 
-  mp_result *result;
-  result = malloc(sizeof(mp_result));
-
-  status = mpfit(&absfunc, LEN_omegas, len_theta, theta, 0, 0, &frd, result);
-
-  printresult(result);
+  get_frf(LEN_omegas, omegas, 5, theta, Ts, resp_fit);
+  // printresult(result);
 
   print_status(status);
 
@@ -60,17 +53,25 @@ void main(){
   for (i=0; i<len_theta; i++){
     printf("Theta[%d] = %.12f\n", i, theta[i]);
   }
-  get_frf(LEN_omegas, frd.omegas, 5, theta, Ts, resp_fit);
-  // for (i=0; i<LEN_omegas; i++){
-  //   printf("resp[i] = %.6f + %.6fj\n", creal(resp_fit[i]), cimag(resp_fit[i]));
-  // }
 
-  bode(LEN_omegas, omegas, frd.Resp, resp_fit);
 
+  printf("idx  |   resp_real   | resp_fit_real   | resp_imag   |resp_fit_imag\n");
+  for (i=0; i<LEN_omegas; i++){
+    printf("%d    %.6f    %.6f    %.6fj    %.6fj\n", i, resp_real[i], creal(resp_fit[i]),
+           resp_imag[i], cimag(resp_fit[i]));
+  }
+
+
+
+#ifndef __MINGW32__
+  bode(LEN_omegas, omegas, resp, resp_fit);
+#endif
 
   free(resp);
-  free(result);
-  }
+  free(resp_fit);
+
+  return 0;
+}
 
 
 /*Print out the frf, for debugging */
@@ -86,7 +87,6 @@ void print_frd(FRF_Data frd){
 /* Simple routine to print the fit results */
 void printresult(mp_result *result)
 {
-int i;
 
 printf("  CHI-SQUARE = %f    (%d DOF)\n",
          result->bestnorm, result->nfunc-result->nfree);

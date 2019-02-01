@@ -1,10 +1,11 @@
 #include <complex.h>
+#include <stdlib.h>
 #include <math.h>
 
 #include "mpfit.h"
 // #include "fit_ZPK.h"
 #include "SOS.h"
-
+#include "plotting.h"
 
 
 int absfunc(int m, int n, double *theta, double *resid, double **dvec, void *user_data)
@@ -23,7 +24,7 @@ int absfunc(int m, int n, double *theta, double *resid, double **dvec, void *use
   FRF_Data *model_data = ( FRF_Data *) user_data;
   double Ts = model_data->Ts;
 
-  double *omegas, *ey, f;
+  double *omegas;
   double complex *Resp;
   double complex G_est;
   omegas = model_data->omegas;
@@ -39,7 +40,43 @@ int absfunc(int m, int n, double *theta, double *resid, double **dvec, void *use
 
 
 
+int fit_sos(int N_omegas, double *omegas, double *resp_real,
+             double *resp_imag, int N_theta, double *theta, double result[9]){
+  int status=0, i=0;
 
+  mp_result *mpres = malloc(sizeof(mp_result));
+  double complex *resp_fit = malloc(N_omegas * sizeof( double complex));
+  double complex *resp = malloc(N_omegas * sizeof( double complex));
+
+  for (i=0; i < N_omegas; i++){
+    resp[i] = resp_real[i] + resp_imag[i]*I;
+  }
+
+
+  FRF_Data frd = {.N = N_omegas,
+                  .Resp=resp,
+                  .omegas = omegas,
+                  .Ts=40e-6};
+
+  status = mpfit(&absfunc, N_omegas, N_theta, theta, 0, 0, &frd, mpres);
+
+  result[0] = mpres->bestnorm;
+  result[1] = mpres->orignorm;
+  result[2] = (double) mpres->niter;
+  result[3] = (double) mpres->nfev;
+  result[4] = (double) mpres->status;
+  result[5] = (double) mpres->npar;
+  result[6] = (double) mpres->nfree;
+  result[7] = (double) mpres->npegged;
+  result[8] = (double) mpres->nfunc;
+
+  free(mpres);
+  free(resp_fit);
+  free(resp);
+
+  return status;
+
+}
 
 
 

@@ -58,6 +58,7 @@ src_unused/
 cgsolve_tmp.m
 l1qc_newton_tmp.m
 
+*.so
 *.o
 *.dll
 *.wdb
