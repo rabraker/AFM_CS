@@ -48,6 +48,20 @@ int fit_sos(int N_omegas, double *omegas, double *resp_real,
   double complex *resp_fit = malloc(N_omegas * sizeof( double complex));
   double complex *resp = malloc(N_omegas * sizeof( double complex));
 
+  mpres->bestnorm=0;
+  mpres->orignorm=0;
+  mpres->niter=0;
+  mpres->nfev=0;
+  mpres->status=0;
+  mpres->npar=0;
+  mpres->nfree=0;
+  mpres->npegged=0;
+  mpres->nfunc=0;
+  mpres->resid=0;
+  mpres->xerror=0;
+  mpres->covar=0;
+
+
   for (i=0; i < N_omegas; i++){
     resp[i] = resp_real[i] + resp_imag[i]*I;
   }

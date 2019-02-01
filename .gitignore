@@ -44,6 +44,8 @@ test.org
 *.synctex.gz
 *.log
 auto/
+*.exe
+TAGS
 
 GPATH
 GRTAGS

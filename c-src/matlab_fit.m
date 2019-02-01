@@ -67,10 +67,18 @@ frfBode(g2, freqs_res, f2, 'Hz', '--b')
 % frfBode(g2/dcgain(g2), freqs_res, f3, 'Hz', '--r')
 
 %%
+% write json data
 
+opts.FileName = 'frf_test_data.json'
+theta = [0.6786, -1.9959, 0.99891, -1.996142, 0.9989];
+savejson('', struct('omegas', omegas(:)', 'resp_real', real(resp(:)'),...
+  'resp_imag', imag(resp(:)'), 'theta0', theta), opts)
+
+
+%%
 omegas = freqs_res*2*pi;
 resp = -G_res;
-WH = WriteHeader('test_data')
+WH = WriteHeader('include/test_data')
 
 WH.open();
 WH.write_ifndef()
