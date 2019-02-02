@@ -27,9 +27,10 @@ int main(){
 #define len_theta  5
 
   int i=0, status=0;
-
+  char num_stab[] = "no ";
+  char den_stab[] = "no ";
   double Ts = 40e-6;
-  double result[9];
+  double result[11];
   double theta[len_theta] = {0.678648984004927, -1.995999123944854, 0.998919373769841,
                              -1.996142567427762, 0.998941969049303};
 
@@ -62,6 +63,15 @@ int main(){
   }
 
 
+  if (result[9] == 1)
+    sprintf(num_stab, "%s", "yes");
+
+  if (result[10] == 1)
+    sprintf(den_stab, "%s", "yes");
+
+
+  printf("Numerator is stable? %s\n", num_stab);
+  printf("Denominator is stable? %s\n", den_stab);
 
 #ifndef __MINGW32__
   bode(LEN_omegas, omegas, resp, resp_fit);

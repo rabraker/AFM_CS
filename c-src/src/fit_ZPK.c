@@ -40,9 +40,48 @@ int absfunc(int m, int n, double *theta, double *resid, double **dvec, void *use
 }
 
 
+/* Return 1 of roots of a2*z^2 + a1*z + a0 are within the
+ unit circle.
 
+ Return 0 otherwise.
+*/
+int poly2_is_z_stable(double a, double b, double c){
+
+  double root1 = 0.0, root2 = 0.0;
+
+  root1 =( -b + csqrt(b * b - 4*a * c)) / (2 * a);
+  root2 =( -b - csqrt(b * b - 4*a * c)) / (2 * a);
+
+  if( ( cabs(root1) < 1.0) && ( cabs(root2) < 1) ){
+    return 1;
+  }
+
+  return 0;
+
+}
+
+
+/*
+
+  Given an initial guess in parameter vector theta, fits the
+  a SOS transfer function of the form
+
+  k = theta[0]
+  b1 = theta[1]
+  b0 = theta[2]
+  a1 = theta[3]
+  a0 = theta[4]
+
+           z^2 + b1*z + b0
+  G(z) =k ----------------------
+        z^2 + a1*z + a0
+
+  to the FRF data contained in resp_real + j*resp_imag, defined
+  at frequencies omega.
+
+*/
 int fit_sos(int N_omegas, double *omegas, double *resp_real,
-             double *resp_imag, int N_theta, double *theta, double result[9]){
+             double *resp_imag, int N_theta, double *theta, double result[11]){
   int status=0, i=0;
 
   mp_result *mpres = malloc(sizeof(mp_result));
@@ -75,6 +114,8 @@ int fit_sos(int N_omegas, double *omegas, double *resp_real,
 
   status = mpfit(&absfunc, N_omegas, N_theta, theta, 0, 0, &frd, mpres);
 
+
+
   result[0] = mpres->bestnorm;
   result[1] = mpres->orignorm;
   result[2] = (double) mpres->niter;
@@ -85,6 +126,8 @@ int fit_sos(int N_omegas, double *omegas, double *resp_real,
   result[7] = (double) mpres->npegged;
   result[8] = (double) mpres->nfunc;
 
+  result[9] = poly2_is_z_stable(1.0, theta[1], theta[2]); // Numerator is stable?
+  result[10] = poly2_is_z_stable(1.0, theta[3], theta[4]); // Denominator is stable?
   free(mpres);
   free(resp_fit);
   free(resp);
