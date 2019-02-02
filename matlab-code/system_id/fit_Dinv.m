@@ -8,14 +8,14 @@ freq2 = linspace(191, 235, 45)';
 freq3 = logspace(log10(235), log10(12500-1), 100)';
 
 freqs = [freq0; freq1; freq2; freq3];
-ss_fname = fullfile(PATHS.sysid, 'z-axis_sines_info_quick_firstResFourierCoef_11-26-2018-03.json');
-
+% ss_fname = fullfile(PATHS.sysid, 'z-axis_sines_info_quick_firstResFourierCoef_11-26-2018-03.json');
+ss_fname = ' Z:\afm-cs\sysID\ALL-axis_sines_info_intsamps_quickFourierCoef_1-17-2019z-drive-03.json';
 ss_data = SweptSinesOnline(ss_fname);
 
 % [G_frf, freqs, Coh, params] = load_randnoise_frf(rand_fname);
 % G_frf(1) = [];
 % freqs(1) = [];
-G_frf = ss_data.FC_s(:,2)./ss_data.FC_s(:,1);
+G_frf = ss_data.FC_s(:,4)./ss_data.FC_s(:,1);
 freqs = ss_data.freq_s;
 %%
 f1 = figure(2001);
