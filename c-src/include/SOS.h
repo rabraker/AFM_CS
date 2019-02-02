@@ -1,6 +1,11 @@
 #ifndef _SOS_
 #define _SOS_
 
+/* Use this to wrap function arguments that arent used, but are required by the callers
+ callback spec.
+*/
+#define UNUSED(x) (void)(x)
+
 #include <complex.h>
 
 void get_frf(int N_w, double *omega, int m, double *theta, double Ts, double complex *Resp);

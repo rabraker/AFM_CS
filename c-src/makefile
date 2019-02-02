@@ -1,74 +1,99 @@
-# ROOT=/home/arnold/sandbox/c_sandbox/plplot_sandbox
-# TARGET = win32
-CC  = gcc
-CFLAGS= -g -pedantic -Wall -Wextra -Wundef -Winit-self -fPIC
+# Detect what we are compiling on.
+
+SHELL = bash
+UNAME_S = $(shell uname -s)
+$(info "uname = $(UNAME_S)")
+
+ifeq ($(shell [[ $(UNAME_S) =~ ^MINGW64+ ]] && echo yes || echo no), yes)
+	ARCH=win64
+endif
+
+ifeq ($(shell [[ $(UNAME_S) =~ ^MINGW32+ ]] && echo yes || echo no), yes)
+	ARCH=win32
+endif
+
+arch = $(shell [[ $(UNAME_S) =~ ^Linux+ ]] && echo yes || echo no)
+$(info "arch = $(arch)" )
+
+
+ifeq ($(shell [[ $(UNAME_S) =~ ^Linux+ ]] && echo yes || echo no), yes)
+	ARCH=Linux
+endif
+
+$(info "target = $(ARCH)")
+
+CC  	  = gcc
+LD        = gcc
+
+CFLAGS    = -g -pedantic -Wall -Wextra -Wundef -Winit-self -fPIC
 
 #include makedefs
-LIB_SRC   =   SOS.c fit_ZPK.c mpfit.c
-
+LIB_SRC   = SOS.c fit_ZPK.c mpfit.c
 SRC_DIR   = src
-BUILD_DIR = build
+APP_SRC   = main.c test_data.c
+
 APP       = bode_fit
 LIBNAME_  = fit_zpk
 CPPFLAGS  = -Icmpfit/ -Iinclude
 
-LDFLAGS = -L./
+LDFLAGS   = -L./
 
-ifeq ($(TARGET), linux)
-CPPFLAGS += -I/usr/include/plplot/
-LDFLAGS  += -L/usr/lib/x86_64-linux-gnu \
-			-L/usr/lib/x86_64-linux-gnu/plplot5.10.0
-# LDFLAGS  += -Lcmpfit/
-LDLIBS = -lplplotd -lc -lm
-LIBNAME = lib$(LIBNAME_).so
+LDLIBS    = -lm
 
-APP_SRC = src/main.c src/test_data.c src/plotting.c
+
+ifeq ($(ARCH), Linux)
+	CPPFLAGS += -I/usr/include/plplot/
+	LDFLAGS  += -L/usr/lib/x86_64-linux-gnu \
+				-L/usr/lib/x86_64-linux-gnu/plplot5.10.0
+	LDLIBS    += -lplplotd -lc
+	LIBNAME   = lib$(LIBNAME_).so
+
+	APP_SRC  +=  plotting.c
+	BUILD_DIR = build
 endif
-ifeq ($(TARGET), win32)
-APP_SRC   = src/main.c src/test_data.c
-LD        = gcc
-CPPFLAGS += -DBUILDING_DLL -D__MINGW32__
-LDLIBS    = -lm
-# -lmpfit
-LIBNAME   = lib$(LIBNAME_).dll
-# LDFLAGS   += -Lcmpfit-32/
+
+ifeq ($(ARCH), win32)
+	BUILD_DIR = build-w32
+	CPPFLAGS += -DBUILDING_DLL -D__MINGW32__
+	LIBNAME   = lib$(LIBNAME_).dll
 endif
-ifeq ($(TARGET), win64)
-APP_SRC   = src/main.c src/test_data.c
-LD        = gcc
-CPPFLAGS +=
-LDLIBS    = -lm
-LIBNAME   = lib$(LIBNAME_).dll
-# LDFLAGS   += -Lcmpfit/
+
+ifeq ($(ARCH), win64)
+	BUILD     = build-w64
+	LIBNAME   = lib$(LIBNAME_).dll
 endif
-$(info "BUILDING target = $(TARGET)")
+
+$(info "BUILDING target = $(ARCH)")
 
 OBJ       = $(LIB_SRC:%.c=$(BUILD_DIR)/%.o)
+APP_OBJ   = $(APP_SRC:%.c=$(BUILD_DIR)/%.o)
 
-LIBPATH = $(shell pwd)
+LIBPATH   = $(shell pwd)
 
 
-$(info $(OBJ))
+
 # Rules for building the application and library
 all: $(LIBNAME) $(APP)
 
+$(BUILD_DIR):
+	mkdir $(BUILD_DIR)
 
-$(APP):$(APP_SRC)
+$(APP):$(APP_OBJ)
 	@echo "----- Building APP------"
 	$(CC) $(CPPFLAGS) $(CFLAGS) -Wl,--rpath $(LIBPATH) $(LDFLAGS) \
-		 -o $(APP) $(APP_SRC) -l$(LIBNAME_) $(LDLIBS)
+		 -o $(APP) $(APP_OBJ) -l$(LIBNAME_) $(LDLIBS)
 
 $(LIBNAME):$(OBJ)
 	@echo "------ linking lib-----------"
 	$(CC) -shared $(LDFLAGS) $(OBJ) -o $(LIBNAME) $(LDLIBS)
-	#cp lib$(LIBNAME_).dll lib$(LIBNAME_).so
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c |$(BUILD_DIR)
 	@echo "----------- Building lib source"
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
+
 clean:
-	@rm -f $(APP)
+	rm -f $(APP)
 	rm -f $(BUILD_DIR)/*.o
 	rm -f $(LIBNAME_).dll
 	rm -f $(LIBNAME_).so

@@ -19,7 +19,8 @@ int absfunc(int m, int n, double *theta, double *resid, double **dvec, void *use
     (= 0  when automatic finite differences are computed)
   */
 
-
+  UNUSED(n);
+  UNUSED(dvec);
   int i;
   FRF_Data *model_data = ( FRF_Data *) user_data;
   double Ts = model_data->Ts;
@@ -94,29 +95,3 @@ int fit_sos(int N_omegas, double *omegas, double *resp_real,
 
 
 
-
-// typedef struct SoS_{
-//   // assume z^2 + a1*z a2. Do not store first coef.
-//   double Den[2];
-//   double Num[2];
-//   double Ts;
-//   double k;
-
-// } SoS;
-// double complex eval_frf(double omega, SoS sos){
-
-//   double complex z1;
-//   double complex z2;
-//   double complex den;
-//   double complex num;
-//   double complex G;
-//   // e^{j * Ts * w}
-//   z1 = cexp( I * omega * sos.Ts);
-//   z2 = cpow(z1, 2);
-
-//   num = z2 + z1 * sos.Num[0] + sos.Num[1];
-//   den = z2 + z1 * sos.Den[0] + sos.Den[1];
-
-//   G = sos.k * num / den;
-//   return G;
-// }
