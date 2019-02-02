@@ -1,6 +1,7 @@
 classdef RasterExp <handle
-  
-  
+% rast_exp = RasterExp(raster_paths, varargin)
+% 
+% 'rel
   properties
     raster_paths;
     channel_map;
@@ -29,6 +30,8 @@ classdef RasterExp <handle
   
   methods
     function self= RasterExp(raster_paths, varargin)
+    % self= RasterExp(raster_paths, varargin)
+    
     % [datmat, samps_period, samps_line] 
       self.raster_paths = raster_paths;
       default_chan_map = ChannelMap([1:4, NaN]);
