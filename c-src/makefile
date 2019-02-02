@@ -47,7 +47,7 @@ ifeq ($(ARCH), Linux)
 				-L/usr/lib/x86_64-linux-gnu/plplot5.10.0
 	LDLIBS    += -lplplotd -lc
 	LIBNAME   = lib$(LIBNAME_).so
-
+	LDLIBS_APP = $(LDLIBS) -l$(LIBNAME)
 	APP_SRC  +=  plotting.c
 	BUILD_DIR = build
 endif
@@ -55,12 +55,14 @@ endif
 ifeq ($(ARCH), win32)
 	BUILD_DIR = build-w32
 	CPPFLAGS += -DBUILDING_DLL -D__MINGW32__
-	LIBNAME   = lib32$(LIBNAME_).dll
+	LIBNAME   = lib$(LIBNAME_)32.dll
+	LDLIBS_APP = $(LDLIBS) -l$(LIBNAME_)32.dll
 endif
 
 ifeq ($(ARCH), win64)
 	BUILD     = build-w64
-	LIBNAME   = lib64$(LIBNAME_).dll
+	LIBNAME   = lib$(LIBNAME_)64.dll
+	LDLIBS_APP = $(LDLIBS) -l$(LIBNAME_)64.dll
 endif
 
 $(info "BUILDING target = $(ARCH)")
@@ -81,7 +83,7 @@ $(BUILD_DIR):
 $(APP):$(APP_OBJ)
 	@echo "----- Building APP------"
 	$(CC) $(CPPFLAGS) $(CFLAGS) -Wl,--rpath $(LIBPATH) $(LDFLAGS) \
-		 -o $(APP) $(APP_OBJ) -l$(LIBNAME_) $(LDLIBS)
+		 -o $(APP) $(APP_OBJ) $(LDLIBS_APP:.dll=)
 
 $(LIBNAME):$(OBJ)
 	@echo "------ linking lib-----------"
