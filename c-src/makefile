@@ -55,12 +55,12 @@ endif
 ifeq ($(ARCH), win32)
 	BUILD_DIR = build-w32
 	CPPFLAGS += -DBUILDING_DLL -D__MINGW32__
-	LIBNAME   = lib$(LIBNAME_).dll
+	LIBNAME   = lib32$(LIBNAME_).dll
 endif
 
 ifeq ($(ARCH), win64)
 	BUILD     = build-w64
-	LIBNAME   = lib$(LIBNAME_).dll
+	LIBNAME   = lib64$(LIBNAME_).dll
 endif
 
 $(info "BUILDING target = $(ARCH)")
