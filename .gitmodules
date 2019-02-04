@@ -1,3 +1,0 @@
-[submodule "labview/sysID"]
-	path = labview/sysID
-	url = git@rabraker.com:sysID.git
