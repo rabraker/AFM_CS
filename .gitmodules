@@ -1,0 +1,3 @@
+[submodule "labview/fpga_interface_lib"]
+	path = labview/fpga_interface_lib
+	url = git@rabraker.com:fpga_interface_lib.git
