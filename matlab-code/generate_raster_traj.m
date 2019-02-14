@@ -6,30 +6,20 @@ clc
 addpath('functions')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Where to save raster data
-raster_root = 'C:\Users\arnold\Documents\labview\afm_imaging\data\raster';
 
-%-------------- Location of System Model -------------------------
-dataroot      = fullfile(getMatPath(), 'AFM_SS',...
-                'System_Identification', 'data', 'data_xaxis'); 
-expName           = ['22-Jun-2016_exp01'];
-modFitName    = [expName, '.mat'];
-modFitPath    = fullfile(dataroot, modFitName);
-load(modFitPath, 'modelFit')
+addpath('functions/state_space_x')
 
+plants = CanonPlants.plants_ns14(9, 1);
+PLANT_init_x = plants.PLANT;
 
-% FitNum    = 'FitNum001';
-PLANT_init_x = ltiFit(modFitPath, 'SS02').sys;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 Ts = 40e-6;
 TsTicks = 1600;
 Ki_x = 0.01;
-% lines_sec = 01;
-% sec_line = 1/lines_sec;
+
 % Trace is one line at sec_line. The whole period is trace and re-trace.
-
-
 raster_freq = 1; % Hz.
 raster_period = 1/raster_freq;
 
@@ -38,14 +28,11 @@ raster_amplitude = image_side/2;
 % volts2mu = 5;
 % mu2volts = 1/AFM.volts2mic_xy;
 
-
 % resolution, ie, how many lines?
 %  (eventually, this should be the same as as pixels)
 npix = 128;
 square_num_lines = npix;
 y_height = (1/square_num_lines)*image_side;
-
-
 
 
 [x_rasterdata, truefreq, points_per_line] = raster(raster_freq, Ts, raster_period-Ts, 'coerce', 1,...
@@ -55,7 +42,6 @@ y_height = (1/square_num_lines)*image_side;
 x_rasterdata.Data = (x_rasterdata.Data+1)*raster_amplitude;
 y_rasterdata = timeseries(linspace(0, y_height, length(x_rasterdata.Time))',...
                 x_rasterdata.Time);
-
 
 
 D_x = tf(Ki_x, [1 -1], Ts);
@@ -86,30 +72,33 @@ end
             
 % write it to a .csv file
 
-data_name = sprintf('raster_scan_%dpix_%dmic_%.2dHz.csv',npix,image_side, raster_freq)
+data_name = sprintf('raster_scan_%dpix_%dmic_%.2dHz.csv',npix,image_side, raster_freq);
 
-target_dir = sprintf('%dmicrons', image_side)
+target_dir = sprintf('%dmicrons', image_side);
 %
-data_root = PATHS.raster_image_data('5microns', 'parents')
-% fullfile(getdataroot, 'raster', target_dir);
-% if exist(data_root, 'file') ~=2
-%     mkdir(fullfile(getdataroot, 'raster'), target_dir)
-% end
+data_root = PATHS.raster_image_data('5microns', 'parents');
 
 data_in_path = fullfile(data_root, data_name)
 meta_path = strrep(data_in_path, '.csv', '.json');
 
-csvwrite(data_in_path, xy_data);
+% csvwrite(data_in_path, xy_data);
 opts.FileName = meta_path;
             
-savejson('', struct('raster_freq', raster_freq, 'npix', npix,...
-              'width', image_side,...
-              'points_per_line', int64(length(x_rasterdata.Time)/2),...
-              'points_per_period', int64(length(x_rasterdata.Time)),...
-              'total_num_points', int64(npix*length(x_rasterdata.Time)),...
-              'scan_type', 0,  'fpga_input', xy_data(:)'), opts);
+dat= struct('raster_freq', raster_freq,...
+            'npix', npix,...
+            'width', image_side,...
+            'points_per_line', int64(length(x_rasterdata.Time)/2),...
+            'points_per_period', int64(length(x_rasterdata.Time)),...
+            'total_num_points', int64(npix*length(x_rasterdata.Time)),...
+            'scan_type', 0,...
+            'mu_length', image_side*2*npix,...
+            'tip_velocity', 0,...
+            'actual_sub_samble_perc', 100,...
+            'fpga_input', xy_data(:)',...
+            'pix_idx', int64(0)'...
+          );
 
-
+savejson('', dat,  opts);
 
 
 

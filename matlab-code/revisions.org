@@ -1,0 +1,4 @@
+
+
+** API Change
+With commit 7231016c0ba2b0e606868f2fc87c2a50ef5f7c45, we start using JSON for raster as CS scan.

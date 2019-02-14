@@ -54,9 +54,6 @@ mu_micron = (1/pix_per_micron) * mu_pix;
 mu_volts = mu_micron * microns2volts;
 mu_Nsamples = ceil(mu_volts / volts_per_sample);
 
-ME = MeasEntityMu.factory([volts_per_sample, 0]);
-
-N_mve = 1;
 
 % ************************************************
 
@@ -99,16 +96,18 @@ vec = mpt.as_vector();
 
 
 perc = floor(actual_sub_sample_frac*100);
-fname = sprintf('cs-traj-%dpix-%dperc-%dnm-%dmic-%.2dHz_250prescan.csv',npix, perc, mu_length*1000,width, raster_freq);
+fname = sprintf('cs-traj-%dpix-%dperc-%dnm-%dmic-%.2dHz_250prescan.json',npix, perc, mu_length*1000,width, raster_freq);
 target_dir = sprintf('%dmicrons/parents', width);
 data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', target_dir);
 
-fpath_csv = fullfile(data_root, fname);
+fpath_json = fullfile(data_root, fname);
 fprintf('File root:\n%s\n', data_root)
 fprintf('File name:\n%s\n', fname)
 
 %%
-mpt.write_data(fpath_csv)
+
+mpt.write_data_json(fpath_json)
+% mpt.write_data(fpath_csv)
 
     
 
