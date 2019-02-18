@@ -21,8 +21,10 @@ size = '5microns';
 %move   |  lower  |  settle  | scan   | up 
 % 4.035 | 0.971  | 9.658   | 22.607  | 0.428 |
 % Total Imaging time: 37.70
-cs_exp_data_name_s{1} = 'cs-traj-512pix-9perc-500nm-5mic-01Hz_250prescan_out_11-24-2018-03.csv';
+% cs_exp_data_name_s{1} = 'cs-traj-512pix-9perc-500nm-5mic-01Hz_250prescan_out_11-24-2018-03.csv';
 data_root = PATHS.cs_image_data(size, '11-24-2018');
+cs_exp_data_name_s{1} = 'cs-traj-256pix-10perc-500nm-5mic-01Hz_250prescan.json_2-14-2019-03.csv';
+data_root = PATHS.cs_image_data(size, '2-14-2019');
 
 
 chan_map = ChannelMap([1:5]);
@@ -48,10 +50,10 @@ cs_paths = get_cs_paths(data_root, cs_exp_data_name_s{1});
 
 hole_depth = (20);
 
-cs_exp = CsExp(cs_paths, chan_map, Ts, hole_depth, gg);
+cs_exp = CsExp(cs_paths, 'feature_height', hole_depth, 'gg', gg);
 
-cs_exp.print_state_times();
-fprintf('Total Imaging time: %.2f\n', cs_exp.time_total)
+% cs_exp.print_state_times();
+% fprintf('Total Imaging time: %.2f\n', cs_exp.time_total)
 
 % % something screwed up. Was supposed to only have 250 pre-scan samples, but
 % % they are in the settle.
@@ -60,7 +62,7 @@ fprintf('Total Imaging time: %.2f\n', cs_exp.time_total)
 %   cs_exp.idx_state_s.tsettle{k}(end-200:end) = [];
 %   cs_exp.idx_state_s.scan{k} = [idx_k, cs_exp.idx_state_s.scan{k}];
 % end
-%%
+%
 figbase = 20;
 
 [~, axs] = make_traj_figs(figbase);

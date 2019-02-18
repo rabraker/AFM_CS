@@ -10,15 +10,16 @@
 % present, the entire signal was on the flat part of the grating. 
 clear, clc
 % close all
-addpath('classes')
-addpath('functions')
 
+addpath('functions')
+addpath('functions/state_space_x')
 
 
 %-------------- Location of System Model -------------------------
 
-plant_data = load(fullfile(PATHS.sysid(), 'x-axis_sines_infoFourierCoef_9-11-2018-01.mat'));
-PLANT_init_x = ss(plant_data.modelFit.models.G_uz2stage);
+% plant_data = load(fullfile(PATHS.sysid(), 'x-axis_sines_infoFourierCoef_9-11-2018-01.mat'));
+plants = CanonPlants.plants_ns14(9);
+PLANT_init_x = plants.PLANT;
 
 %-------------- Define scan Params -------------------------
 Ts = 40e-6;
@@ -27,7 +28,7 @@ Ki_x = 0.01;
 
 if 1
     width =5;  % microns
-    npix =512;  % image resolution.
+    npix =256;  % image resolution.
     mu_length = 0.5;  % 1000 nm. length of the horizontal mu-path. 
     sub_sample_frac = 0.125;  % Percent of pixels to subsample. 
 end
