@@ -62,7 +62,7 @@ l1qc_newton_tmp.m
 
 l1qc.m
 l1qc_opts.m
-
+matlab-code/legacy/
 
 *.so
 *.o
