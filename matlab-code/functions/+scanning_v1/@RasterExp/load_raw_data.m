@@ -52,7 +52,8 @@ function self = load_raw_data(self, raster_paths, opts)
   self.channel_map = opts.channel_map;
   fprintf('Loading Meta file...\n%s\n', raster_paths.meta_path)
   meta_data = loadjson(raster_paths.meta_path);
-%   self.meta_data = meta_data.Cluster;
+  self.meta_data = meta_data.scan_meta;
+  self.UserData = meta_data;
   self.Ts = AFM.Ts;
   
   fprintf('Loading Data file...\n%s\n', raster_paths.data_path)

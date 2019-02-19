@@ -10,6 +10,7 @@ classdef RasterExp <handle
     yref;
     meta_data;
     Ts;
+    met_ind;
     npix;
     width;
     volts2pix;

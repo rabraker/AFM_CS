@@ -5,7 +5,7 @@
 % 
 % raster_paths.data_path
 % raster_paths.meta_path
-% raster_paths.meta_in_path
+% raster_paths.parent_path
 
 function [raster_paths] = get_raster_paths(data_root, data_name)
   parent_root = get_parent_root(data_root);
@@ -16,8 +16,4 @@ function [raster_paths] = get_raster_paths(data_root, data_name)
   raster_paths.meta_path = fullfile(data_root, raster_exp_meta_name);
   
   raster_paths.parent_path = fullfile(parent_root, parent_name);
-  %k = regexp(raster_paths.data_path, '_out');
-  raster_paths.meta_in_path = []; %sprintf('%s.mat', raster_paths.data_path(1:k-1));
-  
-  raster_paths.data_path_mat = []; %strrep(raster_paths.data_path, '.csv', '.mat');
 end
