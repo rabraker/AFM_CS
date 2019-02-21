@@ -12,12 +12,14 @@ function [raster_paths] = get_raster_paths(data_root, data_name)
   parent_name = get_parent_name(data_name, '_out_');
   
   raster_exp_meta_name = strrep(data_name, '.csv', '-meta.mat');
+  % Location of the raw, experimental data.
   raster_paths.data_path = fullfile(data_root, data_name);
+  % Location of the post-experiment meta-data.
   raster_paths.meta_path = fullfile(data_root, raster_exp_meta_name);
   
   raster_paths.parent_path = fullfile(parent_root, parent_name);
   k = regexp(raster_paths.data_path, '_out');
   raster_paths.meta_in_path = sprintf('%s.mat', raster_paths.data_path(1:k-1));
-  
+  % Where to save the post-processed data.
   raster_paths.data_path_mat = strrep(raster_paths.data_path, '.csv', '.mat');
 end

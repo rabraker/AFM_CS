@@ -56,14 +56,20 @@ function self = load_raw_data(self, raster_paths, opts)
   self.UserData = meta_data;
   self.Ts = AFM.Ts;
   
+  % Load parent data.
+  parent_dat = loadjson(raster_paths.parent_path);
+  xyref = reshape(parent_dat.fpga_input', 2, [])';
+  self.xref = xyref(:,1);
+  self.yref = xyref(:,2); 
+  
   fprintf('Loading Data file...\n%s\n', raster_paths.data_path)
   datmat = csvread(raster_paths.data_path);
   
-  % Load parent data.
-  parent_dat = csvread(raster_paths.parent_path);
-  xyref = reshape(parent_dat', 2, [])';
-  self.xref = xyref(:,1);
-  self.yref = xyref(:,2); 
+%   % Load parent data.
+%   parent_dat = csvread(raster_paths.parent_path);
+%   xyref = reshape(parent_dat', 2, [])';
+%   self.xref = xyref(:,1);
+%   self.yref = xyref(:,2); 
   
   npix = meta_data.scan_meta.npix;
   width = meta_data.scan_meta.width;
@@ -88,7 +94,7 @@ function self = load_raw_data(self, raster_paths, opts)
   self.volts2pix = volts2pix;
   self.micron2pix = micron2pix;
   
-  self.samps_per_period = size(parent_dat,1)/2; % twice as many in here for x & y.
+  self.samps_per_period = size(self.xref,1); % twice as many in here for x & y.
   self.samps_per_line = self.samps_per_period/2;
   if floor(self.samps_per_line)~= self.samps_per_line
     warning('Non integer number of samples per line = %f.', ...

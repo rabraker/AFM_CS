@@ -14,13 +14,13 @@ import scanning_v1.*
 clear size
 size_dir = '5microns';
 
-dat_root = PATHS.raster_image_data(size_dir, '2-19-2019');
-dat_name1 = 'raster_scan_128pix_5mic_01Hz_out_2-19-2019-03.csv';
-dat_name2 = 'raster_scan_128pix_5mic_01Hz_out_2-19-2019-04.csv';
-dat_names = {dat_name1, dat_name2};
+dat_root = PATHS.raster_image_data(size_dir, '2-20-2019');
+dat_name1 = 'raster_scan_256pix_25mic_5.00e-01Hz_out_2-20-2019-03.csv';
+% dat_name2 = 'raster_scan_128pix_5mic_01Hz_out_2-19-2019-04.csv';
+dat_names = {dat_name1}; %, dat_name2};
 
-pixmaps = cell(2)
-for k=1:2
+pixmaps = cell(1,length(dat_names))
+for k=1:length(dat_names)
   
 raster_paths = get_raster_paths(dat_root, dat_names{k});
 
@@ -31,9 +31,10 @@ Ts = rast_exp.Ts;
 width = rast_exp.width;
 stit = sprintf('Scan %d', k)
 
-
+figbase=10
 pixmaps{k} = plot_data(rast_exp, figbase*k, stit)
 end
+
 %%
 
 pixmap1 = pixmaps{1};
@@ -55,12 +56,13 @@ fprintf('ssm: %.4f\n', psn);
 
 function pixmat2 = plot_data(rast_exp, figbase, stit)
 clc
-% rast_exp.bin_raster_really_slow(@detrend);
-rast_exp.bin_raster_really_slow();
+rast_exp.bin_raster_really_slow(@detrend);
+% rast_exp.bin_raster_really_slow();
 
 pixmat2 = rast_exp.pix_mat;
 
-thresh = (20/7)*(1/1000)*20;
+% thresh = (20/7)*(1/1000)*20;
+thresh = 0.05
 pixmat2 = pixmat2 - mean(pixmat2(:));
 F10 = figure(figbase+2); clf
 ax1 = gca();
@@ -68,14 +70,10 @@ ax1 = gca();
 f11 = figure(figbase+3); clf
 ax2 = gca();
 
-lo = min(min(pixmat2));
-hi = max(max(pixmat2));
-
-
-pixmat2 = detrend2(detrend2(pixmat2(10:end-10,10:end-25)));
+% pixmat2 = detrend2(detrend2(pixmat2(10:end-10,10:end-25)));
 imshow_dataview(flipud(pixmat2 - mean(pixmat2(:))), [-thresh, thresh], ax1, ax2)
 grid(ax1, 'on')
-colormap(ax1, 'parula')
+colormap(ax1, 'gray')
 grid(ax2, 'on')
 ax1.GridAlpha = 1;
 ax2.GridAlpha = 1;
