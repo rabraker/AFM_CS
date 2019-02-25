@@ -13,26 +13,23 @@
 % 
 % mpt_connect_rad() will recursively call itself until no connection is made.
 
-function [xtraj0, ytraj0, xtc, ytc] = mpt_connect_rad(xtraj0, ytraj0, xtc, ytc, opts)
+function [mptc_s, mptc] = mpt_connect_rad(mptc_s, mptc, opts)
 %   rad_min, volts_per_sample, ax)
- 
-  if nargin < 6
-    ax = [];
-  end
+
   
-  if length(xtraj0) <2
+  if length(mptc_s) <2
     return
   end
-  x1e = xtc(end);
-  y1e = ytc(end);
-  [xr, yr] = get_xr_yr(xtraj0, ytraj0);
+  x1e = mptc.xt(end);
+  y1e = mptc.yt(end);
+  [xr, yr] = get_xr_yr(mptc_s);
   
   rdiff = sqrt( (xr - x1e).^2 + (yr - y1e).^2);
   
   [rmin, rmin_idx] = min(rdiff);
   
   if opts.ensure_forward
-    optional_cond = (x1e < xtraj0{rmin_idx}(1)); % x2s
+    optional_cond = (x1e < mptc_s{rmin_idx}.xt(1)); % x2s
   else
     optional_cond = true;
   end
@@ -43,8 +40,8 @@ function [xtraj0, ytraj0, xtc, ytc] = mpt_connect_rad(xtraj0, ytraj0, xtc, ytc, 
     % to xtc, ytc, and recursively call back into mpt_connect_rad().
     
     % Extract:
-    xt2 = xtraj0{rmin_idx};
-    yt2 = ytraj0{rmin_idx};
+    xt2 = mptc_s{rmin_idx}.xt;
+    yt2 = mptc_s{rmin_idx}.yt;
     x2s = xt2(1);
     y2s = yt2(1);
     
@@ -57,38 +54,41 @@ function [xtraj0, ytraj0, xtc, ytc] = mpt_connect_rad(xtraj0, ytraj0, xtc, ytc, 
       ycon = (y1e:sign(y2s-y1e)*opts.volts_per_sample:y2s)';
       xcon = linspace(x1e, x2s, length(ycon))';
     end
+    % The meta data is negative of scan idx.
+    met_idx_con = ones(length(xcon), 1) * (-1*mptc.met_idx(1));
+    met_idx_ext = ones(length(xt2), 1) * mptc.met_idx(1);
     
     if ~isempty(opts.ax)
       plot(opts.ax, xcon, ycon, 'r')
       plot(opts.ax, xt2, yt2, '--g')
-      plot(opts.ax, xtc, ytc, '--k')
+      plot(opts.ax, mptc.xt, mptc.yt, '--k')
       xlim(opts.ax, [0,1])
       ylim(opts.ax, [0,1])
       drawnow()
     end
-    xtc = [xtc(:); xcon(:); xt2];
-    ytc = [ytc(:); ycon(:); yt2];
-     
-     % Delete
-    xtraj0(rmin_idx) = [];
-    ytraj0(rmin_idx) = [];
+    mptc.xt = [mptc.xt(:); xcon(:); xt2];
+    mptc.yt = [mptc.yt(:); ycon(:); yt2];
+    mptc.met_idx = [mptc.met_idx(:); met_idx_con(:); met_idx_ext(:)];
     
-    [xtraj0, ytraj0, xtc, ytc] = mpt_connect_rad(xtraj0, ytraj0, xtc, ytc, opts);
+     % Delete
+     mptc_s(rmin_idx) = [];
+    
+    [mptc_s, mptc] = mpt_connect_rad(mptc_s, mptc, opts);
   end
   
   % Otherwise, do nothing.
 
 end
 
-function [xr, yr] = get_xr_yr(xtraj, ytraj)
+function [xr, yr] = get_xr_yr(mptc_s)
   % Returns the first element of each array contained in the cell arrays xtraj
   % ytraj.
-  xr = zeros(length(xtraj), 1);
-  yr = zeros(length(ytraj), 1);
+  xr = zeros(length(mptc_s), 1);
+  yr = zeros(length(mptc_s), 1);
   
-  for k =1:length(xtraj)
-    xr(k) = xtraj{k}(1);
-    yr(k) = ytraj{k}(1);
+  for k =1:length(mptc_s)
+    xr(k) = mptc_s{k}.xt(1);
+    yr(k) = mptc_s{k}.yt(1);
   end
 
 end

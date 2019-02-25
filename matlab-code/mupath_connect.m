@@ -45,7 +45,6 @@ plants = CanonPlants.plants_ns14(9);
 PLANT_init_x = plants.PLANT;
 
 %-------------- Define scan Params -------------------------
-Ts = 40e-6;
 TsTicks = 1600;
 Ki_x = 0.01;
 
@@ -62,8 +61,8 @@ mu_pix = ceil(mu_length*pix_per_micron);
 % ************************************************
 % ************************************************
 
-Ts = 40e-6;  % AFM sample rate. 
-% Fs = 1/Ts;
+Ts = AFM.Ts;  % AFM sample rate. 
+
 microns2volts = 1/5;  %10/50;
 raster_freq = 1;  % hz
 raster_period = 1/raster_freq;
@@ -88,121 +87,70 @@ actual_sub_sample_frac = length(find(pix_mask == 1))/npix^2;
 fprintf('Desired sub sample fraction: %f\n', sub_sample_frac)
 fprintf('Actual  sub sample fraction: %f\n', actual_sub_sample_frac)
 
-figure(1)
-subplot(1,2,1)
+
 I = ones(npix,npix)-pix_mask;
 I = flipud(I); % why the fuck does it start from the top???
 figure(1)
 imshow(I)
-
+%%
 
 
 % '------------------correct by overscan for ramp ramp set ---------------
-N = mu_Nsamples;
-x_rate = volts_per_sample;
 G = PLANT_init_x;
 D = tf([0.01, 0], [1 -1], Ts);
 H = feedback(D*G, 1);
 % N-1 because x0 is sample 1.
-x_N =  (N-1)*x_rate;
-N_extra = mu_overscan(G, D, x_rate, mu_Nsamples, 0);
+% x_N =  (mu_Nsamples-1)*volts_per_sample;
+N_extra = mu_overscan(G, D, volts_per_sample, mu_Nsamples, 0);
 
+figure(3);clf; hold on
+ax = gca();
 
 mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, Ts,...
-  'overscan_samples', N_extra, 'pre_pad_samples', 250);
-mpt.connect_mu_paths(1);
+  'overscan_samples', N_extra, 'pre_pad_samples', 250, 'ax', ax);
 
 
-subplot(1,2,2)
-I_con = ones(npix,npix)-mpt.pix_mask;
-I_con = flipud(I_con); % why the fuck does it start from the top???
 
-imshow(I_con)
-
-figure(2)
-imshowpair(I, I_con)
-
-%%
-clc
-mu_len_v = mu_length*AFM.mic2volt_xy;
-figure(3);clf; hold on;
-ax=gca();
-tcon_min = 0.03;
+tcon_min = 0.04;
 tcon_est = 0.06;
 rad_min = tcon_min * volts_per_second;
 
 
-xr0 = mpt.XR_volt_starts;
-yr0 = mpt.YR_volt_starts;
-
-xtraj0 = {};
-ytraj0 = {};
-
-k=1;
-pix_mask = zeros(npix, npix);
-
-for k=1:length(xr0)
-  
-  x1s = xr0(k);
-  y1s = yr0(k);
-  x1e = x1s+mu_len_v;
-  y1e = y1s;
-  
-  xtraj0{k} = (x1s:volts_per_sample:x1e)';
-  ytraj0{k} = ones(length(xtraj0{k}),1)*y1s;
-  
-  plot(xtraj0{k}, ytraj0{k}, '-b', 'LineWidth', 1.5)
-%   drawnow()
-end
-
-
 figure(3); hold on
-xtrajc = {};
-ytrajc = {};
-xtraj = xtraj0;
-ytraj = ytraj0;
-xrc = xr0;
-yrc = yr0;
-
-N=1;
+ax = gca();
+N = 1;
+mptc_0 = mpt.mu_path_traj_s;
 mpt_connect_opts = struct('rad_min', rad_min, 'volts_per_sample', volts_per_sample,...
-  'ax', ax, 'ensure_forward', true);
-
-for j=1:N
-  k = 1;
-  while ~isempty(xtraj)
-    xtc = xtraj{1};
-    ytc = ytraj{1};
-    xtraj(1) = [];
-    ytraj(1) = [];
-    
-    [xtraj, ytraj, xtc, ytc] = mpt_connect_rad(xtraj, ytraj, xtc, ytc, mpt_connect_opts);
-    xtrajc{k} = xtc;
-    ytrajc{k} = ytc;
-    
-    k=k+1;
-  end
-end
+        'ax', ax, 'ensure_forward', true, 'Npasses', N);
+mpt.mu_path_connect_rad(mpt_connect_opts);
 
 
+%%
 % compute estimated scanning time for the original and connected.
-ttot_up_down_mov_og = tcon_est * length(xtraj0);
-ttot_scan_og = scan_time(xtraj0);
+ttot_up_down_mov_og = tcon_est * length(mptc_0);
+ttot_scan_og = scan_time(mptc_0);
 
 ttot_og = ttot_scan_og + ttot_up_down_mov_og;
 
-ttot_up_down_mov_con = tcon_est * length(xtrajc);
-ttot_scan_con = scan_time(xtrajc);
+ttot_up_down_mov_con = tcon_est * length(mpt.mu_path_traj_s);
+ttot_scan_con = scan_time(mpt.mu_path_traj_s);
 ttot_con = ttot_scan_con + ttot_up_down_mov_con;
 
 
 fprintf('Original Scan Time (estimated): %f\n', ttot_og);
 fprintf('Connected Scan Time (estimated): %f\n', ttot_con);
+fprintf('Estimated percent savings: %f\n', (1-ttot_con/ttot_og)*100);
 
-function t_scan = scan_time(xtraj)
+% % figure(5); clf
+% % for k=1:length(mpt.mu_path_traj_s)
+% %    hold on;
+% %   plot(mpt.mu_path_traj_s{k}.met_idx)
+% % end
+
+function t_scan = scan_time(mptc_s)
   
   t_scan = 0;
-  for k=1:length(xtraj)
-    t_scan = t_scan + length(xtraj{k})*AFM.Ts;
+  for k=1:length(mptc_s)
+    t_scan = t_scan + length(mptc_s{k}.xt)*AFM.Ts;
   end
 end
