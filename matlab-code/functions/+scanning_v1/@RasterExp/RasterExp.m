@@ -1,4 +1,4 @@
-classdef RasterExp <handle
+classdef RasterExp <matlab.mixin.Copyable
 % rast_exp = RasterExp(raster_paths, varargin)
 % 
 % 'rel
