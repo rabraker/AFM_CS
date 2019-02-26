@@ -17,9 +17,11 @@ size_dir = '5microns';
 % dat_root = PATHS.raster_image_data(size_dir, '2-25-2019');
 % dat_name1 = 'raster_scan_256pix_5mic_01Hz_out_2-25-2019-01.csv';
 % dat_name2 = 'raster_scan_256pix_5mic_01Hz_out_2-25-2019-02.csv';
-dat_root = PATHS.raster_image_data(size_dir, '2-21-2019');
-dat_name1 = 'raster_scan_256pix_5mic_01Hz_out_2-21-2019-01.csv';
-dat_name2 = 'raster_scan_256pix_5mic_01Hz_out_2-21-2019-02.csv';
+dat_root = PATHS.raster_image_data(size_dir, '2-25-2019');
+
+
+dat_name1 = 'raster_scan_256pix_5mic_01Hz_out_2-25-2019-03.csv';
+dat_name2 = 'raster_scan_256pix_5mic_01Hz_out_2-25-2019-04.csv';
 dat_names = {dat_name1, dat_name2};
 
 pixmaps = cell(length(dat_names), 1);

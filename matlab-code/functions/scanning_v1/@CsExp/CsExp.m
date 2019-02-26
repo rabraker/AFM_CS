@@ -171,15 +171,21 @@ classdef CsExp < handle
     end
 
     function print_state_times(self)
-      tmove = self.state_times(1);
-      tlower = self.state_times(2);
-      tsettle = self.state_times(3);
-      tscan = self.state_times(4);
-      tup = self.state_times(5);
+      if self.state_times(1) == 0
+        idx_shift = 1;
+      else
+        idx_shift = 0;
+      end
+      tmove = self.state_times(1+idx_shift);
+      tlower = self.state_times(2+idx_shift);
+      tsettle = self.state_times(3+idx_shift);
+      tscan = self.state_times(4+idx_shift);
+      tup = self.state_times(5+idx_shift);
 
       fprintf(['Total times\n--------\n',...
-               'move   |  lower  |  settle  | scan   | up \n']);
-      fprintf('%.3f | %.3f  | %.3f   | %.3f  | %.3f |\n', tmove, tlower, tsettle, tscan, tup);
+               'move   |  lower  |  settle  | scan   |   up  |  total   |\n']);
+      fprintf('%.3f  | %.3f   | %.3f    | %.3f | %.3f |  %.3f  |\n', tmove,...
+        tlower, tsettle, tscan, tup, sum(self.state_times(1+idx_shift:end)));
     end
 
     function [x_k, y_k, uz_k, ze_k, t_k] = get_state_cycle_k(self, k, state)
@@ -330,7 +336,8 @@ classdef CsExp < handle
       b = b(pix_idx);
       
       % y, set of measurements. have to remove all the spots we didn't sample.
-      opts = CsTools.l1qc_opts();
+%       opts = l1qc_opts();
+      opts = l1qc_dct_opts('verbose', 2, 'l1_tol', 0);
       if use_2d
         A = @(x) CsTools.Afun_dct2(x, pix_idx, n);
         At = @(x) CsTools.Atfun_dct2(x, pix_idx, n);
@@ -338,11 +345,9 @@ classdef CsExp < handle
         eta_vec = CsTools.l1qc_logbarrier(x0, A, At, b, opts);
         self.Img_bp = idct2(CsTools.pixvec2mat(eta_vec, n));
       else
-        % A = @(x) CsTools.Afun_dct(x, pix_idx);
-        At = @(b) CsTools.Atfun_dct(b, pix_idx, n*m);
-        x0 = At(b);
-        eta_vec = CsTools.l1qc(x0, b, pix_idx-1, opts);
-        self.Img_bp = CsTools.pixvec2mat(idct(eta_vec), n);
+        [x_est, LBRes] = l1qc_dct_mex(n*m, b, pix_idx-1, opts);
+%         = l1qc_dct_mex(length(img_vec), b, pix_idx, opts);
+        self.Img_bp = CsTools.pixvec2mat(x_est, n);
       end
       
       time_bp = toc;
