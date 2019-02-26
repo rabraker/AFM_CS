@@ -50,7 +50,7 @@ Ki_x = 0.01;
 
 if 1
     width =5;  % microns
-    npix =256;  % image resolution.
+    npix =512;  % image resolution.
     mu_length = 0.5;  % 1000 nm. length of the horizontal mu-path. 
     sub_sample_frac = 0.125;  % Percent of pixels to subsample. 
 end
@@ -141,6 +141,18 @@ fprintf('Original Scan Time (estimated): %f\n', ttot_og);
 fprintf('Connected Scan Time (estimated): %f\n', ttot_con);
 fprintf('Estimated percent savings: %f\n', (1-ttot_con/ttot_og)*100);
 
+
+perc = floor(actual_sub_sample_frac*100);
+fname = sprintf('cs-traj-%dpix-%dperc-%dnm-%dmic-%.2dHz_250prescan.json',npix, perc, mu_length*1000,width, raster_freq);
+target_dir = sprintf('%dmicrons/parents', width);
+data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', target_dir);
+fpath_json = fullfile(data_root, fname);
+
+fprintf('File root:\n%s\n', data_root)
+fprintf('File name:\n%s\n', fname)
+
+
+mpt.write_data_json(fpath_json)
 % % figure(5); clf
 % % for k=1:length(mpt.mu_path_traj_s)
 % %    hold on;

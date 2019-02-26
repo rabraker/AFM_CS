@@ -144,19 +144,22 @@ classdef MuPathTraj < handle
         yt = mptc_k.yt;
         met_idx = mptc_k.met_idx;
         assert(all(abs(met_idx) == k)); % should only have k and -k.
-        % xr_ = xt(1);
-        % yr_ = yt(1);
+        xr_ = xt(1);
+        yr_ = yt(1);
         %N_ = N_vec(k);
-        %[xr_k, yr_k, N_k] = self.adjust_pre_pad(xr_, yr_, N_);
+        [xrp, yrp] = self.adjust_pre_pad(xr_, yr_, length(xt));
         %N_k = N_k + self.overscan_samples;
+        xr_k_ = xt(1);
+        yr_k_ = yt(1);
         
-        xr_k = xt(1);
-        yr_k = yt(1);
-
+        xr_pre = linspace(xrp, xr_k_, self.overscan_samples);
+        yr_pre = xr_pre*0 + yrp;
+        met_idx_pre = xr_pre*0 + k;
+        
         % the setpoint has a meta-idx=0;
-        vec_k = [xr_k; 
-                 yr_k;
-                 0];
+        vec_k = [[xr_pre(1), xr_pre(:)'];
+                 [yr_pre(1), yr_pre(:)'];
+                 [0, met_idx_pre(:)']];
 
         met_idx(end) = -1;
         vec_k = [vec_k, [xt(:)'; yt(:)'; met_idx(:)']];              %#ok<AGROW>
