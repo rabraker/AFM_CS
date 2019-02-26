@@ -21,33 +21,37 @@ function [ s ] = metadata2text(ExpMetaData, Ts)
         if strcmp(fld{1},'state_counts')
             continue
         end
-%         
-%        s_i = sprintf('%s: %g', fld{1}, ExpMetaData.(fld{1}));
-%        if length(s_row) + length(s_i) < 79-5
-%            s_row = sprintf('%s  |  %s',s_row, s_i);
-%        else
-%            % Row is to long. Tack it onto the whole thing. 
-%            s = sprintf('%s\n%s', s, s_row);
-%            s_row = sprintf('%s', s_i);
-%        end
+        %
+        %        s_i = sprintf('%s: %g', fld{1}, ExpMetaData.(fld{1}));
+        %        if length(s_row) + length(s_i) < 79-5
+        %            s_row = sprintf('%s  |  %s',s_row, s_i);
+        %        else
+        %            % Row is to long. Tack it onto the whole thing.
+        %            s = sprintf('%s\n%s', s, s_row);
+        %            s_row = sprintf('%s', s_i);
+        %        end
         
-       fld_str = fld2str(ExpMetaData.(fld{1}));
-
-       s_i = sprintf('%s: %s', fld{1}, fld_str);
-       
-       if length(s_row) + length(s_i) < 79-5
-           s_row = sprintf('%s  |  %s',s_row, s_i);
-       else
-           % Row is to long. Tack it onto the whole thing. 
-           s = sprintf('%s\n%s', s, s_row);
-           s_row = sprintf('%s', s_i);
-       end       
-%        if strcmp(fld{1}, 'Den') | strcmp(fld{1}, 'Num')
-%            keyboard
-%        end
-       
+        try
+          fld_str = fld2str(ExpMetaData.(fld{1}));
+          
+          s_i = sprintf('%s: %s', fld{1}, fld_str);
+          
+          if length(s_row) + length(s_i) < 79-5
+            s_row = sprintf('%s  |  %s',s_row, s_i);
+          else
+            % Row is to long. Tack it onto the whole thing.
+            s = sprintf('%s\n%s', s, s_row);
+            s_row = sprintf('%s', s_i);
+          end
+          %        if strcmp(fld{1}, 'Den') | strcmp(fld{1}, 'Num')
+          %            keyboard
+          %        end
+          
+          
+        catch
+          fprintf('skipping field %s\n', fld{1});
+        end
     end
-    
     s = sprintf('%s\n%s', s, s_row);
 
 end
