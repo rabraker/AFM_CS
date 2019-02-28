@@ -82,8 +82,7 @@ $(BUILD_DIR):
 
 $(APP):$(APP_OBJ)
 	@echo "----- Building APP------"
-	$(CC) $(CPPFLAGS) $(CFLAGS) -Wl,--rpath $(LIBPATH) $(LDFLAGS) \
-		 -o $(APP) $(APP_OBJ) $(LDLIBS_APP:.dll=)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -Wl,--rpath $(LIBPATH) $(LDFLAGS) -o $(APP) $(APP_OBJ) $(LDLIBS_APP:.dll=)
 
 $(LIBNAME):$(OBJ)
 	@echo "------ linking lib-----------"

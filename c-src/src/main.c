@@ -30,7 +30,8 @@ int main(){
   char num_stab[] = "no ";
   char den_stab[] = "no ";
   double Ts = 40e-6;
-  double result[11];
+  // double result[11];
+  struct FitSOSResult fit_sos_result;
   double theta[len_theta] = {0.678648984004927, -1.995999123944854, 0.998919373769841,
                              -1.996142567427762, 0.998941969049303};
 
@@ -41,7 +42,7 @@ int main(){
   for (i=0; i< LEN_omegas; i++){
     resp[i] = resp_real[i] + resp_imag[i]*I;
   }
-  status = fit_sos(LEN_omegas, omegas, resp_real, resp_imag, len_theta, theta, result);
+  status = fit_sos_st(LEN_omegas, omegas, resp_real, resp_imag, len_theta, theta, &fit_sos_result);
 
 
   get_frf(LEN_omegas, omegas, 5, theta, Ts, resp_fit);
@@ -63,10 +64,10 @@ int main(){
   }
 
 
-  if (result[9] == 1)
+  if (fit_sos_result.stable_num == 1)
     sprintf(num_stab, "%s", "yes");
 
-  if (result[10] == 1)
+  if (fit_sos_result.stable_den == 1)
     sprintf(den_stab, "%s", "yes");
 
 

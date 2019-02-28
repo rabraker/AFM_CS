@@ -31,7 +31,7 @@ double complex freqresp_SOS(double omega, double *theta, double Ts){
 
 
 /*Get the frequency response of a grid of omegas. */
-void get_frf(int N_w, double *omega, int m, double *theta, double Ts, double complex *Resp){
+DLL_PUBLIC void get_frf(int N_w, double *omega, int m, double *theta, double Ts, double complex *Resp){
   int i;
   UNUSED(m);
   for (i=0; i<N_w; i++){

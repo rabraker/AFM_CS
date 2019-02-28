@@ -9,7 +9,7 @@
 
 
 
-int absfunc(int m, int n, double *theta, double *resid, double **dvec, void *user_data)
+static int absfunc(int m, int n, double *theta, double *resid, double **dvec, void *user_data)
 {
   /*
     int m         - number of data points
@@ -41,17 +41,21 @@ int absfunc(int m, int n, double *theta, double *resid, double **dvec, void *use
 }
 
 
-/* Return 1 of roots of a2*z^2 + a1*z + a0 are within the
- unit circle.
+/* Return 1 if roots of a2*z^2 + a1*z + a0 are within the
+   unit circle.
 
- Return 0 otherwise.
+   Return 0 otherwise.
 */
 int poly2_is_z_stable(double a, double b, double c){
 
-  double root1 = 0.0, root2 = 0.0;
+  double complex root1;
+  double complex root2;
+  double complex a_c = a + 0*I;
+  double complex b_c = b + 0*I;
+  double complex c_c = c + 0*I;
 
-  root1 =( -b + csqrt(b * b - 4*a * c)) / (2 * a);
-  root2 =( -b - csqrt(b * b - 4*a * c)) / (2 * a);
+  root1 =( -b_c + csqrt(b_c * b_c - 4*a_c * c_c)) / (2 * a_c);
+  root2 =( -b_c - csqrt(b_c * b_c - 4*a_c * c_c)) / (2 * a_c);
 
   if( ( cabs(root1) < 1.0) && ( cabs(root2) < 1) ){
     return 1;
@@ -60,6 +64,9 @@ int poly2_is_z_stable(double a, double b, double c){
   return 0;
 
 }
+
+
+
 
 
 /*
@@ -73,74 +80,15 @@ int poly2_is_z_stable(double a, double b, double c){
   a1 = theta[3]
   a0 = theta[4]
 
-           z^2 + b1*z + b0
+  z^2 + b1*z + b0
   G(z) =k ----------------------
-        z^2 + a1*z + a0
+  z^2 + a1*z + a0
 
   to the FRF data contained in resp_real + j*resp_imag, defined
   at frequencies omega.
 
 */
-int fit_sos(int N_omegas, double *omegas, double *resp_real,
-             double *resp_imag, int N_theta, double *theta, double result[11]){
-  int status=0, i=0;
-
-  mp_result *mpres = malloc(sizeof(mp_result));
-  double complex *resp_fit = malloc(N_omegas * sizeof( double complex));
-  double complex *resp = malloc(N_omegas * sizeof( double complex));
-
-  mpres->bestnorm=0;
-  mpres->orignorm=0;
-  mpres->niter=0;
-  mpres->nfev=0;
-  mpres->status=0;
-  mpres->npar=0;
-  mpres->nfree=0;
-  mpres->npegged=0;
-  mpres->nfunc=0;
-  mpres->resid=0;
-  mpres->xerror=0;
-  mpres->covar=0;
-
-
-  for (i=0; i < N_omegas; i++){
-    resp[i] = resp_real[i] + resp_imag[i]*I;
-  }
-
-
-  FRF_Data frd = {.N = N_omegas,
-                  .Resp=resp,
-                  .omegas = omegas,
-                  .Ts=40e-6};
-
-  status = mpfit(&absfunc, N_omegas, N_theta, theta, 0, 0, &frd, mpres);
-
-
-
-  result[0] = mpres->bestnorm;
-  result[1] = mpres->orignorm;
-  result[2] = (double) mpres->niter;
-  result[3] = (double) mpres->nfev;
-  result[4] = (double) mpres->status;
-  result[5] = (double) mpres->npar;
-  result[6] = (double) mpres->nfree;
-  result[7] = (double) mpres->npegged;
-  result[8] = (double) mpres->nfunc;
-
-  result[9] = poly2_is_z_stable(1.0, theta[1], theta[2]); // Numerator is stable?
-  result[10] = poly2_is_z_stable(1.0, theta[3], theta[4]); // Denominator is stable?
-  free(mpres);
-  free(resp_fit);
-  free(resp);
-
-  return status;
-
-}
-
-
-
-
-int fit_sos_st(int N_omegas, double *omegas, double *resp_real,
+DLL_PUBLIC int fit_sos_st(int N_omegas, double *omegas, double *resp_real,
                double *resp_imag, int N_theta, double *theta,  struct FitSOSResult *fit_sos_result){
   int status=0, i=0;
 
@@ -171,8 +119,26 @@ int fit_sos_st(int N_omegas, double *omegas, double *resp_real,
                   .Resp=resp,
                   .omegas = omegas,
                   .Ts=40e-6};
+  mp_par pars[N_theta];
+  double ub[5] = {20, 2, 1, 2, 1};
+  double lb[5] = {-20, -2, -1, -2, -1};
 
-  status = mpfit(&absfunc, N_omegas, N_theta, theta, 0, 0, &frd, mpres);
+  for (i=0; i<N_theta; i++){
+    pars[i].fixed = 0;
+
+    pars[i].limited[0] = 1;
+    pars[i].limited[1] = 1;
+    pars[i].limits[0] = lb[i];
+    pars[i].limits[1] = ub[i];
+
+    pars[i].parname = 0;
+    pars[i].step = 0;
+    pars[i].relstep = 0;
+    pars[i].side = 0;
+    pars[i].deriv_debug = 0;
+
+  }
+  status = mpfit(&absfunc, N_omegas, N_theta, theta, pars, 0, &frd, mpres);
 
   fit_sos_result->stable_num =  poly2_is_z_stable(1.0, theta[1], theta[2]);  // Numerator is stable?
   fit_sos_result->stable_den =  poly2_is_z_stable(1.0, theta[3], theta[4]); // Denominator is stable?
@@ -184,8 +150,6 @@ int fit_sos_st(int N_omegas, double *omegas, double *resp_real,
   fit_sos_result->npegged = mpres->npegged;
   fit_sos_result->nfunc = mpres->nfunc;
 
-  // result[9] = poly2_is_z_stable(1.0, theta[1], theta[2]); // Numerator is stable?
-  // result[10] = poly2_is_z_stable(1.0, theta[3], theta[4]); // Denominator is stable?
   // free(mpres);
   free(resp_fit);
   free(resp);
