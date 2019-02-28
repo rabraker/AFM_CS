@@ -101,3 +101,5 @@ matlab-code/tuesday-figs/
 c-src/libfit_zpk32_lv/
 frf_test_data.json
 matlab-code/legacy/process_cs_data.m
+*.json
+c-src/sweptSines_lib/
