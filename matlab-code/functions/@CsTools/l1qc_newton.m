@@ -78,7 +78,7 @@ function [xp, up, niter, cgit_tot] = l1qc_newton(x0, u0, A, At, b, epsilon, tau,
     
     w1p = ntgz - sig12./sig11.*ntgu;
     h11pfun = @(z) sigx.*z - (1/fe)*At(A(z)) + 1/fe^2*(atr'*z)*atr;
-    [dx, cgres, cgiter] = CsTools.cgsolve_hs(h11pfun, w1p, cgtol, cgmaxiter, 0, dx*s);
+    [dx, cgres, cgiter] = CsTools.cgsolve(h11pfun, w1p, cgtol, cgmaxiter, 0, dx*0);
     cgit_tot=cgit_tot + cgiter;
     
     if (cgres > 1/2)

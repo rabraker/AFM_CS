@@ -1,4 +1,4 @@
-function Mpix = pixvec2mat(vpix, nrows)
+function Mpix = pixvec2mat(vpix, nrows, ncol)
   % Converts the (forced to be) column vector vpix into a matrix such that
   % The rows of Mpix are taken as contiguous chunks of vpix. I.e.,
   %
@@ -13,6 +13,10 @@ function Mpix = pixvec2mat(vpix, nrows)
   % assure vpix is a column vector to start
   vpix = vpix(:);
   
-  Mpix = reshape(vpix, [], nrows)';
+  if nargin == 2
+    Mpix = reshape(vpix, [], nrows)';
+  else
+    Mpix = reshape(vpix, nrows, ncol)';
+  end
   
 end

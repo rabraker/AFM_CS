@@ -11,7 +11,7 @@ classdef CsTools
     
     vpix = pixmat2vec(Mat);
     
-    Mpix = pixvec2mat(vpix, nrows);
+    Mpix = pixvec2mat(vpix, nrows, ncol);
     
     pixelifsampled = muPathMaskGen(mupathLength,n,m,samplingRatio,RepeatSamplingFlag);
     
@@ -28,7 +28,7 @@ classdef CsTools
       b = b(pix_idx);
     end
 
-    function [ eta ] = Atfun_dct(b, pix_idx, len_eta)
+    function [ eta ] = Atfun_dct(b, pix_idx, N, M)
     % Computes the adjoint of the CS equation
     % b = E * M * eta
     % where E is the subsampling matrix and M is the idct. That is
@@ -37,13 +37,13 @@ classdef CsTools
     %
     % N2 is the length eta.
       
-      eta = zeros(len_eta, 1);
+      eta = zeros(N*M, 1);
       eta(pix_idx) = b;
       eta = dct(eta);
       
     end
 
-    function [ eta ] = Atfun_dct2(b, pix_idx, N)
+    function [ eta ] = Atfun_dct2(b, pix_idx, N, M)
     % Computes the adjoint of the CS equation
     % b = E * M * eta
     % where E is the subsampling matrix and M is the 2D-idct. That is
@@ -52,7 +52,7 @@ classdef CsTools
     %
     % N2 is the length eta.
     
-      z_sparse = zeros(N,1);
+      z_sparse = zeros(N*M,1);
       z_sparse(pix_idx) = b;
       Z_sparse_mat = CsTools.pixvec2mat(z_sparse, N);
       
@@ -61,7 +61,7 @@ classdef CsTools
       eta = CsTools.pixmat2vec(Eta_mat);
     end
     
-    function [b] = Afun_dct2(eta, pix_idx, N)
+    function [b] = Afun_dct2(eta, pix_idx, N, M)
     % Computes the adjoint of the CS equation
     % b = E * M * eta
     % where E is the subsampling matrix and M is the 2D-idct. That is

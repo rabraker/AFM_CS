@@ -337,17 +337,25 @@ classdef CsExp < handle
       
       % y, set of measurements. have to remove all the spots we didn't sample.
 %       opts = l1qc_opts();
-      opts = l1qc_dct_opts('verbose', 2, 'l1_tol', 0);
+      opts = l1qc_dct_opts('verbose', 2, 'l1_tol', 0); %'epsilon', 0.01);
+      b = b - min(b);
+      max_b = max(b);
+      b = b/max_b;
       if use_2d
-        A = @(x) CsTools.Afun_dct2(x, pix_idx, n);
-        At = @(x) CsTools.Atfun_dct2(x, pix_idx, n);
-        x0 = At(b);
-        eta_vec = CsTools.l1qc_logbarrier(x0, A, At, b, opts);
-        self.Img_bp = idct2(CsTools.pixvec2mat(eta_vec, n));
+%         A = @(x) CsTools.Afun_dct2(x, pix_idx, n, m);
+%         At = @(x) CsTools.Atfun_dct2(x, pix_idx, n, m);
+%         x0 = At(b);
+%         eta_vec = CsTools.l1qc_logbarrier(x0, A, At, b, opts);
+%         self.Img_bp = idct2(CsTools.pixvec2mat(eta_vec, n))*max_b;
+%         
+        [x_est, LBRes] = l1qc_dct_mex(n*m, b, pix_idx-1, opts, n, m);
+        self.Img_bp = CsTools.pixvec2mat(x_est*max(b), n);
+        
       else
+
         [x_est, LBRes] = l1qc_dct_mex(n*m, b, pix_idx-1, opts);
 %         = l1qc_dct_mex(length(img_vec), b, pix_idx, opts);
-        self.Img_bp = CsTools.pixvec2mat(x_est, n);
+        self.Img_bp = CsTools.pixvec2mat(x_est*max(b), n);
       end
       
       time_bp = toc;
