@@ -12,12 +12,13 @@ clear, clc
 % close all
 
 addpath('functions')
+rmpath('functions/scanning_v0')
+addpath('functions/scanning_v1')
 addpath('functions/state_space_x')
 
 
 %-------------- Location of System Model -------------------------
 
-% plant_data = load(fullfile(PATHS.sysid(), 'x-axis_sines_infoFourierCoef_9-11-2018-01.mat'));
 plants = CanonPlants.plants_ns14(9);
 PLANT_init_x = plants.PLANT;
 
@@ -28,9 +29,9 @@ Ki_x = 0.01;
 
 if 1
     width =5;  % microns
-    npix =256;  % image resolution.
+    npix =512;  % image resolution.
     mu_length = 0.5;  % 1000 nm. length of the horizontal mu-path. 
-    sub_sample_frac = 0.125;  % Percent of pixels to subsample. 
+    sub_sample_frac = 0.10;  % Percent of pixels to subsample. 
 end
 % Unit conversions.
 pix_per_micron = npix/width;
@@ -58,7 +59,7 @@ mu_Nsamples = ceil(mu_volts / volts_per_sample);
 
 % ************************************************
 
-[pix_mask, XR, YR] = mu_path_mask(npix, mu_pix, sub_sample_frac, width, microns2volts);
+[pix_mask] = mu_path_mask(mu_pix, npix, npix, sub_sample_frac, false);
 
 actual_sub_sample_frac = length(find(pix_mask == 1))/npix^2;
 
@@ -71,11 +72,7 @@ I = flipud(I); % why the fuck does it start from the top???
 figure(1)
 imshow(I)
 
-
-
 % '------------------correct by overscan for ramp ramp set ---------------
-
-
 N = mu_Nsamples;
 x_rate = volts_per_sample;
 G = PLANT_init_x;
@@ -86,18 +83,24 @@ x_N =  (N-1)*x_rate;
 N_extra = mu_overscan(G, D, x_rate, mu_Nsamples, 1);
 
 mu_Nsamples_extra = N+N_extra;
-meta_cell = repmat({mu_Nsamples_extra}, 1, length(XR));
-%
 
-% clc
+% Magic numbers for connection threshold radius.
+tcon_min = 0.04;
+tcon_est = 0.06;
+rad_min = tcon_min * volts_per_second;
+figure(3);clf; hold on
+ax = gca();
+
 mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, Ts,...
   'overscan_samples', N_extra, 'pre_pad_samples', 250);
-mpt.connect_mu_paths(0.064);
-vec = mpt.as_vector();
+
+mpt_connect_opts = struct('rad_min', rad_min, 'volts_per_sample', volts_per_sample,...
+        'ax', ax, 'ensure_forward', true, 'Npasses', N);
+% mpt.mu_path_connect_rad(mpt_connect_opts);
 
 
 perc = floor(actual_sub_sample_frac*100);
-fname = sprintf('cs-traj-%dpix-%dperc-%dnm-%dmic-%.2dHz_250prescan.json',npix, perc, mu_length*1000,width, raster_freq);
+fname = mpt.get_fname();
 target_dir = sprintf('%dmicrons/parents', width);
 data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', target_dir);
 
@@ -105,7 +108,7 @@ fpath_json = fullfile(data_root, fname);
 fprintf('File root:\n%s\n', data_root)
 fprintf('File name:\n%s\n', fname)
 
-%%
+
 
 mpt.write_data_json(fpath_json)
 % mpt.write_data(fpath_csv)

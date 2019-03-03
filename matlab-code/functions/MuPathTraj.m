@@ -33,6 +33,8 @@ classdef MuPathTraj < handle
     overscan_samples;
     
     sub_sample_perc;
+    met_idx_pad = 10;
+    is_connected=false;
   end
   
 
@@ -77,7 +79,20 @@ classdef MuPathTraj < handle
       
       self.sub_sample_perc = 100 * sum(self.pix_mask(:)) / self.npix^2;
     end
-  
+    function fname = get_fname(self)
+      perc = floor(self.sub_sample_perc);
+      prescan_str = sprintf('%dprescan', self.pre_pad_samples);
+      if self.is_connected
+        con_str= 'isconnect';
+      else
+        con_str = 'notconnect';
+      end
+      fname = sprintf('cs-traj-%dpix-%dperc', self.npix, perc);
+      fname = sprintf('%s-%dnm-%dmic', fname, self.mu_length_mic_nom*1000, self.width_mic);
+      fname = sprintf('%s-%.2dHz', fname, self.x_rate_mic_per_sec / (self.width_mic*2));
+      fname = sprintf('%s-%s-%s.json', fname, prescan_str, con_str);
+    end
+
     function write_data_json(self, json_fname)
       vec = self.as_vector();
       % For full compatibility with doing raster as CS, we need extra fields.
@@ -90,7 +105,7 @@ classdef MuPathTraj < handle
               'points_per_line', int64(0),...
               'points_per_period', int64(0),...
               'total_num_points', int64(length(vec)/3),... % /3 because have x,y,idx
-              'number_of_scans', self.N_paths,...
+              'number_of_scans', self.N_paths+self.met_idx_pad,...
               'scan_type', 1,...
               'mu_length', self.mu_length_mic_nom,...
               'overscan_samples', self.overscan_samples,...
@@ -143,18 +158,25 @@ classdef MuPathTraj < handle
         xt = mptc_k.xt;
         yt = mptc_k.yt;
         met_idx = mptc_k.met_idx;
-        assert(all(abs(met_idx) == k)); % should only have k and -k.
+        try
+          if self.is_connected
+            met_idx_pad = self.met_idx_pad;
+          else
+            met_idx_pad = 1;
+          end
+        assert(all(abs(met_idx) == k + met_idx_pad-1)); % should only have k and -k.
+        catch
+          keyboard
+        end
         xr_ = xt(1);
         yr_ = yt(1);
-        %N_ = N_vec(k);
         [xrp, yrp] = self.adjust_pre_pad(xr_, yr_, length(xt));
-        %N_k = N_k + self.overscan_samples;
         xr_k_ = xt(1);
         yr_k_ = yt(1);
         
         xr_pre = linspace(xrp, xr_k_, self.overscan_samples);
         yr_pre = xr_pre*0 + yrp;
-        met_idx_pre = xr_pre*0 + k;
+        met_idx_pre = xr_pre*0 + self.met_idx_pad - 1;
         
         % the setpoint has a meta-idx=0;
         vec_k = [[xr_pre(1), xr_pre(:)'];
@@ -162,7 +184,7 @@ classdef MuPathTraj < handle
                  [0, met_idx_pre(:)']];
 
         met_idx(end) = -1;
-        vec_k = [vec_k, [xt(:)'; yt(:)'; met_idx(:)']];              %#ok<AGROW>
+        vec_k = [vec_k, [xt(:)'; yt(:)'; met_idx(:)']];  %#ok<AGROW>
         
         vec = [vec; reshape(vec_k, [], 1)];              %#ok<AGROW>
       end
@@ -185,8 +207,8 @@ classdef MuPathTraj < handle
           
           [mptc_s, mptc] = mpt_connect_rad(mptc_s, mptc, mptc_opts);
           % corerce the meta index to the actual k.
-          mptc.met_idx(mptc.met_idx >0) = k;
-          mptc.met_idx(mptc.met_idx <0) = -k;
+          mptc.met_idx(mptc.met_idx >0) = k + self.met_idx_pad - 1;
+          mptc.met_idx(mptc.met_idx <0) = -k - self.met_idx_pad + 1;
           
           mptc_c{k} = mptc;
           
@@ -195,6 +217,7 @@ classdef MuPathTraj < handle
       end
       
       self.mu_path_traj_s = mptc_c;
+      self.is_connected = true;
     end
     
     function [xr, yr, N] = adjust_pre_pad(self, xr_volts, yr_volts, N_)
