@@ -18,8 +18,11 @@ classdef ImshowDataView
         fun = @(event_obj) ImshowDataView.plotter(event_obj, ax1, ax2);
       end
       
-%       axes(ax1)
-      h_im = imagesc(ax1, IM);
+      if ~isempty(thresh)
+        h_im = imagesc(ax1, IM, thresh);
+      else
+        h_im = imagesc(ax1, IM);
+      end
       colormap('gray');
 %       ax1 = h_im.Parent;
       
