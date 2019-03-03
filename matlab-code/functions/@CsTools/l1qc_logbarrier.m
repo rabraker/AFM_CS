@@ -9,7 +9,7 @@
 %      1/2(||Ax-b||^2 - \epsilon^2) <= 0
 % and use a log barrier algorithm.
 %
-% Usage:  xp = l1qc_logbarrier(x0, A, At, b, epsilon, lbtol, mu, cgtol, cgmaxiter)
+% Usage:  xp = l1qc_logbarrier(x0, A, At, b, opts)
 %
 % x0 - Nx1 vector, initial point.
 %

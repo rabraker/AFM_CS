@@ -1,5 +1,5 @@
 function [hands] = plot_all_cycles(self, ax1, ax2, ax3, ax4)
-%% Plot the color-ized cs cycles to the provided axes.
+% Plot the color-ized cs cycles to the provided axes.
 %
 % Usage
 % -----
@@ -89,51 +89,55 @@ function [hands] = plot_all_cycles(self, ax1, ax2, ax3, ax4)
   % figs = {Fig_uz, Fig_ze, Fig_x, Fig_y};
   % axs = {ax1, ax2, ax3, ax4};        
 
-  indc = {   'k',        'r',   [0, .75, .75],       'b',        [.93 .69 .13], ;
-          'xy-move', 'tip down', 'tip settle',  '$\mu$-path scan', 'tip up',};
+  indc = {   'k',        'r',   [0, .75, .75],       'b',        [.93 .69 .13], 'm';
+          'xy-move', 'tip down', 'tip settle',  '$\mu$-path scan', 'tip up', 'connect'};
 
 
-  state_seq = {'move', 'tdown', 'tsettle', 'scan', 'tup'};
+  state_seq = {'move', 'tdown', 'tsettle', 'scan', 'tup', 'connect'};
 
-  Num_cycles = min([length(self.idx_state_s.move), length(self.idx_state_s.tdown),...
-                    length(self.idx_state_s.tsettle), length(self.idx_state_s.scan),...
-                    length(self.idx_state_s.tup)]);
-h_x = gobjects(length(state_seq),1);
-h_y = gobjects(length(state_seq),1);
-h_ze = gobjects(length(state_seq),1);
-h_uz = gobjects(length(state_seq),1);
-  for idx_cs_seq = 1:Num_cycles
-
-    for k=1:length(state_seq)
-      try
-        idx_state = self.idx_state_s.(state_seq{k}){idx_cs_seq};
-      catch
-        keyboard
-      end
-      
-      t_k  = idx_state*self.Ts;
-      if plotuz
-        uz_k = self.uz(idx_state);
-        h_uz(k) = plot(ax1, t_k, uz_k, 'color', indc{1, k});
-        h_uz(k).DisplayName = indc{2,k};
-      end
-      if plotze
-        ze_k = self.ze(idx_state);
-        h_ze(k) = plot(ax2, t_k, ze_k, 'color', indc{1, k});
-        h_ze(k).DisplayName = indc{2,k};
-      end
-      if plotx
-        x_k = self.x(idx_state);
-        h_x(k) = plot(ax3, t_k, x_k, 'color', indc{1, k});
-        h_x(k).DisplayName = indc{2,k};
-      end
-      if ploty
-        y_k = self.y(idx_state);
-        h_y(k) = plot(ax4, t_k, y_k, 'color', indc{1, k});
-        h_y(k).DisplayName = indc{2,k};
-      end
+  %   Num_cycles = min([length(self.idx_state_s.move), length(self.idx_state_s.tdown),...
+  %                     length(self.idx_state_s.tsettle), length(self.idx_state_s.scan),...
+  %                     length(self.idx_state_s.tup)]);
+  h_x = gobjects(length(state_seq),1);
+  h_y = gobjects(length(state_seq),1);
+  h_ze = gobjects(length(state_seq),1);
+  h_uz = gobjects(length(state_seq),1);
+  
+  
+  
+  for k=1:length(state_seq)
+    
+    %   try
+    %     idx_state = self.idx_state_s.(state_seq{k}){idx_cs_seq};
+    %   catch
+    %     keyboard
+    %   end
+    idx_cell = self.idx_state_s.(state_seq{k});
+    if isempty(idx_cell)
+      h_x(k) = [];
+      h_y(k) = [];
+      h_ze(k) = [];
+      h_uz(k) = [];
+      continue;
     end
-
+    if plotuz
+      h_uz(k) = plot_cell_of_timeseries(ax1, idx_cell, self.uz, 'color', indc{1, k});
+      h_uz(k).DisplayName = indc{2,k};
+    end
+    if plotze
+      h_ze(k) = plot_cell_of_timeseries(ax2, idx_cell, self.ze, 'color', indc{1, k});
+      h_ze(k).DisplayName = indc{2,k};
+    end
+    if plotx
+      h_x(k) = plot_cell_of_timeseries(ax3, idx_cell, self.x, 'color', indc{1, k});
+      h_x(k).DisplayName = indc{2,k};
+    end
+    if ploty
+      h_y(k) = plot_cell_of_timeseries(ax4, idx_cell, self.y, 'color', indc{1, k});
+      %     y_k = self.y(idx_state);
+      %     h_y(k) = plot(ax4, t_k, y_k, 'color', indc{1, k});
+      h_y(k).DisplayName = indc{2,k};
+    end
   end
 
   if plotuz
@@ -154,4 +158,14 @@ h_uz = gobjects(length(state_seq),1);
   plot(ax2, [self.t(1), self.t(end)], -[.05, .05], '--k')
 
   linkaxes(axs, 'x');
+end
+
+function hand = plot_cell_of_timeseries(ax, idx_cell, data, varargin)
+  hand = gobjects(1);
+  for k=1:length(idx_cell)
+    t = idx_cell{k}*AFM.Ts;
+    y = data(idx_cell{k});
+    hand = plot(ax, t, y, varargin{:});
+  end
+
 end

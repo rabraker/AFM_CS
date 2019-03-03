@@ -39,7 +39,7 @@ cs_exp_data_name_s =...
   'cs-traj-512pix-9perc-500nm-5mic-01Hz_250prescan_out_11-24-2018-02.csv',...
   'cs-traj-512pix-9perc-500nm-5mic-01Hz_250prescan_out_11-24-2018-03.csv'};
 
-data_root = PATHS.cs_image_data(img_size, '11-24-2018');
+data_root = PATHS.cs_image_data(img_size, '2018/11-24-2018');
 
 cs_paths1 = get_cs_paths(data_root, cs_exp_data_name_s{1});
 cs_exp1 = CsExp(cs_paths1, 'feature_height', hole_depth, 'gg', gg, 'load_full', true);
@@ -67,10 +67,10 @@ cs_exp3.process_cs_data();
 cs_exp3.solve_bp(recalc);
 
 
-cs_exp1.save(force_save)
-cs_exp2.save(force_save)
-cs_exp3.save(force_save)
-
+% cs_exp1.save(force_save)
+% cs_exp2.save(force_save)
+% cs_exp3.save(force_save)
+%%
 thresh = (20/7)*(1/1000)*20;
 cs_sim_path = '~/matlab/afm-cs/matlab-code/notes/data/cs_sim_CS20NG.mat';
 
@@ -84,7 +84,7 @@ else
   
 end
 
-raster_root = PATHS.raster_image_data(img_size, '11-25-2018');
+raster_root = PATHS.raster_image_data(img_size, '2018/11-25-2018');
 dat_name = 'raster_scan_512pix_5mic_01Hz_out_11-25-2018bungee_extfan-01.csv';
 raster_paths = get_raster_paths(raster_root, dat_name);
 rast_exp = RasterExp(raster_paths, 'reload_raw', false, 'load_full', true)

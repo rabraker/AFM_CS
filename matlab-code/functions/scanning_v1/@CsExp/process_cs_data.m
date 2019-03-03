@@ -26,14 +26,24 @@ function [pix_mask] = process_cs_data(self, verbose, figs)
   end
   
   % Reset the pix_mask
+  Ki=self.meta_exp.z_axis_params.Ki_scan;
+  DI = zpk(0, 1, Ki, AFM.Ts);
+  ref = self.meta_exp.z_axis_params.setpoint_scan;
   self.pix_mask = self.pix_mask*0;
   for k = 1:length(self.idx_state_s.scan)
+    
     % Get the data for the current mu-path.
-    [X_raw, Y_raw] = self.get_scan_k(k, true);
+    [X_raw, Y_raw, U_scan, Ze, t] = self.get_scan_k(k, true);
+    Ze = detrend(Ze-ref);
+%     U_scan = lsim(DI, Ze, t-t(1));
     Y_raw = Y_raw*pix_per_volt;
     X_raw = X_raw*pix_per_volt;
     
-    [U_scan, U_z, U_orig] = self.dynamic_detrend(k);
+    figure(100); clf; hold on, grid on;
+    plot(U_scan)
+    %plot(U_scan_)
+    %keyboard
+%     [U_scan, U_z, U_orig] = self.dynamic_detrend(k);
     
     if max(U_scan) - min(U_scan) > 0.4 % throw out rediculous data.
       fprintf('skipping cycle %d\n', k)
@@ -43,32 +53,33 @@ function [pix_mask] = process_cs_data(self, verbose, figs)
     self.Img_raw(y_idx, x_idx) = U_k;
     self.pix_mask(y_idx, x_idx) = 1;
     
-    if verbose
-      t_k = (0:length(U_z)-1)'*self.Ts;
-      idx = length(U_z) - length(U_scan);
-      % figure(Fig1);
-      plot(ax1, t_k(1:idx)+tend_last, U_orig(1:idx)-U_orig(end), '--g');
-      h_f1_uog = plot(ax1, t_k(idx:end)+tend_last, U_orig(idx:end)-U_orig(end), 'k');
-      
-      plot(ax1, t_k(1:idx)+tend_last, U_z(1:idx)-U_z(end), '--b');
-      h_f1_uz = plot(ax1, t_k(idx:end)+tend_last, U_z(idx:end)-U_z(end), 'r');
-      tend_last = t_k(end) + tend_last;
-      U_ = U_orig(idx:end);
-      t_ = (0:length(U_)-1)'*self.Ts;
-      % figure(Fig2);
-      h_f2_uog = plot(ax2, t_, U_ - max(U_), 'k');
-      h_f2_uz = plot(ax2, t_, U_z(idx:end) - max(U_z(idx:end)), 'r');
-      
-      % -------------------
-      % ---- visualize ------
-      if abs(max(U_k) - min(U_k))> self.feature_height
-        % Then we have an edge.
-        cs = 'r';
-      else
-        cs = 'b';
-      end
-      plot(ax3, U_k, 'color', cs)
-    end
+%  THIS IS BASICALLY BROKEN WITH THE MU-PATH-CONNECT SCHEME    
+%     if verbose
+%       t_k = (0:length(U_z)-1)'*self.Ts;
+%       idx = length(U_z) - length(U_scan);
+%       % figure(Fig1);
+%       plot(ax1, t_k(1:idx)+tend_last, U_orig(1:idx)-U_orig(end), '--g');
+%       h_f1_uog = plot(ax1, t_k(idx:end)+tend_last, U_orig(idx:end)-U_orig(end), 'k');
+%       
+%       plot(ax1, t_k(1:idx)+tend_last, U_z(1:idx)-U_z(end), '--b');
+%       h_f1_uz = plot(ax1, t_k(idx:end)+tend_last, U_z(idx:end)-U_z(end), 'r');
+%       tend_last = t_k(end) + tend_last;
+%       U_ = U_orig(idx:end);
+%       t_ = (0:length(U_)-1)'*self.Ts;
+%       % figure(Fig2);
+%       h_f2_uog = plot(ax2, t_, U_ - max(U_), 'k');
+%       h_f2_uz = plot(ax2, t_, U_z(idx:end) - max(U_z(idx:end)), 'r');
+%       
+%       % -------------------
+%       % ---- visualize ------
+%       if abs(max(U_k) - min(U_k))> self.feature_height
+%         % Then we have an edge.
+%         cs = 'r';
+%       else
+%         cs = 'b';
+%       end
+%       plot(ax3, U_k, 'color', cs)
+%     end
     drawnow();
   end % main loop
   

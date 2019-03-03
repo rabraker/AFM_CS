@@ -330,7 +330,7 @@ classdef CsExp < handle
       b = b(pix_idx);
       
       % y, set of measurements. have to remove all the spots we didn't sample.
-      opts = CsTools.l1qc_opts();
+      opts = l1qc_opts();
       if use_2d
         A = @(x) CsTools.Afun_dct2(x, pix_idx, n);
         At = @(x) CsTools.Atfun_dct2(x, pix_idx, n);
@@ -338,10 +338,10 @@ classdef CsExp < handle
         eta_vec = CsTools.l1qc_logbarrier(x0, A, At, b, opts);
         self.Img_bp = idct2(CsTools.pixvec2mat(eta_vec, n));
       else
-        % A = @(x) CsTools.Afun_dct(x, pix_idx);
-        At = @(b) CsTools.Atfun_dct(b, pix_idx, n*m);
+        A = @(x) CsTools.Afun_dct(x, pix_idx);
+        At = @(b) CsTools.Atfun_dct(b, pix_idx, n, m);
         x0 = At(b);
-        eta_vec = CsTools.l1qc(x0, b, pix_idx-1, opts);
+        eta_vec = CsTools.l1qc_logbarrier(x0, A, At, b,opts);
         self.Img_bp = CsTools.pixvec2mat(idct(eta_vec), n);
       end
       

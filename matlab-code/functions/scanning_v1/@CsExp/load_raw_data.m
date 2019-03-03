@@ -87,8 +87,10 @@ function self = load_raw_data(self, cs_paths, opts)
   
   self.t = (0:length(self.x)-1)'*AFM.Ts;
   if ~isempty(opts.gg) && isa(opts.gg, 'lti')
+    fprintf('Performing Dynamic detrend...');
     self.gg = opts.gg;
     self.uz = lsim(opts.gg, (dat_meas(:, channel_map.uz)), self.t);
+    fprintf('done\n');
   else
     self.uz = dat_meas(:, channel_map.uz);
   end

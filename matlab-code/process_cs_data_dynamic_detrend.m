@@ -3,10 +3,12 @@ clear
 
 % initialize paths.
 init_paths();
-
+rmpath functions/scanning_v1/
+addpath functions/scanning_v0/
 Ts = 40e-6;
 
-size = '5microns';
+
+img_size = '5microns';
 % cs_exp_data_name_s{1} = 'cs-traj-512pix-9perc-500nm-5mic-01Hz_250prescan_out_11-26-2018newDinv-03.csv';
 
 % data_root = PATHS.cs_image_data(size, '11-26-2018');
@@ -18,13 +20,10 @@ size = '5microns';
 % data_root = PATHS.cs_image_data(size, '11-17-2018');
 
 
-%move   |  lower  |  settle  | scan   | up 
-% 4.035 | 0.971  | 9.658   | 22.607  | 0.428 |
-% Total Imaging time: 37.70
-% cs_exp_data_name_s{1} = 'cs-traj-512pix-9perc-500nm-5mic-01Hz_250prescan_out_11-24-2018-03.csv';
-data_root = PATHS.cs_image_data(size, '11-24-2018');
-cs_exp_data_name_s{1} = 'cs-traj-256pix-10perc-500nm-5mic-01Hz_250prescan.json_2-14-2019-03.csv';
-data_root = PATHS.cs_image_data(size, '2-14-2019');
+% chan_map = ChannelMap([1:5]);
+cs_exp_data_name_s = {'cs-traj-512pix-9perc-500nm-5mic-01Hz_250prescan_out_11-24-2018-01.csv'};
+data_root = PATHS.cs_image_data(img_size, '2018/11-24-2018');
+
 
 
 chan_map = ChannelMap([1:5]);
@@ -50,7 +49,7 @@ cs_paths = get_cs_paths(data_root, cs_exp_data_name_s{1});
 
 hole_depth = (20);
 
-cs_exp = CsExp(cs_paths, 'feature_height', hole_depth, 'gg', gg);
+cs_exp = CsExp(cs_paths, 'load_full', true, 'feature_height', hole_depth, 'gg', gg);
 
 % cs_exp.print_state_times();
 % fprintf('Total Imaging time: %.2f\n', cs_exp.time_total)
@@ -62,7 +61,7 @@ cs_exp = CsExp(cs_paths, 'feature_height', hole_depth, 'gg', gg);
 %   cs_exp.idx_state_s.tsettle{k}(end-200:end) = [];
 %   cs_exp.idx_state_s.scan{k} = [idx_k, cs_exp.idx_state_s.scan{k}];
 % end
-%
+
 figbase = 20;
 
 [~, axs] = make_traj_figs(figbase);
@@ -98,7 +97,7 @@ imshow_dataview(cs_exp.Img_raw-mean(cs_exp.Img_raw(:)), [-ht, ht], ax, axx)
 bp = true;
 % ********* SMP *************
 clear CsExp
-cs_exp.solve_smp1d();
+
 
 ht = cs_exp.feature_height;
 figure(10+figbase)
@@ -106,12 +105,6 @@ ax = gca();
 figure(11+figbase)
 axx = gca();
 imshow_dataview(cs_exp.Img_raw, [-ht, ht], ax, axx)
-
-figure(12+figbase)
-ax = gca();
-figure(13+figbase)
-axx = gca();
-imshow_dataview(cs_exp.Img_smp1d - mean(cs_exp.Img_smp1d(:)), [-ht, ht], ax, axx)
 
 
 ht = cs_exp.feature_height;
@@ -130,17 +123,14 @@ ax6 = gca();
 ax6.Visible = 'off';
 
 cs_exp.Img_raw = cs_exp.Img_raw - mean(cs_exp.Img_raw(:));
-cs_exp.Img_smp1d = cs_exp.Img_smp1d - mean(cs_exp.Img_smp1d(:));
+
 imshow_sane(cs_exp.Img_raw, ax3, cs_exp.width, cs_exp.width, [-ht, ht]);
 title(ax3, 'sample');
 
-imshow_sane(cs_exp.Img_smp1d, ax5, cs_exp.width, cs_exp.width, [-ht, ht])
-title(ax5, 'SMP reconstruction');
-drawnow
 
 
 if bp
-    cs_exp.solve_basis_pursuit();
+    cs_exp.solve_bp();
     imshow_sane(cs_exp.Img_bp, ax4, cs_exp.width, cs_exp.width, [-ht, ht]);
     title(ax4, 'BP reconstruction');
 end

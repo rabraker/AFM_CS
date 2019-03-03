@@ -330,32 +330,27 @@ classdef CsExp < handle
       [n m] = size(self.Img_raw);
       
       tic
-      
+
+      opts = l1qc_dct_opts('verbose', 2, 'l1_tol', 0); %'epsilon', 0.01);
       pix_idx = find(CsTools.pixmat2vec(self.pix_mask) > 0.5);
+      % b, set of measurements. have to remove all the spots we didn't sample.
       b = CsTools.pixmat2vec(self.Img_raw);
       b = b(pix_idx);
-      
-      % y, set of measurements. have to remove all the spots we didn't sample.
-%       opts = l1qc_opts();
-      opts = l1qc_dct_opts('verbose', 2, 'l1_tol', 0); %'epsilon', 0.01);
-      b = b - min(b);
+      min_b = min(b);
       max_b = max(b);
-      b = b/max_b;
+      max_diff_b = max_b - min_b;
+      b = b/max_diff_b;
       if use_2d
-%         A = @(x) CsTools.Afun_dct2(x, pix_idx, n, m);
-%         At = @(x) CsTools.Atfun_dct2(x, pix_idx, n, m);
-%         x0 = At(b);
-%         eta_vec = CsTools.l1qc_logbarrier(x0, A, At, b, opts);
-%         self.Img_bp = idct2(CsTools.pixvec2mat(eta_vec, n))*max_b;
-%         
+        % A = @(x) CsTools.Afun_dct2(x, pix_idx, n, m);
+        % At = @(x) CsTools.Atfun_dct2(x, pix_idx, n, m);
+        % x0 = At(b);
+        % eta_vec = CsTools.l1qc_logbarrier(x0, A, At, b, opts);
+        % self.Img_bp = idct2(CsTools.pixvec2mat(eta_vec, n))*max_b;
         [x_est, LBRes] = l1qc_dct_mex(n*m, b, pix_idx-1, opts, n, m);
-        self.Img_bp = CsTools.pixvec2mat(x_est*max(b), n);
-        
+        self.Img_bp = CsTools.pixvec2mat(x_est*max_diff_b, n);
       else
-
         [x_est, LBRes] = l1qc_dct_mex(n*m, b, pix_idx-1, opts);
-%         = l1qc_dct_mex(length(img_vec), b, pix_idx, opts);
-        self.Img_bp = CsTools.pixvec2mat(x_est*max(b), n);
+        self.Img_bp = CsTools.pixvec2mat(x_est*max_diff_b, n);
       end
       
       time_bp = toc;
@@ -392,45 +387,44 @@ classdef CsExp < handle
     end
 
     function idx_state_s = divide_by_state(met_ind)
-      names = {'move', 'tdown', 'tsettle', 'scan', 'tup'};
-      names_idx = [1:5];
+      names = {'move', 'tdown', 'tsettle', 'scan', 'tup', 'connect'};
+      names_idx = [1:6];
       idx_state_s.scan = {};
       idx_state_s.move = {};
       idx_state_s.tdown = {};
       idx_state_s.tsettle = {};
       idx_state_s.tup = {};
-
+      idx_state_s.connect = {};
+      met_ind(met_ind <=-6 ) = -6;
+      
       met_ind_temp = abs(met_ind);
       idx_end = 0;
-
+      
       break_out = false;
       k=1;
-      while true
-
-        for j = 1:length(names)
-          idx_end_prev = idx_end;
-          j_next = max(mod(j+1, 6), 1); % wrap back to 1 when j=5.
-          idx_start = find(met_ind_temp(idx_end_prev+1:end) == names_idx(j), 1, 'first') + idx_end_prev;
-
-          idx_end   = find(met_ind_temp(idx_end_prev+1:end) == names_idx(j_next), 1, 'first') + idx_end_prev-1;
-
-          if isempty(idx_end)
-            idx_end   = find(met_ind_temp(idx_end_prev+1:end) == names_idx(j), 1, 'last') + idx_end_prev;
-          end
-
-          if isempty(idx_end) || idx_end >=length(met_ind_temp)
-            break_out = true;
-            break
-          end
-          idx_state_s.(names{j}){k} = idx_start:idx_end;
+      
+      master_idx = 1;
+      while ~isempty(met_ind_temp)
+        
+        state_cur = met_ind_temp(1);
+        idx_ = find(met_ind_temp ~= state_cur, 1, 'first')-1;
+        slice = 1:idx_;
+        if isempty(slice)
+          break;
         end
+        name = names{state_cur};
+        
+        n = length(idx_state_s.(name));
+        
+        idx_set = slice + master_idx - 1;
+        idx_state_s.(name){n+1} = idx_set;
+      
+        master_idx = idx_set(end)+1;
 
-        if break_out
-          break
-        end
-        k = k+1;
+        met_ind_temp(slice) = [];
       end
     end
+
 
   end
 
