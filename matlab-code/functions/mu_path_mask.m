@@ -1,105 +1,48 @@
-% [pixelifsampled, XR, YR] = mu_path_mask(pix, mu_pix, sub_sample_frac,...
-%     width, microns2volts)
+% [pix_idx, pix_mask_mat] = muPathMaskGen(mupathLength,n,m,samplingRatio,RepeatSampling)
+% Return Mu path sampling mask
 %
-% Inputs
-% ------
-%    pix:   (int) number of pixels in width and height of image. We assume a
-%    square image.
-%    mu_pix:  (int) length of mu-path in pixels
-%    sub_sample_frac: (double) sub sampling fraction, e.g., 0.1 for 10%
-%    width:           (double) Optional, default=1. Width in microns 
-%                     of the image
-%    microns2vols:    (double) Optional, default=1. Conversion from 
-%                     microns 2 volts, typically 1/5
-%    for our stage.
-%
-% Outputs
-% -------
-%   pixelifsampled:  pix by pix matrix of ones and zeros, where a 1 indicates
-%   the pixel should be sampled.
-%   XR, YR:  (double vectors) Vectors in volts of the reference values that the
-%   stage should move to when sampling.
+% Arguments
+% ----------
+%   mupath_len : size (in pixels) of mu path pattern
+%   n,m : image size
+%   samplingRatio : (Percentage) - total pixels to sample = samplingRatio*n*m
+%   repeat_sampling : (true|false) If true, repeat sampling allowed. 
+%                     If false: repeat sampling not allowed.
+% Returns
+% --------
+%   pix_idx : a vector of sampled pixel indeces.
+%   pix_mask_mat : an n by m mu path pattern mask, which contains 1's in the
+%                  mu-path areas, and zeros elsewhere.
 
 
-function [pixelifsampled, XR, YR] = mu_path_mask(pix, mu_pix, sub_sample_frac,...
-    width, microns2volts)
-  
-  if nargin < 4
-    width = 1;
-    microns2volts = 1;
-  end
-  
-  pix_per_micron = pix/width;
-  pixelifsampled = zeros(pix, pix);
-  XR = [];
-  YR = [];
-  swtch = rand(pix,1);
-  for n=1:pix % down rows
-    
-    if  swtch(n) >0.5
-      m = 1;
-      while m < pix - mu_pix
-        if rand(1,1) < sub_sample_frac/mu_pix
-          pixelifsampled(n, m:m+mu_pix) = 1;
-          XR = [XR; ( (m - 1) / pix_per_micron) * microns2volts];
-          YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
-          m = m + mu_pix;
-        else
-          m = m+1;
+function [pix_mask_mat, pix_idx] = mu_path_mask(mupath_len, n, m, samplingRatio, repeat_sampling)
+   
+    if nargin < 5
+        repeat_sampling = false;
+    end
+
+    pix_mask_mat = zeros(n,m);
+
+    while (sum(sum(pix_mask_mat))<samplingRatio*n*m)
+        
+        if repeat_sampling
+            
+            rand_i = randi(n);
+            rand_j = randi([2-mupath_len m]);            
+            pix_mask_mat(rand_i,max(rand_j,1):min(rand_j+mupath_len-1,n)) = 1;            
+            
+        else            
+            rand_i = randi(n);
+            rand_j = randi(m-mupath_len+1);
+            if sum(pix_mask_mat(rand_i,rand_j:rand_j+mupath_len-1)) < 0.5
+                pix_mask_mat(rand_i,rand_j:rand_j+mupath_len-1) = 1;
+            end            
         end
-      end
-    else
-      m = pix; % reverse direction for odd ones.
-      while m > mu_pix
-        if rand(1,1) < sub_sample_frac/mu_pix
-          pixelifsampled(n, m-mu_pix:m) = 1;
-          
-          XR = [XR; ( (m - mu_pix) / pix_per_micron) * microns2volts];
-          YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
-          m = m - mu_pix;
-        else
-          m = m-1;
-        end
-      end
     end
     
-  end
-
+    pix_idx = find(CsTools.pixmat2vec(pix_mask_mat)>0.5);
+   
 end
 
-% for n=1:pix % down rows
-%     m = 1;
-%    while m < pix  % accros columns. pix - mu_pix so that the paths
-%                            % dont hang off outside the 5-micron square. 
-%        if rand(1,1) < sub_sample_frac/mu_pix
-%            if m < pix-mu_pix
-%               pixelifsampled(n, m:m+mu_pix) = 1;
-%               XR = [XR; ( (m - 1) / pix_per_micron) * microns2volts];
-%               YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
-%            else
-%                pixelifsampled(n, end-mu_pix:end) = 1;
-%                XR = [XR; ( (pix-mu_pix - 1) / pix_per_micron) * microns2volts];
-%                YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
-%            end
-%           m = m + mu_pix;
-%        else
-%            m = m+1;
-%        end
-%    end
-%    m
-% end
-% 
-% for n=1:pix % down rows
-%     m = 1;
-%    while m < pix - mu_pix  % accros columns. pix - mu_pix so that the paths
-%                            % dont hang off outside the 5-micron square. 
-%        if rand(1,1) < sub_sample_frac/mu_pix
-%           pixelifsampled(n, m:m+mu_pix) = 1;
-%           XR = [XR; ( (m - 1) / pix_per_micron) * microns2volts];
-%           YR = [YR; ( (n - 1) / pix_per_micron) * microns2volts];
-%           m = m + mu_pix;
-%        else
-%            m = m+1;
-%        end
-%    end
-% end
+
+
