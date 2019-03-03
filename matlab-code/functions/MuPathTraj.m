@@ -105,7 +105,7 @@ classdef MuPathTraj < handle
               'points_per_line', int64(0),...
               'points_per_period', int64(0),...
               'total_num_points', int64(length(vec)/3),... % /3 because have x,y,idx
-              'number_of_scans', self.N_paths+self.met_idx_pad,...
+              'number_of_scans', self.N_paths+self.met_idx_pad - 1,...
               'scan_type', 1,...
               'mu_length', self.mu_length_mic_nom,...
               'overscan_samples', self.overscan_samples,...
@@ -168,13 +168,9 @@ classdef MuPathTraj < handle
         catch
           keyboard
         end
-        xr_ = xt(1);
-        yr_ = yt(1);
-        [xrp, yrp] = self.adjust_pre_pad(xr_, yr_, length(xt));
-        xr_k_ = xt(1);
-        yr_k_ = yt(1);
+        [xrp, yrp] = self.adjust_pre_pad(xt(1), yt(1), length(xt));
         
-        xr_pre = linspace(xrp, xr_k_, self.overscan_samples);
+        xr_pre = linspace(xrp, xt(1), self.pre_pad_samples);
         yr_pre = xr_pre*0 + yrp;
         met_idx_pre = xr_pre*0 + self.met_idx_pad - 1;
         
@@ -183,8 +179,19 @@ classdef MuPathTraj < handle
                  [yr_pre(1), yr_pre(:)'];
                  [0, met_idx_pre(:)']];
 
+        
         met_idx(end) = -1;
         vec_k = [vec_k, [xt(:)'; yt(:)'; met_idx(:)']];  %#ok<AGROW>
+% debug the bizzar trajectories we are getting.
+%         figure(200)
+%         plot(vec_k(1, :))
+%         title('x')
+%         figure(201)
+%         plot(vec_k(2, :))
+%         title('y')
+%         keyboard        
+%                 
+%         keyboard        
         
         vec = [vec; reshape(vec_k, [], 1)];              %#ok<AGROW>
       end
@@ -218,16 +225,17 @@ classdef MuPathTraj < handle
       
       self.mu_path_traj_s = mptc_c;
       self.is_connected = true;
+      self.N_paths = length(self.mu_path_traj_s);
     end
     
     function [xr, yr, N] = adjust_pre_pad(self, xr_volts, yr_volts, N_)
     % [xr, yr, N] = adjust_pre_pad(self, xr_volts, yr_volts, N_)
     % 
-      N = N_ + self.pre_pad_samples;
+      N = self.pre_pad_samples; %+N_
       
       volts_per_sec = self.x_rate_mic_per_sec * AFM.mic2volt_xy();
       
-      x_diff_ticks = N_ * volts_per_sec * self.Ts; % Ts is seconds per tick
+      x_diff_ticks = N * volts_per_sec * self.Ts; % Ts is seconds per tick
       
       xr = xr_volts - x_diff_ticks;
       yr = yr_volts;

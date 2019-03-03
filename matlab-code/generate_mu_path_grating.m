@@ -29,7 +29,7 @@ Ki_x = 0.01;
 
 if 1
     width =5;  % microns
-    npix =512;  % image resolution.
+    npix = 512;  % image resolution.
     mu_length = 0.5;  % 1000 nm. length of the horizontal mu-path. 
     sub_sample_frac = 0.10;  % Percent of pixels to subsample. 
 end
@@ -92,11 +92,11 @@ figure(3);clf; hold on
 ax = gca();
 
 mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, Ts,...
-  'overscan_samples', N_extra, 'pre_pad_samples', 250);
+  'overscan_samples', N_extra, 'pre_pad_samples', 250)
 
 mpt_connect_opts = struct('rad_min', rad_min, 'volts_per_sample', volts_per_sample,...
         'ax', ax, 'ensure_forward', true, 'Npasses', N);
-% mpt.mu_path_connect_rad(mpt_connect_opts);
+mpt.mu_path_connect_rad(mpt_connect_opts)
 
 
 perc = floor(actual_sub_sample_frac*100);
