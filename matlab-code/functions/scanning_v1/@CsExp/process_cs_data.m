@@ -39,8 +39,8 @@ function [pix_mask] = process_cs_data(self, verbose, figs)
     Y_raw = Y_raw*pix_per_volt;
     X_raw = X_raw*pix_per_volt;
     
-    figure(100); clf; hold on, grid on;
-    plot(U_scan)
+%     figure(100); clf; hold on, grid on;
+%     plot(U_scan)
     %plot(U_scan_)
     %keyboard
 %     [U_scan, U_z, U_orig] = self.dynamic_detrend(k);
