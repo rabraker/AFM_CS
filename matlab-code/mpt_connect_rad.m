@@ -47,7 +47,7 @@ function [mptc_s, mptc] = mpt_connect_rad(mptc_s, mptc, opts)
     
 
     % Build the connecting trajectory. 
-    if abs(x1e - x2s) < abs(x1e - x2s) 
+    if abs(y1e - y2s) < abs(x1e - x2s) 
       xcon = (x1e:sign(x2s-x1e)*opts.volts_per_sample:x2s)';
       ycon = linspace(y1e, y2s, length(xcon))';
     else
