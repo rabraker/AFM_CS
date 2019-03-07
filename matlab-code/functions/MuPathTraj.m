@@ -87,6 +87,9 @@ classdef MuPathTraj < handle
       else
         con_str = 'notconnect';
       end
+      if self.N_paths <= 2
+        con_str = 'istotallyconnected';
+      end
       fname = sprintf('cs-traj-%dpix-%dperc', self.npix, perc);
       fname = sprintf('%s-%dnm-%dmic', fname, self.mu_length_mic_nom*1000, self.width_mic);
       fname = sprintf('%s-%.2dHz', fname, self.x_rate_mic_per_sec / (self.width_mic*2));

@@ -345,7 +345,7 @@ classdef CsExp < handle
         % At = @(x) CsTools.Atfun_dct2(x, pix_idx, n, m);
         % x0 = At(b);
         % eta_vec = CsTools.l1qc_logbarrier(x0, A, At, b, opts);
-        % self.Img_bp = idct2(CsTools.pixvec2mat(eta_vec, n))*max_b;
+        % self.Img_bp = idct2(CsTools.pixvec2mat(eta_vec, n))*max_diff_b;
         [x_est, LBRes] = l1qc_dct_mex(n*m, b, pix_idx-1, opts, n, m);
         self.Img_bp = CsTools.pixvec2mat(x_est*max_diff_b, n);
       else
