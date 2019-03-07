@@ -14,8 +14,12 @@ import scanning_v1.*
 clear size
 size_dir = '5microns';
 
-dat_root = PATHS.raster_image_data(size_dir, '2-20-2019');
-dat_name1 = 'raster_scan_256pix_25mic_5.00e-01Hz_out_2-20-2019-03.csv';
+% dat_root = PATHS.raster_image_data(size_dir, '2-20-2019');
+% dat_name1 = 'raster_scan_256pix_25mic_5.00e-01Hz_out_2-20-2019-03.csv';
+
+dat_root = PATHS.raster_image_data(size_dir, '3-4-2019');
+dat_name1 = 'raster_scan_256pix_5mic_01Hz_out_3-4-2019with-GS-01.csv';
+dat_name2 = 'raster_scan_256pix_5mic_01Hz_out_3-4-2019without-GS-02.csv' %3 yes
 % dat_name2 = 'raster_scan_128pix_5mic_01Hz_out_2-19-2019-04.csv';
 dat_names = {dat_name1}; %, dat_name2};
 
@@ -26,11 +30,12 @@ raster_paths = get_raster_paths(dat_root, dat_names{k});
 
 rast_exp = RasterExp(raster_paths);
 
+rast_exp.UserData.z_axis_params
 npix = rast_exp.npix;
 Ts = rast_exp.Ts;
 width = rast_exp.width;
 stit = sprintf('Scan %d', k)
-
+%%
 figbase=10
 pixmaps{k} = plot_data(rast_exp, figbase*k, stit)
 end
@@ -55,7 +60,7 @@ fprintf('ssm: %.4f\n', psn);
 
 
 function pixmat2 = plot_data(rast_exp, figbase, stit)
-clc
+
 rast_exp.bin_raster_really_slow(@detrend);
 % rast_exp.bin_raster_really_slow();
 

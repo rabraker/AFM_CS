@@ -8,9 +8,9 @@ Ts = 40e-6;
 addpath('functions')
 
 % ---------------------------------------------------
-mode = 2;
+mode = 1;
 if mode == 1
-  data_root = '/media/labserver/afm-cs/z-bounce'
+  data_root = '/media/labserver/afm-cs/z-bounce/2018'
   cs_exp_data_name = 'cs-traj-z-bounce_out_10-17-2018-03.csv'; % illustrates problem
   % cs_exp_data_name = 'cs-traj-z-bounce_out_10-8-2018-22.csv';
   uz_idx = 4;
@@ -18,7 +18,7 @@ if mode == 1
   figbase = 10;
 
 elseif mode == 2
-  data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', '5microns', '10-21-2018');
+  data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', '5microns', '2018', '10-21-2018');
   cs_exp_data_name = 'cs-traj-512pix-10perc-500nm-5mic-01Hz_out_10-31-2018-02.csv';
   uz_idx = 4;
   met_idx = 5;
