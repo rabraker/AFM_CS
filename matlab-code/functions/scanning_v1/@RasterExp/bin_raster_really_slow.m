@@ -49,9 +49,9 @@ function [ self] = bin_raster_really_slow(self, line_detrender)
   self.pix_mask = zeros(xpix, ypix);
   self.pix_mat = zeros(xpix,ypix);
   
-  samps_per_period = self.samps_per_period;
+  samps_per_line = self.samps_per_line;
   for j_row = 0:ypix-1
-    ind_y = j_row*(samps_per_period/2)+1:(j_row+1)*(samps_per_period/2);
+    ind_y = j_row*(samps_per_line)+1:(j_row+1)*(samps_per_line);
     x_dat_j = xdat_trace(ind_y)';
     U_dat_j_init = udat_trace(ind_y)';
     

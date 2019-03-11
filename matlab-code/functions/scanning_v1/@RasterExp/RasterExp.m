@@ -62,7 +62,34 @@ classdef RasterExp <matlab.mixin.Copyable
     % Methods defined in other files
     self = load_raw_data(self, raster_paths, npix, width, opts)
     [ self] = bin_raster_really_slow(self, line_detrender)
-    trace_inds = get_trace_inds(self)
+    trace_inds = get_trace_indeces(self)
+    
+    
+    function damage = damage_metric(self)
+    % Compute a damage metric based on the deflection signals positivity.
+    % This is computed as the power of the positive values of the negative
+    % error signal. The motivation is that, for a given setpoint, we do not
+    % care, from a damage perspective, if the error dips below the setpoint
+    % (though that will affect image quality), because this corresponds to the
+    % tip parachiting off a ledge. Rather from a damage perspective, what we
+    % care about is events where (ze - ref) signal becomes positive.
+    
+      ref = self.UserData.z_axis_params.setpoint_scan;
+      % rather than subtracting mean, subtract the reference value.
+      err = self.ze - ref;  % shift to zero.
+      err_pos = err(err>0);
+      damage = sum(err_pos.^2)/length(err_pos)/self.Ts;
+    end
+
+    function quality = quality_metric(self)
+    % Compute a quality metric based on the deflection signal's power.
+
+      ref = self.UserData.z_axis_params.setpoint_scan;
+      % rather than subtracting mean, subtract the reference value.
+      err = self.ze - ref;  % shift to zero.
+      quality = sum(abs(err).^2)/length(err)/self.Ts;
+    end
+    
     
     function save(self, force_save)
     % Serialize to a .mat file to the location contained
