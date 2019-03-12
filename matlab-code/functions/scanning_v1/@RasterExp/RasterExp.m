@@ -8,7 +8,7 @@ classdef RasterExp <matlab.mixin.Copyable
     % parent_data;
     xref;
     yref;
-    meta_data;
+%     meta_data;
     Ts;
     met_ind;
     npix;
@@ -19,14 +19,16 @@ classdef RasterExp <matlab.mixin.Copyable
     samps_per_period;
     samps_per_line;
     gg;
-    
+    meta_exp;
+    meta_in;
+    time_total;
     uz;
     ze;
     x;
     y;
     pix_mat;
     pix_mask;
-    UserData;
+%     UserData;
   end
   
   methods
@@ -56,7 +58,7 @@ classdef RasterExp <matlab.mixin.Copyable
         self = self.load_raw_data(raster_paths, opts);
         fprintf('done\n')
       end      
-
+      self.time_total = length(self.x)*self.Ts;
     end
     
     % Methods defined in other files
@@ -64,6 +66,10 @@ classdef RasterExp <matlab.mixin.Copyable
     [ self] = bin_raster_really_slow(self, line_detrender)
     trace_inds = get_trace_indeces(self)
     
+    function meta_data(self)
+      error(['For consistency with CsExp, the meta_data property has been',...
+        ' removed. That data is now located in self.meta_in.'])
+    end
     
     function damage = damage_metric(self)
     % Compute a damage metric based on the deflection signals positivity.
@@ -74,7 +80,7 @@ classdef RasterExp <matlab.mixin.Copyable
     % tip parachiting off a ledge. Rather from a damage perspective, what we
     % care about is events where (ze - ref) signal becomes positive.
     
-      ref = self.UserData.z_axis_params.setpoint_scan;
+      ref = self.meta_exp.z_axis_params.setpoint_scan;
       % rather than subtracting mean, subtract the reference value.
       err = self.ze - ref;  % shift to zero.
       err_pos = err(err>0);
@@ -84,7 +90,7 @@ classdef RasterExp <matlab.mixin.Copyable
     function quality = quality_metric(self)
     % Compute a quality metric based on the deflection signal's power.
 
-      ref = self.UserData.z_axis_params.setpoint_scan;
+      ref = self.meta_exp.z_axis_params.setpoint_scan;
       % rather than subtracting mean, subtract the reference value.
       err = self.ze - ref;  % shift to zero.
       quality = sum(abs(err).^2)/length(err)/self.Ts;

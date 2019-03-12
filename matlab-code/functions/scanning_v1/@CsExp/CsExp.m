@@ -57,8 +57,59 @@ classdef CsExp < handle
         fprintf('done\n')
       end
 
+      self.time_total = length(self.x)*self.Ts;
+    end
+    
+    function times = get_state_times(self)
+      
+
+      flds = fields(self.idx_state_s)';
+      total = 0;
+      for fld_ = flds
+        fld = fld_{1}
+        N_state = 0;
+        for k=1:length(self.idx_state_s.(fld))
+          N_state = N_state + length(self.idx_state_s.(fld){k});
+        end
+        times.(fld) = N_state * self.Ts;
+        total = total + times.(fld);
+      end
+      times.total = total;
+    end
+    
+    function damage = damage_metric(self)
+    % Compute a damage metric based on the deflection signals positivity.
+    % This is computed as the power of the positive values of the negative
+    % error signal. The motivation is that, for a given setpoint, we do not
+    % care, from a damage perspective, if the error dips below the setpoint
+    % (though that will affect image quality), because this corresponds to the
+    % tip parachiting off a ledge. Rather from a damage perspective, what we
+    % care about is events where (ze - ref) signal becomes positive.
+    
+      ref = self.meta_exp.z_axis_params.setpoint_scan;
+      % rather than subtracting mean, subtract the reference value.
+      err = self.ze - ref;  % shift to zero.
+      
+      % This should *should* drop most everything not part of scan/settling.
+      % If it doesnt, well, our control isnt doing well and it should part of
+      % the metric.
+      err_pos = err(err>0);
+      damage = sum(err_pos.^2)/length(err_pos)/self.Ts;
     end
 
+    function quality = quality_metric(self)
+    % Compute a quality metric based on the deflection signal's power.
+
+      ref = self.meta_exp.z_axis_params.setpoint_scan;
+      % rather than subtracting mean, subtract the reference value.
+      ze_cs_scan = [];
+      for k=1:length(self.idx_state_s.scan)
+        ze_cs_scan = [ze_cs_scan; self.ze(self.idx_state_s.scan{k})]; %#ok<AGROW>
+      end
+      err = ze_cs_scan - ref;
+      quality = sum(abs(err).^2)/length(err)/self.Ts;
+    end
+    
     function save(self, force_save)
     % Serialize to a .mat file to the location contained
     % in raster_paths.data_path_mat.
