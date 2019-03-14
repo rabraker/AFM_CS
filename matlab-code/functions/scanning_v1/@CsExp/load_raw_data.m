@@ -89,14 +89,14 @@ function self = load_raw_data(self, cs_paths, opts)
   if ~isempty(opts.gg) && isa(opts.gg, 'lti')
     fprintf('Performing Dynamic detrend...');
     self.gg = opts.gg;
-    self.uz = lsim(opts.gg, (dat_meas(:, channel_map.uz)), self.t);
+    self.uz = lsim(opts.gg, dat_meas(:, channel_map.uz), self.t);
     fprintf('done\n');
+  elseif  ~isempty(opts.gg) && isa(opts.gg, 'function_handle')
+    self.uz = opts.gg(dat_meas(:, channel_map.uz), self.idx_state_s);
   else
     self.uz = dat_meas(:, channel_map.uz);
   end
   self.ze = dat_meas(:, channel_map.ze);
-  self.ze = dat_meas(:, channel_map.ze);
-
   
   
   self.Img_raw = zeros(self.npix, self.npix);

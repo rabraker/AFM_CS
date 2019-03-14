@@ -60,13 +60,35 @@ classdef CsExp < handle
       self.time_total = length(self.x)*self.Ts;
     end
     
-    function times = get_state_times(self)
+    function [t_cycle_est, t_connect] = estimate_mpt_connect_savings(self)
+      N_up = length(self.idx_state_s.tup);
+      N_scan = length(self.idx_state_s.scan);
+      N_move = length(self.idx_state_s.move);
+      N_down = length(self.idx_state_s.tdown);
+      N_settle = length(self.idx_state_s.tsettle);
+      N_connect = length(self.idx_state_s.connect);
       
-
+      times = self.get_state_times();
+      % compute the average move time:
+      % scan_avg = times.scan/N_scan;
+      % move_avg = times.move/N_move;
+      % tdown_avg = times.tdown/N_down;
+      % tsettle_avg = times.tdown/N_settle;
+      
+      % Average time to do CS cycle, excluding scanning:
+      t_cycle = (times.move + times.tdown + times.tsettle + times.tup);
+      t_cycle_avg = t_cycle/(N_move);
+      
+      % Estimated time to do a cycle, rather than than connect:
+      t_cycle_est = N_connect*t_cycle_avg;
+      t_connect = times.connect;      
+    end
+    
+    function times = get_state_times(self)
       flds = fields(self.idx_state_s)';
       total = 0;
       for fld_ = flds
-        fld = fld_{1}
+        fld = fld_{1};
         N_state = 0;
         for k=1:length(self.idx_state_s.(fld))
           N_state = N_state + length(self.idx_state_s.(fld){k});
@@ -358,7 +380,7 @@ classdef CsExp < handle
     end
 
 
-    function solve_bp(self, recalc, use_2d)
+    function solve_bp(self, recalc, use_2d, opts)
     % Solve the Basis Pursuit problem in either 1d or 2d. If in 1D, use the mex
     % function. 
     % Options
@@ -380,9 +402,9 @@ classdef CsExp < handle
       
       [n m] = size(self.Img_raw);
       
-      tic
-
-      opts = l1qc_dct_opts('verbose', 2, 'l1_tol', 0); %'epsilon', 0.01);
+      if ~exist('opts', 'var')
+        opts = l1qc_dct_opts('verbose', 2, 'l1_tol', 0); %'epsilon', 0.01);
+      end
       pix_idx = find(CsTools.pixmat2vec(self.pix_mask) > 0.5);
       % b, set of measurements. have to remove all the spots we didn't sample.
       b = CsTools.pixmat2vec(self.Img_raw);
@@ -391,16 +413,17 @@ classdef CsExp < handle
       max_b = max(b);
       max_diff_b = max_b - min_b;
       b = b/max_diff_b;
+      tic
       if use_2d
         % A = @(x) CsTools.Afun_dct2(x, pix_idx, n, m);
         % At = @(x) CsTools.Atfun_dct2(x, pix_idx, n, m);
         % x0 = At(b);
         % eta_vec = CsTools.l1qc_logbarrier(x0, A, At, b, opts);
         % self.Img_bp = idct2(CsTools.pixvec2mat(eta_vec, n))*max_diff_b;
-        [x_est, LBRes] = l1qc_dct_mex(n*m, b, pix_idx-1, opts, n, m);
+        [x_est, LBRes] = l1qc_dct(n, m, b, pix_idx, opts);
         self.Img_bp = CsTools.pixvec2mat(x_est*max_diff_b, n);
       else
-        [x_est, LBRes] = l1qc_dct_mex(n*m, b, pix_idx-1, opts);
+        [x_est, LBRes] = l1qc_dct(n*m, 1, b, pix_idx, opts);
         self.Img_bp = CsTools.pixvec2mat(x_est*max_diff_b, n);
       end
       

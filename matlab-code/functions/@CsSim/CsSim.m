@@ -37,12 +37,16 @@ classdef CsSim < handle
       
       time_bp = toc;
       
-      fprintf('BP Time: %f\n', time_bp);
+      fprintf('BP Time: %f\n', time_bp, opts);
     end
-    
     function solve_bp(self, recalc, use_2d)
     % Solve the Basis Pursuit problem in either 1d or 2d. If in 1D, use the mex
     % function. 
+    % Options
+    % -------
+    % recalc : (true|false), default false. Do not optimize if self.Img_bp is
+    %          non-empty and non-zero.
+    % use_2d : (true|false), default false. If true, compute using 2D-dct.
       if nargin <2
         recalc = false;
       end
@@ -57,26 +61,30 @@ classdef CsSim < handle
       
       [n m] = size(self.Img_sub_sampled);
       
-      tic
-      
+      if ~exist('opts', 'var')
+	opts = l1qc_dct_opts('verbose', 2, 'l1_tol', 0); %'epsilon', 0.01);
+      end
       pix_idx = find(CsTools.pixmat2vec(self.pix_mask) > 0.5);
+      % b, set of measurements. have to remove all the spots we didn't sample.
       b = CsTools.pixmat2vec(self.Img_sub_sampled);
       b = b(pix_idx);
+      min_b = min(b);
+      max_b = max(b);
+      max_diff_b = max_b - min_b;
+      b = b/max_diff_b;
       
-      % y, set of measurements. have to remove all the spots we didn't sample.
-      opts = CsTools.l1qc_opts();
+      tic
       if use_2d
-        A = @(x) CsTools.Afun_dct2(x, pix_idx, n);
-        At = @(x) CsTools.Atfun_dct2(x, pix_idx, n);
-        x0 = At(b);
-        eta_vec = CsTools.l1qc_logbarrier(x0, A, At, b, opts);
-        self.Img_bp = idct2(CsTools.pixvec2mat(eta_vec, n));
+        % A = @(x) CsTools.Afun_dct2(x, pix_idx, n, m);
+        % At = @(x) CsTools.Atfun_dct2(x, pix_idx, n, m);
+        % x0 = At(b);
+        % eta_vec = CsTools.l1qc_logbarrier(x0, A, At, b, opts);
+        % self.Img_bp = idct2(CsTools.pixvec2mat(eta_vec, n))*max_diff_b;
+        [x_est, LBRes] = l1qc_dct(n, m, b, pix_idx, opts);
+        self.Img_bp = CsTools.pixvec2mat(x_est*max_diff_b, n);
       else
-        % A = @(x) CsTools.Afun_dct(x, pix_idx);
-        At = @(b) CsTools.Atfun_dct(b, pix_idx, n*m);
-        x0 = At(b);
-        eta_vec = CsTools.l1qc(x0, b, pix_idx-1, opts);
-        self.Img_bp = CsTools.pixvec2mat(idct(eta_vec), n);
+        [x_est, LBRes] = l1qc_dct(n*m, 1, b, pix_idx, opts);
+        self.Img_bp = CsTools.pixvec2mat(x_est*max_diff_b, n);
       end
       
       time_bp = toc;

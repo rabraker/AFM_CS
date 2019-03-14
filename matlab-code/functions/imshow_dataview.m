@@ -2,7 +2,7 @@ function imshow_dataview(IM, thresh, ax1, ax2)
   axes(ax1)
 
   if length(thresh) ==2
-    h_im = imagesc(ax1, IM, thresh);
+    h_im = imagesc(ax1, IM); %2018a doesnt like this: , thresh);
   else
     h_im = imagesc(ax1, IM);
   end

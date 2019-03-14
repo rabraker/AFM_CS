@@ -33,6 +33,7 @@ if 1
     mu_length = 0.5;  % 1000 nm. length of the horizontal mu-path. 
     sub_sample_frac = 0.10;  % Percent of pixels to subsample. 
 end
+
 % Unit conversions.
 pix_per_micron = npix/width;
 mu_pix = ceil(mu_length*pix_per_micron);
@@ -43,7 +44,7 @@ mu_pix = ceil(mu_length*pix_per_micron);
 Ts = 40e-6;  % AFM sample rate. 
 Fs = 1/Ts;
 microns2volts = 1/5;  %10/50;
-raster_freq = 1;  % hz
+raster_freq = 4;  % hz
 raster_period = 1/raster_freq;
 
 microns_per_second = width/(raster_period/2);
@@ -81,7 +82,7 @@ H = feedback(D*G, 1);
 % N-1 because x0 is sample 1.
 x_N =  (N-1)*x_rate;
 N_extra = mu_overscan(G, D, x_rate, mu_Nsamples, 1);
-
+%%
 mu_Nsamples_extra = N+N_extra;
 
 % Magic numbers for connection threshold radius.
@@ -96,8 +97,15 @@ mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, Ts,...
 
 mpt_connect_opts = struct('rad_min', rad_min, 'volts_per_sample', volts_per_sample,...
         'ax', ax, 'ensure_forward', true, 'Npasses', N);
-mpt.mu_path_connect_rad(mpt_connect_opts)
 
+mpt.mu_path_connect_rad(mpt_connect_opts);
+
+NN = 0;
+for k=1:length(mpt.mu_path_traj_s)
+  NN = NN + length(mpt.mu_path_traj_s{k}.xt);
+end
+
+NN*AFM.Ts + length(mpt.mu_path_traj_s)*tcon_min
 
 perc = floor(actual_sub_sample_frac*100);
 fname = mpt.get_fname();
@@ -112,6 +120,35 @@ fprintf('File name:\n%s\n', fname)
 
 mpt.write_data_json(fpath_json)
 % mpt.write_data(fpath_csv)
+%%
 
-    
 
+
+xt = mpt.mu_path_traj_s{1}.xt;
+yt = mpt.mu_path_traj_s{1}.yt;
+
+for k=2:length(mpt.mu_path_traj_s)
+
+  x0 = xt(end);
+  y0 = yt(end);
+
+  xt_k1 = mpt.mu_path_traj_s{k}.xt;
+  yt_k1 = mpt.mu_path_traj_s{k}.yt;
+
+  x_next = xt_k1(1);
+  y_next = yt_k1(1);
+
+  max_dist = max(abs(x0 - x_next), abs(y0-y_next));
+
+  N = max_dist/volts_per_sample;
+  x_con = linspace(x0, x_next, N)';
+  y_con = linspace(y0, y_next, N)';
+
+  xt = [xt; x_con; xt_k1];
+  yt = [yt; y_con; yt_k1];
+end
+
+%%
+length(xt)*AFM.Ts
+figure;
+plot(xt)

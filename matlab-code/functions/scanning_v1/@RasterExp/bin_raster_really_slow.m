@@ -51,8 +51,17 @@ function [ self] = bin_raster_really_slow(self, line_detrender)
   
   samps_per_line = self.samps_per_line;
   for j_row = 0:ypix-1
-    ind_y = j_row*(samps_per_line)+1:(j_row+1)*(samps_per_line);
+    % Guard against the possibility that samps_per_line is not an integer.
+    % Need to fix this in the raster trajectory generator.
+    indy_start = ceil(j_row*(samps_per_line)+1);
+    indy_end = floor((j_row+1)*(samps_per_line));
+    ind_y = indy_start:indy_end;
+    try
     x_dat_j = xdat_trace(ind_y)';
+    catch
+      warning('Exited early from processing raster data (j_row=%d)', jrow);
+      break
+    end
     U_dat_j_init = udat_trace(ind_y)';
     
     [U_dat_j] = line_detrender(U_dat_j_init);

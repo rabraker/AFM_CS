@@ -82,7 +82,7 @@ for k=1:length(rast_exps)
   pixmats{k} = pixmats_raw{k};
   pixmats{k} = pin_along_column(pixmats_raw{k}, x1s(k), x2s(k));
 %   pixmats{k} = pixmats{k} - mean(pixmats{k}(:));
-  stit = sprintf('(raster) %.2f Hz', rast_exps{k}.meta_data.raster_freq);
+  stit = sprintf('(raster) %.2f Hz', rast_exps{k}.meta_in.raster_freq);
   plot_raster_data(pixmats{k}, figbase*k, stit)
 %   stit = sprintf('(raw) scan %d', k);
 end
@@ -103,7 +103,7 @@ end
 %
 slice = 25:511-25;
 
-imm_idx = 8;
+imm_idx = 1;
 mu = 40;
 im_master = pixmats{imm_idx};
 % im_master = SplitBregmanROF(im_master, mu, 0.001);
@@ -111,9 +111,11 @@ im_master = im_master - mean(im_master(:));
 % figure, imagesc(im_master), colormap('gray')
 
 
-%
+figure(3000);clf;
+h = subplott(2,4);
+
 fprintf('---------------------------------------------------\n');
-for k=7:length(rast_exps)
+for k=1:length(rast_exps)
   if k== imm_idx
     continue;
   end
@@ -125,12 +127,15 @@ for k=7:length(rast_exps)
   [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice);
   mx = max(imk_slice(:));
   mn = min(imk_slice(:));
-stit = sprintf('(raster %d, %.1f Hz) psnr: %.4f, ssm: %.4f, min:%.4f, max:%.4f',...
-  k, rast_exps{k}.meta_data.raster_freq, psn_1k, ssm_1k, mn, mx);
+% stit = sprintf('(raster %d, %.1f Hz) psnr: %.4f, ssm: %.4f, min:%.4f, max:%.4f',...
+%   k, rast_exps{k}.meta_in.raster_freq, psn_1k, ssm_1k, mn, mx);
+stit = sprintf('(raster %d, %.1f Hz)\n psnr: %.4f, ssm: %.4f',...
+  k, rast_exps{k}.meta_in.raster_freq, psn_1k, ssm_1k);
+
 fprintf("%s\n", stit);
-figure(2000+k)
-imshowpair(imk_slice, im1_ontok_fit)
-title(stit)
+% figure(2000+k)
+imshowpair(imk_slice, im1_ontok_fit, 'parent', h(k))
+title(h(k), stit)
 end
 
 

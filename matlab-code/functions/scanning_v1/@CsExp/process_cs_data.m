@@ -34,16 +34,16 @@ function [pix_mask] = process_cs_data(self, verbose, figs)
     
     % Get the data for the current mu-path.
     [X_raw, Y_raw, U_scan, Ze, t] = self.get_scan_k(k, true);
-    Ze = detrend(Ze-ref);
-%     U_scan = lsim(DI, Ze, t-t(1));
+    % Ze = detrend(Ze-ref);
+    % U_scan = lsim(DI, Ze, t-t(1));
     Y_raw = Y_raw*pix_per_volt;
     X_raw = X_raw*pix_per_volt;
     
-%     figure(100); clf; hold on, grid on;
-%     plot(U_scan)
-    %plot(U_scan_)
-    %keyboard
-%     [U_scan, U_z, U_orig] = self.dynamic_detrend(k);
+    % figure(100); clf; hold on, grid on;
+    % plot(U_scan)
+    % plot(U_scan_)
+    % keyboard
+    % [U_scan, U_z, U_orig] = self.dynamic_detrend(k);
     
     if max(U_scan) - min(U_scan) > 0.4 % throw out rediculous data.
       fprintf('skipping cycle %d\n', k)
