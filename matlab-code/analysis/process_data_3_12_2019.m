@@ -84,9 +84,9 @@ end
 
 [~, axs] = make_cs_traj_figs(figbase, 2);
 cs_exps{2}.plot_all_cycles(axs{1:2});
-
+%%
 bp = true;
-for k=1:4 %length(cs_exps)
+for k=5:length(cs_exps)
   cs_exps{k}.process_cs_data(false, []);
   fprintf('finished processing raw CS data...\n');
   fprintf('nperc=%.3f\n', sum(cs_exps{k}.pix_mask(:))/cs_exps{k}.npix^2);
@@ -111,7 +111,7 @@ for k=1:4 %length(cs_exps)
   end
 
 end
-
+%%
 mu = Inf;
 Img_filts = {};
 for k=1:length(cs_exps)
@@ -231,19 +231,19 @@ end
 
 %%
 S = scan_metrics_table(scan_metrics)
-fid = fopen('notes/cs_raster_table_3-12-2019_mu100.tex', 'w+');
+fid = fopen('notes/tables/cs_raster_table_3-12-2019_mu100.tex', 'w+');
 fprintf(fid, '%s', S);
 fclose(fid);
 
 S = state_times_table(cs_exps)
-fid = fopen('notes/cs_state_times_table_3-12-2019_mu100.tex', 'w+');
+fid = fopen('notes/tables/cs_state_times_table_3-12-2019_mu100.tex', 'w+');
 fprintf(fid, '%s', S);
 fclose(fid);
 
 %%
 S = mpt_connect_table(cs_stats)
 
-fid = fopen('notes/cs_connect_table_3-12-2019_mu100.tex', 'w+');
+fid = fopen('notes/tables/cs_connect_table_3-12-2019_mu100.tex', 'w+');
 fprintf(fid, '%s', S);
 fclose(fid);
 

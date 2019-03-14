@@ -104,3 +104,4 @@ matlab-code/legacy/process_cs_data.m
 *.json
 c-src/sweptSines_lib/
 mpt-connect-play/
+matlab-code/notes/tables/*

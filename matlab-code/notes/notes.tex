@@ -1,0 +1,397 @@
+% Created 2019-01-10 Thu 17:04
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\usepackage[margin=1in]{geometry}
+\usepackage[inkscapelatex=false, inkscapepath=svgsubpath]{svg}
+\usepackage{booktabs}
+\usepackage{placeins}
+\author{arnold braker}
+\date{\today}
+\title{Notes On Improving raster scanning and CS scanning}
+\hypersetup{
+ pdfauthor={arnold braker},
+ pdftitle={Notes On Improving raster scanning and CS scanning},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 25.1.1 (Org mode 9.1.4)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+\subsection{Probes}
+
+From seans email:
+
+If I’m right, the model was the PPP-NCLR, available from Nanosensors. They have a nominal resonance of 190 kHz, a force constant of 48 N/m (with a range of 21-98 N/m), and a length of 225 um (with a range of 215-235 um).
+
+From Paper: Nanosensors PPP-NCLR-50, 22-98 N/m, fr=146-236 kHz.
+
+
+\label{sec:orgdb0dcd6}
+The purpose of this document is to memoralize my work over the last few months trying to improve compressed sensing (CS) based imaging in the atomic force microscope (AFM). Along the way, raster scanning has improved dramatically as well. The two improvements that make the biggest difference to both modes are 
+
+\begin{enumerate}
+\item Mitigating external disturbances caused by building vibration and electrical noise. This is discussed in Section \ref{sec:noise}.
+\item Building a compensator to cancell the complex pole-zero pair at 215 Hz (Section \ref{sec:z_comp}). More work could be done here. For example, we could try an \(H_{\infty}\) designed to damp the mode, rather than cancell it. We could also stick with the cancelletion and build an automated system identification routine to update the compensator every run (or so).
+\end{enumerate}
+
+\subsection{Things specific to CS}
+\label{sec:org1bbe619}
+The status here is less clear. In terms of the actual CS-scanning, I have explored several ways do the disengagement/move/engagement part of the CS scanning. I will talk about this in Section TK. One of the things that those exploration highlight is that drift in \(Z\)-piezo shows up the image data. One method to deal with this is what I'm calling "dynamic detrending," which I will discuss in \ref{sec:dyn_detrend}. 
+
+In most experimental CS images of the CS-20NG grating, we see a a ghosting of the holes. I show in Section \ref{sec:halos} that this is due to the compressed nature of the resulting image. 
+
+
+\section{Eliminiating Noise and disturbances \label{sec:noise}}
+\label{sec:orgd7da44e}
+Figures \ref{fig:no_iso} and \ref{fig:with_iso} show two 5 micron raster images taken at a 1\textasciitilde{}Hz scan speed. The images were taken with the same control settings and about 5 minutes apart with the same tip. The only difference between them is external disturbance mitigation. 
+
+\begin{figure*}
+\begin{center}
+\includesvg[width=0.97\textwidth]{figures/raster_nobungee}
+\captionof{figure}{\label{fig:no_iso}
+Raster image without vibration isolation and with fan plugged in}
+\end{center}
+\begin{center}
+\includesvg[width=0.97\textwidth]{figures/raster_bungee}
+\captionof{figure}{\label{fig:with_iso}
+Raster scan with the vibration isolator and with the fan run from an external power supply.}
+\end{center}
+\end{figure*}
+
+The two disturbance sources I have been able to identify and mitigate are building vibration and electrical noise. The blue curves in Figures \ref{fig:dfl_time} and \ref{fig:dfl_psd} show an experiment where the AFM tip is resting on the sample surface and \(Z\)-direction control loop is off. In these experiments, the \(XY\)-stage is turned on (more about this later). From the timeseries it is clear there is a low frequency oscillation. This is even clearer in the PSD, which shows a lot of energy in the shaded green band, ie, from about 10 Hz to about 60 Hz. 
+
+\begin{figure*}
+\begin{minipage}{0.5\textwidth}
+\centering
+\includesvg[width=0.97\textwidth]{figures/dfl_time}
+\caption{\label{fig:dfl_time}
+Time Series of the deflection signal. The blue curves are the unmodified instrument, the orange curves are the instrument with vibration isolation and the yellow curves are the with both vibration isolation and using an external power source to run the nPoint cooling fan.}
+\end{minipage}                              
+
+\begin{minipage}{0.5\textwidth}
+\centering
+\includesvg[width=0.97\textwidth]{figures/dfl_psd}
+\caption{\label{fig:dfl_psd}
+PSDs of the deflection signal. The shaded band indicates the domain region of building vibration.}
+\end{minipage}                      
+\end{figure*}
+
+The hypothesis is that this energy is due to the table which the AFM sits on shaking, probably because there are tiny vibrations in the building. This is such a common problem that ther are many \href{https://www.herzan.com/afm-vibration-control.html}{commercial} \href{https://www.thorlabs.com/newgrouppage9.cfm?objectgroup\_id=1105}{solutions}, which unfortunately cost lots money. These solutions are both active and pasive. The simplest passive isolation is to basically suspend the \href{https://www.afmworkshop.com/afm-products/vibration-solutions/bungee-option}{AFM from bungee cords}. 
+
+The idea behind passive vibration isolation is to insert a mechanical low pass filter between the driving vibration and the AFM itself. 
+Once the principle is understood, it is faily easy to build one for about \$50. The one I built is shown in Fig. \ref{fig:isolator}. The principle is shown in in Fig. \ref{fig:schem_iso}. 
+
+\begin{figure*}
+\begin{minipage}{0.5\textwidth}
+\centering
+\includegraphics[width=0.97\textwidth]{figures/my_isolator.jpg}
+\caption{\label{fig:isolator}
+My home-built vibration isolation chamber}
+\end{minipage}
+
+\begin{minipage}{0.5\textwidth}
+\centering
+\includegraphics[width=0.97\textwidth]{figures/mass-spring-damper.png}
+\caption{\label{fig:schem_iso}
+Mechanical schematic of vibration isolator.}
+\end{minipage}
+\end{figure*}
+
+We imagine the floor \(z\) moving and transfering that motion through the springs (ie, bungee cords) into the motion \(X\) of the AFM suport (ie, the concrete block). The transfer function from \(Z\) to position \(X\) is
+\begin{equation}
+    X(s) = \frac{\frac{\gamma}{m}s + \frac{k}{m}}{s^{2} + \frac{\gamma}{m}s + \frac{k}{m}} Z(s).
+\end{equation}
+
+We want to move the cuttoff frequency of this LPF as low as possible. To do that, we make \(m\) as large as we can, since \(\omega = \sqrt{k/m}\). Hence, the books sitting on the platform. One disadvantage of this type of system is that when we increase \(m\), we decrease the damping. Thus, we can get a resonance. If you look at the marketing material for the active isolation systems, they harp on this quite a bit. 
+
+Nonetheless, this thing seems to work really well. The orange curves in Figs \ref{fig:dfl_time} and \ref{fig:dfl_psd} are the results when using this isolation chamber. Although we have improved things considerably, the deflection signal is still rather noisy. This is due to the spike in the PSD at 380Hz. That spike is so sharp because, if we zoom on the orangetimeseries, we see almost a perfect sinusoid of 380 Hz.
+
+Note also that the PSDs show resonances. These are from the xy-stage, which is turned on. These resonances show up in the deflection PSD because noise in xy-power amplifer perturbs the stage. To understand this, we need to understandd sample tilt, which is illustrated in the following video clip.
+
+It is through this mechanism that dynamics in xy-stage show up in the PSD of the deflection when the stage is powered on.
+If we imagine that noise is white, then the position of the stage colored and shows up in the deflection signal largely through sample tilt. Some of what we see may also be to bending modes and runout in the xy-stage, though this is impossible to differentiate from tilt via just the deflection signal (at least, I don't know how). 
+
+It turns out that the spike at 380 Hz in the PSD is caused by the cooling fan inside the xy stage power amplifier. If we unplug that fan, we get the yellow timeseries in Fig. \ref{fig:dfl_time}  which is a vast improvement over the original instrument. 
+
+\subsubsection{{\bfseries\sffamily TODO} I think, at least for raster scanning, that most of the benefit is from the vibration isolation. I should redo this experiment to test the fan situation. I suspect it makes the most impact for CS imaging.}
+\label{sec:org7a9f0ba}
+\subsubsection{{\bfseries\sffamily TODO} It would be interesting to regenerate this data with a longer window to increase the frequency resolution of the PSD, to see if we can see the resonance of the bungee cords.}
+\label{sec:org499bc13}
+\section{Bending Mode Compensation \label{sec:z_comp}}
+\label{sec:org5ae99bb}
+Talking about 215hz here.
+
+\section{CS Scanning\label{sec:CS}}
+\label{sec:org7976d23}
+\subsection{Dynamic Detrending \label{sec:dyn_detrend}}
+\label{sec:orgb9c244d}
+
+\subsection{Implications for CS scanning}
+\label{sec:orgeb08286}
+When raster scanning over a flat area, the control signal is now very, very flat. THis is shown by the orangecurves in \ref{fig:with_iso}. I don't seem to be able to replicate that with CS-scanning. There seem to be multiple complicating factors.
+
+\begin{enumerate}
+\item When we do the descent, we excite the (extremely slow) drift modes in the z-piezo. This means that the \(u_{z}\) control signal is still drifting even though the absolute z-position is relatively constant. Without a z-sensor, we introduce these dynamics into the CS image data. I have had some success eliminating this affect by modeling the drift and running the \textbf{entire} \(u_{z}\) signal through the drift model in a post-processing step. This does not completely remove the affect though. 
+
+That middling success may be because, in the current implementation, each step up is different, depending on if the previous CS cycle ended in a whole or on the flats. This is a problem because, as I learned when modeling drift and hysteresis for x-direction, a linear drift models parameters should really change depending on how large the move is.
+
+It may therefore be better to to move up by a constant amount. I don't like stepping the control signal up because that tends to excite a lot of modes. What I could to is to keep the current method of reseting the \(z\) reference when we step up, but by a larger than desired amount. Then, we keep moving up until some pre-determined \(u_{z}\) threshhold is met.
+
+This scenario would be we would always start the descent from a known control value. However, there is no way to know if we will end up in a hole or on the flats. Thus, we cannot completely eliminate this affect. however, I think it would be best to normalize the drift model to the assumption that we end up on the flats, since that is where the affect seems most noticable.
+
+\item It may be that putting \(g_{drift}^{-1}\) in the loop, rather than using it in post-processing, will improve things.
+
+\item On some descents, I still get oscillations. The frequency of the oscillations (from memory) seems to be either around the 215 Hz resonance, or much higher at around 600 Hz. I need to carefully compare the amplitude of these oscillations to what I see raster scanning on the flats. This occures despite the \(D(z)^{-1}\) controller  which inverts the pz pair at 215 Hz. 
+
+I do not understand why sometimes that inversion works and sometimes it seems not too.
+
+\item It is evident that the cantilevar is still interacting with the surface during the xy-move when we do not completely pull away. I seem to have some success turning of the PI controller during the xy-move. This prevents the controller from reacting to that interaction. Because the frequency content of the incoming (surface) disturbance is high (because we are moving fast), if we leave the PI controller on, we inject a high frequency signal into the loop. 
+
+Note that, if we were to keep applying the same reference at the end of the xy-move, then turning the PI loop back on would usually mean injecting a step command into the loop because the deflection signal will have changed between the beginning and end of the xy-move. I don't think this is a problem because when we turn the PI loop back on, we will also be changing the reference. Thus, we are already committed to injecting a step command into the loop.
+
+\item It may be that CS scanning will work much better on a larger image. Say 20 or 40 microns rather than 5. The reasoning is that for a larger image, the \(\mu\)-paths will become longer. This implies that the proportion of the \(\mu\)-path scan affected by the drift transient should be a much smaller fraction of the total scan length, and hence its affect on the image quality should be reduced.
+\end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+\includesvg[width=0.97\textwidth]{figures/CS_raster_flats_PSD}
+\caption{\label{fig:with_iso}
+PSD of raster scan lines and CS scan paths over the flat area. Note the large peak in the CS curve at 215 Hz.}
+\end{figure}
+\begin{figure}[htbp]
+\centering
+\includesvg[width=0.97\textwidth]{figures/CS_raster_flats_PSD_withFRF}
+\caption{This is caption two.}
+\end{figure}
+It is evident that the primary oscillations in the CS scan data correspond to the z-dir resonance at 215 Hz. The other two major peaks in the CS data are at 380 and 508 Hz. These appear to correspond to the (bending ?) modes of the x and y axes, respectively. 
+
+
+Next step is to to the same analysis scanning over mica or a larger flat section. This will tell us if the trouble is that we are running into stuff during the move.
+kkk
+
+
+
+\subsection{Comparing Experimental to Simulation}
+\label{sec:orge9c0c5d}
+I have been struggling to completely remove the the piezo dynamics from the CS scans. Those dynamics show up in two primary ways. 
+
+\begin{enumerate}
+\item Slow drift from the piezo. I have been able to remove most of this.
+\item Oscillations at 215 Hz during the scanning portion of the cycle. It is evident that these oscillations are much larger when scanning over a flat portion of the sample than they are with raster scanning.
+\end{enumerate}
+
+To remove the drift, I fit a simple drift model and run the \textbf{entire} z-piezo control signal through that model. This is a post-processing step. It may be better to do that online, but I haven't gotten around to it yet. 
+
+There is an resonance (complex pole-zero pair) in the z dynamics at about 215 Hz. In both the raster and CS scanning, I cancell that resonance. This lets me use a larger PI gain than I could otherwise. In both cases, the signal taken to represent the image is the control output of the integrator, before it goes into the inverse compensator. 
+
+This inversion seems to work really well for raster scanning. In CS scanning, it works about the same as raster maybe a quarter of the time. In other cycles, the mode still gets excited. I don't understand why this.
+
+I have been assuming that much of the graininess I see in the CS images is from those dynamics. If you look at a single row of the reconstructed images, it certainly looks like dynamics showing up. I tested this in a few ways. 
+
+Perhaps the direct way to test this is to do CS reconstruction based on \textbf{perfect} data. The top left panel of Figure \ref{fig:cs_sim} shows such an image. For that image, I generated a square, 512 x 512 matrix of all ones. Then, at the same size and guage as the CS20-NG grating, I filled in circles of zeros. I then subsampled that matrix with the same mask used in the experimental CS image. The basis-pursuit reconstruction is shown in the second panel on the left. 
+
+The right column of panels shows experimental results. The top panel is a 1 Hz raster scan. The second panel is a CS image. 
+
+In both columns, the bottom panel shows the row of pixels marked by the orangeline above. This demonstrates that much of the graininess and "oscillations" are actually from the reconstruction. 
+
+TODO: Demonstrate this hypothesis
+In fact, the red portion of the experimental curve shows the actually measured data.
+We conclude then, at least as far as the actual image goes, there is no point to reducing the present dynamics any further. 
+
+
+\begin{figure}[htbp]
+\centering
+\includesvg[width=0.97\textwidth]{figures/cs_compare_sim_sim}
+\caption{\label{fig:cs_sim}
+(left: simulation. right: experiment) Top panels shows the matrix used to represent the CS-20NG. Middle panel shows the CS reconstruction. The top right panel shows a raster scan and the right middle panel shows an experiment CS reconstruction. The bottom panels show the data in a single row of pixels.}
+\end{figure}
+
+
+The second, less direct way, is we can compare the frequency content of lines over flat areas to raster images. 
+
+
+
+\subsection{The CS Halos \label{sec:halos}}
+\label{sec:orgb0d53c2}
+\begin{figure}[htbp]
+\centering
+\includesvg[width=0.97\textwidth]{figures/cs20ng_sim_thresholds_mag}
+\caption{\label{fig:cs20ng_dct}
+Sorted DCT coefficients of the CS20-NG simulation image. The vertical dashed lines indicate the different threshholding fractions used in Figure\textasciitilde{}\ref{fig:cs20ng_thresh_img}.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includesvg[width=0.97\textwidth]{figures/cs20ng_sim_thresholds_img}
+\caption{\label{fig:cs20ng_thresh_img}
+Result of thresholding DCT coeficients. The top left image (100\%) is the baseline, i.e., no thresholding.}
+\end{figure}
+
+\begin{enumerate}
+\item The haloing we get in experimental CS images is an artifact of CS, not my experimental implementation. We saw this in \ref{fig:cs_sim}. We can also see this by taking the original image, converting to DCT, thresholding for the largest, say, \(0.1*512^2\) coeficients, and conveting back to spatial domain. We still get the same halos, though not as noticable. This is illustrated in the following two figures.
+\end{enumerate}
+
+
+So really, that halo is some kind of periodicity that gets cancelled when we have all the coefficients. That strange and neat. I don't really see where that period is coming from though.
+
+\begin{enumerate}
+\item \href{http://feihu.eng.ua.edu/compressive.pdf}{This presentation} is a good overview of CS. One of the things they say is that 2D wavelets are better than DCT for images with sharp edges. This makes sense because DCT is based on DFT, and we expect coeficients to not decay very fast for sharp transitions.
+\item At the same time, "real" AFM images are generally much smoother than our calibration grating. So our results could, in that sense, be interpreted as a "worst case."
+\item On the other hand, plotting the sorted log-magnitude of the DCT coeficients doesnt show much difference (any, really) between our holes and a normal test image.
+
+\item Something that I'm confused about is why we do the CS recononstruction based off of a 1D DCT? Why not a 2D DCT? I have tried this, breifly. The results are not good and the reconstruction takes a very long time.
+
+\item I have seen multiple places (Stack Exchange, that Tuma paper\ldots{}) where people do their CS schemes on an already thresholded image. That is, they take a test image, take the dct, set N-k of the smallest  coefficients to zero, then convert back to spatial domain. This seems like an absurd thing to do if you want you results to bear any resemblence whatsoever to the real world.
+\end{enumerate}
+
+
+
+
+\begin{figure}[htbp]
+\centering
+\includesvg[width=0.97\textwidth]{figures/cs_sim_mu_path_vs_singlepix}
+\caption{\label{fig:cs_sim_cp}
+Comparison of simulated BP reconstructions from our CS20-NG test image.}
+\end{figure}
+
+% \begin{figure}[htbp]
+% \centering
+% \includesvg[width=0.97\textwidth]{figures/cs_sim_mu_path_vs_singlepix_thresh}
+% \caption{\label{fig:cs_sim_thresh}
+% Cs reconstructions using the 10\% threshholded image.}
+% \end{figure}
+\FloatBarrier
+% \ClearFloat
+\newpage
+\newpage
+
+% Figure \ref{fig:cs_sim_thresh} shows cs simulations using the 10\% thresholded image as the master. They look basically identical to above. 
+% -- Need to check this.
+% -- ALso,
+% recompute both this and above with PSNR or SSIM metrics.
+
+
+\section*{Results from 3-10-2019}
+\label{sec:orgbe19e27}
+The damage metric is defined as
+\begin{equation}
+  \text{damage} = \sum_{k=0}^{N-1} \max(0,~z_{dk}-r_{\textrm{scan}})
+\end{equation}
+where $N$ is the total number of samples in a given scan, $z_{dk}$ is the deflection signal at sample $k$ and $r_{\textrm{scan}})$ is the scanning setpoint. The motivation for this metric is that damage occurs while scanning into an uphill, region and here the deflection signal becomes positive. While scanning a downhill region (e.g., going into a hole in the CS20NG), the deflection signal is negative and little damage occurs. By excluding negative values of the deflection, we do not penalize the CS algorithm while it is re-engaging with the specimen unless it overshoots the scanning setpoint. 
+
+
+\begin{table}[htbp]
+  \centering
+  \begin{minipage}{1\textwidth}
+      \begin{centering}
+        % \caption{Performance metrics for the scans taken on 3-10-2019.}
+        \begin{tabular}{cccccc}
+          \input{cs_raster_table_3-11-2019_01.tex}
+        \end{tabular}
+        \label{tab:rast_vs_cs_v1}
+      \end{centering}
+    \end{minipage}
+\begin{minipage}{1\textwidth}
+  \caption{Breakdown of state times for the CS scans listed in Table~\ref{tab:rast_vs_cs_v1}. All times are in seconds.}
+  \begin{tabular}{cccccccc}
+    \input{cs_state_times_table_3-11-2019_01.tex}
+  \end{tabular}
+\end{minipage}
+\end{table}
+
+
+
+\begin{figure}[htbp]
+\includesvg[width=0.5\textwidth]{figures/3-11-2019/raster_0p5Hz.svg}
+\includesvg[width=0.5\textwidth]{figures/3-11-2019/raster_1p0Hz.svg}
+\includesvg[width=0.5\textwidth]{figures/3-11-2019/raster_2p0Hz.svg}
+\includesvg[width=0.5\textwidth]{figures/3-11-2019/raster_4p0Hz.svg}
+\caption{Raster scans from 0.5 Hz to 4 Hz.}
+\end{figure}
+
+\begin{figure}
+\includesvg[width=0.5\textwidth]{figures/3-11-2019/raster_5p0Hz.svg}
+\includesvg[width=0.5\textwidth]{figures/3-11-2019/raster_6p0Hz.svg}
+\includesvg[width=0.5\textwidth]{figures/3-11-2019/cs_1p0Hz_10perc.svg}
+\includesvg[width=0.5\textwidth]{figures/3-11-2019/cs_2p0Hz_10perc.svg}
+\end{figure}
+
+\begin{figure}
+\includesvg[width=0.5\textwidth]{figures/3-11-2019/cs_2p0Hz_7perc.svg}
+\end{figure}
+
+\FloatBarrier
+
+\section{Results From 3-12-2019}
+
+\begin{figure}[htbp]
+\includesvg[width=0.5\textwidth]{figures/3-12-2019/raster_0p5Hz.svg}
+\includesvg[width=0.5\textwidth]{figures/3-12-2019/raster_1p0Hz.svg}
+\includesvg[width=0.5\textwidth]{figures/3-12-2019/raster_2p0Hz.svg}
+\includesvg[width=0.5\textwidth]{figures/3-12-2019/raster_4p0Hz.svg}
+\caption{Raster scans from 0.5 Hz to 4 Hz.}
+\end{figure}
+
+\begin{figure}
+\includesvg[width=0.5\textwidth]{figures/3-12-2019/raster_5p0Hz.svg}
+\includesvg[width=0.5\textwidth]{figures/3-12-2019/raster_6p0Hz.svg}
+\includesvg[width=0.5\textwidth]{figures/3-12-2019/cs_1p0Hz_10perc.svg}
+\includesvg[width=0.5\textwidth]{figures/3-12-2019/cs_2p0Hz_10perc.svg}
+
+\end{figure}
+
+\begin{figure}
+  \includesvg[width=0.5\textwidth]{figures/3-12-2019/cs_3p0Hz_10perc.svg}
+  \includesvg[width=0.5\textwidth]{figures/3-12-2019/cs_4p0Hz_10perc.svg}
+  \includesvg[width=0.5\textwidth]{figures/3-12-2019/cs_2p0Hz_7perc.svg}
+\end{figure}
+
+
+\begin{table}[htbp]
+  \centering
+  \begin{minipage}{1\textwidth}
+    \begin{centering}
+      \caption{Performance metrics for the scans taken on 3-10-2019.  All images filtered with TV denoising, $\mu$=100.}
+      \begin{tabular}{cccccc}
+        \input{tables/cs_raster_table_3-12-2019_mu100.tex}
+      \end{tabular}
+      \label{tab:rast_vs_cs_v1}
+    \end{centering}
+  \end{minipage}
+  
+  \begin{minipage}{1\textwidth}
+    \begin{centering}
+      \caption{Breakdown of state times for the CS scans listed in Table~\ref{tab:rast_vs_cs_v1}. All times are in seconds. All images filtered with TV denoising, $\mu$=100.}
+        \begin{tabular}{cccccccc}
+          \input{tables/cs_state_times_table_3-12-2019_mu100.tex}
+        \end{tabular}
+      \end{centering}
+    \end{minipage}
+    \begin{minipage}{1\textwidth}
+      \begin{centering}
+        \caption{Estimation of time saved by connecting $\mu$-paths.}
+        \begin{tabular}{cccc}
+          \input{tables/cs_connect_table_3-12-2019_mu100.tex}
+        \end{tabular}
+      \end{centering}
+    \end{minipage}
+\end{table}
+
+\end{document}
