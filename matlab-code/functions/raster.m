@@ -35,9 +35,6 @@ addParameter(p, 'shift', defshift);
 parse(p, varargin{:});
 opts = p.Results;
 
-numpoints = ceil(tend/Ts);
-
-tvec = [0:1:numpoints]'*Ts;
 period = 1/freq;
 if opts.coerce
     % We want to get points at the vertices, so coerce the triangle frequency
@@ -50,7 +47,12 @@ else
     quarterperiod = period/4;
     pointsperquarterperiod = (quarterperiod/Ts);
 end
+
+
 points_per_line = 2*pointsperquarterperiod;
+numpoints = 4*pointsperquarterperiod;
+tvec = [0:1:numpoints-1]'*Ts;
+
 % From https://en.wikipedia.org/wiki/Triangle_wave
 % (2/a)*|     |  t    1  |    |_ t/a + 1/2 _|
 %       |t - a|  -- + -- |(-1)

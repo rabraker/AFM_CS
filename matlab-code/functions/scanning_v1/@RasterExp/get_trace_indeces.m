@@ -11,7 +11,7 @@ function [ trace_ind ] = get_trace_indeces(self)
 
 trace_ind = [];
 for k=0:self.npix-1
-    ind = [k*self.samps_per_period+1:(k*self.samps_per_period + self.samps_per_line)]';
+    ind = [k*self.samps_per_period+1:(k*self.samps_per_period + floor(self.samps_per_line))]';
     trace_ind = [trace_ind; ind];
 end
 
