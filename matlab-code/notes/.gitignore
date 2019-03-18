@@ -4,3 +4,6 @@ sidebyside.el
 subfig_filter.el
 _region_.tex
 
+*.bbl
+*.toc
+*.blg

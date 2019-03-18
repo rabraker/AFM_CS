@@ -8,14 +8,18 @@ classdef PATHS
   methods (Static)
     function [ PATH ] = exp()
       % PATH constant to where all experimental data is stored for the
-      % MPC journal paper.
-      if ispc
+           if ispc
         PATH = 'Z:\afm-cs';
       else
         PATH = '/media/labserver/afm-cs';
       end
     end
     
+    function [ PATH ] = step_exp()
+      % PATH constant to where all experimental data for step experiments 
+      % (for the x-y plane) is stored for the.
+        PATH = fullfile(PATHS.exp(), 'step_exp')
+    end
     
     function PATH = cs_image_data(size, date_dir)
       PATH = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', size, date_dir);
