@@ -2,14 +2,17 @@
 function uz_detrended = log_creep_detrend(uz, idx_state_s)
 
 
+% log(0) = Inf, start one step in.
+t = [1:1:length(uz)]'*AFM.Ts;
 
-t = [0:1:length(uz)-1]'*AFM.Ts;
-
-
-idx_scan = [];
-for k=1:length(idx_state_s.scan)
-  idx_ = idx_state_s.scan{k};
-  idx_scan = [idx_scan; idx_(:)];
+if ~isempty(idx_state_s)
+  idx_scan = [];
+  for k=1:length(idx_state_s.scan)
+    idx_ = idx_state_s.scan{k};
+    idx_scan = [idx_scan; idx_(:)];
+  end
+else
+  idx_scan = [1:length(uz)]';
 end
 % idx_scan = [2:1:length(uu)-1]';
 

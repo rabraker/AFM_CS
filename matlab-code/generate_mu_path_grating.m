@@ -8,11 +8,11 @@
 % This will essentially come down to edge detection. If an edge is present,
 % then we know the lower part of the signal was in a hole. If no edge is
 % present, the entire signal was on the flat part of the grating. 
-clear, clc
-% close all
 
+% close all
+% clear, clc
 addpath('functions')
-rmpath('functions/scanning_v0')
+try; rmpath('functions/scanning_v0'); end
 addpath('functions/scanning_v1')
 addpath('functions/state_space_x')
 
@@ -44,17 +44,17 @@ mu_pix = ceil(mu_length*pix_per_micron);
 Ts = 40e-6;  % AFM sample rate. 
 Fs = 1/Ts;
 microns2volts = 1/5;  %10/50;
-raster_freq = 4;  % hz
+raster_freq = 2;  % hz
 raster_period = 1/raster_freq;
 
 microns_per_second = width/(raster_period/2);
 pixels_per_second = pix_per_micron * microns_per_second;
-volts_per_second = microns_per_second*microns2volts;
+volts_per_second = microns_per_second*microns2volts
 volts_per_sample = volts_per_second * Ts;  % Ts = seconds per sample
 
 % Convert mu-path length in pixels to volts
 mu_micron = (1/pix_per_micron) * mu_pix;
-mu_volts = mu_micron * microns2volts;
+mu_volts = mu_micron * microns2volts
 mu_Nsamples = ceil(mu_volts / volts_per_sample);
 
 
@@ -76,12 +76,13 @@ imshow(I)
 % '------------------correct by overscan for ramp ramp set ---------------
 N = mu_Nsamples;
 x_rate = volts_per_sample;
-G = PLANT_init_x;
-D = tf([0.01, 0], [1 -1], Ts);
-H = feedback(D*G, 1);
+% G = PLANT_init_x;
+% D = tf([0.01, 0], [1 -1], Ts);
+% H = feedback(D*G, 1);
 % N-1 because x0 is sample 1.
+xdirControl = get_xdir_standard_control();
 x_N =  (N-1)*x_rate;
-N_extra = mu_overscan(G, D, x_rate, mu_Nsamples, 1);
+N_extra = mu_overscan(xdirControl.Hyr, x_rate, mu_Nsamples, 1)
 %%
 mu_Nsamples_extra = N+N_extra;
 
@@ -118,7 +119,7 @@ fprintf('File name:\n%s\n', fname)
 
 
 
-mpt.write_data_json(fpath_json)
+% mpt.write_data_json(fpath_json)
 % mpt.write_data(fpath_csv)
 %%
 

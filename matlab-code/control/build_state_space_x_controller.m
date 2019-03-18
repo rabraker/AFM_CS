@@ -2,7 +2,7 @@
 % 'estimate' the delay states.
 
 
-% clear all
+clear all
 clc
 % Options
 figbase  = 50;
@@ -109,6 +109,18 @@ can_obs_params.beta = 50;
 % 2). Design FeedForward gains.
 [Nx, Nu] = SSTools.getNxNu(plants.sys_recyc);
 
+gam_iter = gam_s(1);
+fprintf('===========================================================\n');
+
+K_lqr = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_iter, S1);
+Qp = dare(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_iter, S1);
+
+if 1
+  verbose = 0;
+  analyze_margins(plants, sys_obsDist, K_lqr, L_dist, verbose);
+end
+
+%%
 % -------------------------------------------------------------------
 % -------------------- Setup Fixed Point stuff -----------------------------
 A_obs_cl = sys_obsDist.a - L_dist*sys_obsDist.c;
@@ -124,22 +136,6 @@ sys_obs_fxp.a = fi(sys_obsDist.a -L_dist*sys_obsDist.c, 1, nw, nw-7);
 sys_obs_fxp.b = fi(sys_obsDist.b, 1, nw, 29);
 sys_obs_fxp.c = fi(sys_obsDist.c, 1, nw, 28);
 
-
-
-gam_iter = gam_s(1);
-fprintf('===========================================================\n');
-
-K_lqr = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_iter, S1);
-Qp = dare(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_iter, S1);
-
-if 1
-  verbose = 0;
-  analyze_margins(plants, sys_obsDist, K_lqr, L_dist, verbose);
-end
-
-
-% --------------------  Fixed Linear stuff -----------------------------
-%%
 K_fxp = fi(K_lqr, 1, nw,32-10);
 sims_fxpl = SimAFM(plants.PLANT, K_fxp, Nx_fxp, sys_obs_fxp, L_fxp, du_max_fxp,...
   true, 'nw', nw, 'nf', nf, 'thenoise', thenoise);
