@@ -1,4 +1,4 @@
-function [hands] = plot_all_cycles(self, ax1, ax2, ax3, ax4)
+function [hands] = plot_all_cycles(self, ax1, ax2, ax3, ax4, to_pix)
 % Plot the color-ized cs cycles to the provided axes.
 %
 % Usage
@@ -24,7 +24,9 @@ function [hands] = plot_all_cycles(self, ax1, ax2, ax3, ax4)
 %                                   y, and ze, or u_z and x, respectivily.
 %
   
-
+if ~exist('to_pix', 'var')
+  to_pix=false;
+end
 % First, parse the input. 
   if isa(ax1, 'char') && strcmp(ax1, 'all')
     plotx=true;

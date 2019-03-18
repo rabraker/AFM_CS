@@ -39,7 +39,7 @@ classdef CsSim < handle
       
       fprintf('BP Time: %f\n', time_bp, opts);
     end
-    function solve_bp(self, recalc, use_2d)
+    function solve_bp(self, recalc, use_2d, opts)
     % Solve the Basis Pursuit problem in either 1d or 2d. If in 1D, use the mex
     % function. 
     % Options
@@ -55,14 +55,14 @@ classdef CsSim < handle
       end
       if ~recalc && ~isempty(self.Img_bp) && sum(self.Img_bp(:)) ~= 0
         warning(['BP solution already calculated, so skipping optimization.',...
-          'Pass recalc flag to recompute']);
+          ' Pass recalc flag to recompute.']);
         return;
       end
       
       [n m] = size(self.Img_sub_sampled);
       
       if ~exist('opts', 'var')
-	opts = l1qc_dct_opts('verbose', 2, 'l1_tol', 0); %'epsilon', 0.01);
+        opts = l1qc_dct_opts('verbose', 2, 'l1_tol', 0); %'epsilon', 0.01);
       end
       pix_idx = find(CsTools.pixmat2vec(self.pix_mask) > 0.5);
       % b, set of measurements. have to remove all the spots we didn't sample.
