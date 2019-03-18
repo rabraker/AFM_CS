@@ -33,25 +33,21 @@ function [pix_mask] = process_cs_data(self, verbose, figs)
   for k = 1:length(self.idx_state_s.scan)
     
     % Get the data for the current mu-path.
-    [X_raw, Y_raw, U_scan, Ze, t] = self.get_scan_k(k, true);
-    % Ze = detrend(Ze-ref);
-    % U_scan = lsim(DI, Ze, t-t(1));
+    [X_raw, Y_raw, U_scan] = self.get_scan_k(k, true);
     Y_raw = Y_raw*pix_per_volt;
     X_raw = X_raw*pix_per_volt;
-    
-    % figure(100); clf; hold on, grid on;
-    % plot(U_scan)
-    % plot(U_scan_)
-    % keyboard
-    % [U_scan, U_z, U_orig] = self.dynamic_detrend(k);
     
     if max(U_scan) - min(U_scan) > 0.4 % throw out rediculous data.
       fprintf('skipping cycle %d\n', k)
       continue
     end
-    [y_idx, x_idx, U_k] = self.mu_data2pix(X_raw, Y_raw, U_scan);
-    self.Img_raw(y_idx, x_idx) = U_k;
-    self.pix_mask(y_idx, x_idx) = 1;
+    % [y_idx, x_idx, U_k] = self.mu_data2pix(X_raw, Y_raw, U_scan);
+    [y_idx, x_idx, U_k] = self.mu_data2pix_xy(X_raw, Y_raw, U_scan);
+    assert(length(y_idx) == length(x_idx))
+    for k=1:length(x_idx)
+        self.Img_raw(y_idx(k), x_idx(k)) = U_k(k);
+        self.pix_mask(y_idx(k), x_idx(k)) = 1;
+    end
     
 %  THIS IS BASICALLY BROKEN WITH THE MU-PATH-CONNECT SCHEME    
 %     if verbose

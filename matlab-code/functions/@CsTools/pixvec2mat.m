@@ -16,7 +16,7 @@ function Mpix = pixvec2mat(vpix, nrows, ncol)
   if nargin == 2
     Mpix = reshape(vpix, [], nrows)';
   else
-    Mpix = reshape(vpix, nrows, ncol)';
+    Mpix = reshape(vpix', nrows, ncol)';
   end
   
 end

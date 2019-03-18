@@ -59,7 +59,11 @@ classdef CsExp < handle
 
       self.time_total = length(self.x)*self.Ts;
     end
-    
+    function frac = sub_sample_frac(self)
+      N = self.npix^2;
+      n_samps = sum(self.pix_mask(:));
+      frac = n_samps/N;
+    end
     function [t_cycle_est, t_connect] = estimate_mpt_connect_savings(self)
       N_up = length(self.idx_state_s.tup);
       N_scan = length(self.idx_state_s.scan);
@@ -318,7 +322,55 @@ classdef CsExp < handle
         U_scan = U_z(scan_start_idx:end);
     end
 
+    function [y_idx, x_idx, U_k] = mu_data2pix_xy(self, X_raw, Y_raw, U_ks)
+%       y_idx = min(self.npix-1, floor(mean(Y_raw))) + 1;
 
+      x_spread = max(X_raw) - min(X_raw);
+      y_spread = max(Y_raw) - min(Y_raw);
+      xpix_start = floor(min(X_raw));
+      ypix_start = floor(min(Y_raw));
+      
+      npix_x_path_k = ceil(x_spread); % number of bins for this path.
+      npix_y_path_k = ceil(y_spread); % number of bins for this path.
+
+      % Now, define a set of bins for the x-direction. Each bin will have a
+      % different number of data points.
+      % If we include 0, then there are three points for two pixel bins.
+      xbins = linspace(min(X_raw), max(X_raw), npix_x_path_k+1);
+      ybins = linspace(min(Y_raw), max(Y_raw), npix_y_path_k+1);
+      U_k = [];
+      x_idx = [];
+      y_idx = [];
+      
+%       for kk=1:npix_y_path_k
+%         ind_y = find(Y_raw >= ybins(kk) & Y_raw < ybins(kk+1));
+%         if ypix_start+kk > self.npix || isempty(ind_y)
+%             continue
+%         end
+        for jj = 1:npix_x_path_k
+          if xpix_start+jj > self.npix
+            continue
+          end
+          % Get the indeces correspondiing to the current x-data bin.
+          ind_x = find(X_raw >= xbins(jj) & X_raw < xbins(jj+1));
+          %idx_kj = intersect(ind_y, ind_x);
+          if ~isempty(ind_x) % Avoid errors if it is empty.
+            % Slice out the corresponding height data, and average it
+            % together since this is a single pixel.
+            u_pix_jj = mean(U_ks(ind_x));
+            
+            % Collect the uz data into a string of pixels
+            U_k = [U_k; u_pix_jj];
+            x_idx = [x_idx, xpix_start+jj];
+            y_idx = [y_idx, max(1, int32(mean(Y_raw(ind_x)))) ];
+          end
+        end
+      %end
+      % Register the control data to zero. We can do this because we are
+      % scanning long enough that we are always guaranteed to exit a hole.
+      U_k = U_k - max(U_k);
+
+    end % bin_data_into_pix
 
     function [y_idx, x_idx, U_k] = mu_data2pix(self, X_raw, Y_raw, U_ks)
       % Make the assumption that the y-data for each path is constant enough.
