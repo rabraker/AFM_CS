@@ -1,16 +1,21 @@
 
 
-function [N_extra] = mu_overscan(G, D, x_rate, mu_Nsamples, verbose)
+function [N_extra] = mu_overscan(Hyr, x_rate, mu_Nsamples, verbose)
   
   
-  Ts = G.Ts;
-  Hyr = feedback(D*G, 1);
+  Ts = Hyr.Ts;
   
   % TF from reference to error.
-  Her = feedback(1, D*G);
-  Int_z = zpk([], [1], 1, G.Ts);
+  Her = minreal(1 - Hyr); %%feedback(1, D*G);
+  Int_z = zpk([], [1], 1, Ts);
   % Compute the steady state error to a ramp 
   ess = dcgain(minreal(Her*Int_z))*x_rate;
+  
+  % sometimes, the integrator gets perturbed to a really slow pole, so dc-gain 
+  % is infinitate. So evaluate low-freq gain instead.
+  if isinf(ess)
+    ess = abs(freqresp(Her*Int_z, 1))*x_rate;
+  end
   
   N = mu_Nsamples;
 
