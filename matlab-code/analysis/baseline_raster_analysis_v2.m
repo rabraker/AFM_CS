@@ -24,20 +24,20 @@ gg = zpk(z(end-1:end), p(1:2), 1, G.Ts);
 hole_depth = (20);
 
 chan_map = ChannelMap([1:5]);
-exp_date = '3-9-2019'
+exp_date = '3-13-2019'
 % ----------------------- Load and Process CS-data -----------------------------
 dat_root = PATHS.raster_image_data(size_dir, exp_date);
 
 % ----------------------- Load and Process raster-data -------------------------
 raster_files = {...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-9-2019-01.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-9-2019-02.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-9-2019-03.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-9-2019-04.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-9-2019-05.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-9-2019-06.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-9-2019-07.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-9-2019-08.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-01.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-02.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-03.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-04.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-05.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-06.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-07.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-08.csv',...
 };
 
 
@@ -66,25 +66,26 @@ for k=1:length(rast_exps)
 end
 
 
-
+%%
 clc
 
 
-x1s = [36,   37, 46,   51, 50,   52,  57, 55];
-x2s = [450, 455, 460, 463, 465, 467. 474, 474];
+x1s = [45,   45, 50,   50, 50,   52,  57, 55];
+x2s = [450, 455, 455, 463, 419, 467. 474, 474];
 figbase = 10;
 for k=1:length(rast_exps)
-  rast_exp2 = copy(rast_exps{k});
-%   uz = detrend(rast_exp2.uz);
-  rast_exp2.bin_raster_really_slow(@detrend);
+%   rast_exps{k}.bin_raster_really_slow(@detrend);
   
-  pixmats_raw{k} = rast_exp2.pix_mat(1:end-1, 1:end-1);
-  pixmats{k} = pixmats_raw{k};
+  pixmats_raw{k} = rast_exps{k}.pix_mat;
+%   pixmats{k} = pixmats_raw{k};
   pixmats{k} = pin_along_column(pixmats_raw{k}, x1s(k), x2s(k));
-%   pixmats{k} = pixmats{k} - mean(pixmats{k}(:));
+  pixmats{k} = pixmats{k} - mean(pixmats{k}(:));
   stit = sprintf('(raster) %.2f Hz', rast_exps{k}.meta_in.raster_freq);
   plot_raster_data(pixmats{k}, figbase*k, stit)
 %   stit = sprintf('(raw) scan %d', k);
+% if k==5
+%   keyboard
+% end
 end
 %%
 
@@ -96,35 +97,34 @@ for k=1:length(rast_exps)
   
 end
 
+
+
+
 %%
+%
 slice = 25:511-25;
 
-imm_idx = 2;
-mu = Inf;
-
+imm_idx = 3;
+mu = 100;
 im_master = pixmats{imm_idx};
-if ~isinf(mu)
-  im_master = SplitBregmanROF(im_master, mu, 0.001);
-end
+% im_master = SplitBregmanROF(im_master, mu, 0.001);
 im_master = im_master - mean(im_master(:));
 % figure, imagesc(im_master), colormap('gray')
 
 
-% figure(3000);clf;
-F = mkfig(3000, 7, 9.5); clf
-[ha, pos] = tight_subplot(3, 2, [.03, .005 ], .027, .005);
+figure(3000);clf;
+
+[ha, pos] = tight_subplot(2, 2, [.03, .005 ], .027, .005);
 thresh = (20/7)*(1/1000)*20;
 
 fprintf('---------------------------------------------------\n');
 ax_iter = 1;
-for k=[1,2,3,4,5,6,7] %length(rast_exps)
+for k=[1,2,3,4,7] %length(rast_exps)
   if k== imm_idx
     continue;
   end
   imk = pixmats{k};
-  if ~isinf(mu)
     imk = SplitBregmanROF(imk, mu, 0.001);
-  end
   imk = imk - mean(imk(:));
   imk_slice = imk(slice, slice);
   im1_ontok_fit = norm_align(imk_slice, im_master);
@@ -146,50 +146,10 @@ for k=[1,2,3,4,5,6,7] %length(rast_exps)
 end
 
 
-%%
-
-% ---------------------------------------------------------------------------- %
-
-slice = 25:511-25;
-
-imm_idx = 1;
-mu = 40;
-im_master = pixmats{imm_idx};
-% im_master = SplitBregmanROF(im_master, mu, 0.001);
-im_master = im_master - mean(im_master(:));
-% figure, imagesc(im_master), colormap('gray')
-
-
-figure(3000);clf;
-h = subplott(2,4);
-
-fprintf('---------------------------------------------------\n');
-for k=1:length(rast_exps)
-  if k== imm_idx
-    continue;
-  end
-  imk = pixmats{k};
-%   imk = SplitBregmanROF(imk, mu, 0.001);
-  imk = imk - mean(imk(:));
-  imk_slice = imk(slice, slice);
-  im1_ontok_fit = norm_align(imk_slice, im_master);
-  [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice);
-  mx = max(imk_slice(:));
-  mn = min(imk_slice(:));
-% stit = sprintf('(raster %d, %.1f Hz) psnr: %.4f, ssm: %.4f, min:%.4f, max:%.4f',...
-%   k, rast_exps{k}.meta_in.raster_freq, psn_1k, ssm_1k, mn, mx);
-stit = sprintf('(raster %d, %.1f Hz)\n psnr: %.4f, ssm: %.4f',...
-  k, rast_exps{k}.meta_in.raster_freq, psn_1k, ssm_1k);
-
-fprintf("%s\n", stit);
-% figure(2000+k)
-imshowpair(imk_slice, im1_ontok_fit, 'parent', h(k))
-title(h(k), stit)
-end
-
-
 
 %%
+
+
 function plot_raster_data(pixmat2, figbase, stit)
 
   thresh = (20/7)*(1/1000)*20;
