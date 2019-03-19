@@ -1,7 +1,7 @@
-function [ha, pos] = tight_subplot(Nh, Nw, gap, marg_h, marg_w)
+function [ha, pos] = tight_subplot(Nh, Nw, gap, marg_h, marg_w, no_ticks)
 % tight_subplot creates "subplot" axes with adjustable gaps and margins
 %
-% [ha, pos] = tight_subplot(Nh, Nw, gap, marg_h, marg_w)
+% [ha, pos] = tight_subplot(Nh, Nw, gap, marg_h, marg_w, no_ticks)
 %
 %   in:  Nh      number of axes in hight (vertical direction)
 %        Nw      number of axes in width (horizontaldirection)
@@ -11,7 +11,7 @@ function [ha, pos] = tight_subplot(Nh, Nw, gap, marg_h, marg_w)
 %                   or [lower upper] for different lower and upper margins 
 %        marg_w  margins in width in normalized units (0...1)
 %                   or [left right] for different left and right margins 
-%
+%        no_ticks: (boolean) if true, remove ticks
 %  out:  ha     array of handles of the axes objects
 %                   starting from upper left corner, going row-wise as in
 %                   subplot
@@ -26,6 +26,7 @@ function [ha, pos] = tight_subplot(Nh, Nw, gap, marg_h, marg_w)
   if nargin<3; gap = .02; end
   if nargin<4 || isempty(marg_h); marg_h = .05; end
   if nargin<5; marg_w = .05; end
+  if nargin<6; no_ticks = true; end
   if numel(gap)==1;
     gap = [gap gap];
   end
@@ -45,10 +46,12 @@ function [ha, pos] = tight_subplot(Nh, Nw, gap, marg_h, marg_w)
     
     for ix = 1:Nw
       ii = ii+1;
-      ha(ii) = axes('Units','normalized', ...
-        'Position',[px py axw axh], ...
-        'XTickLabel','', ...
+      ha(ii) = axes('Units','normalized',...
+        'Position',[px py axw axh])
+      if no_ticks
+        set(ha(ii),  'XTickLabel','', ...
         'YTickLabel','');
+      end
       px = px+axw+gap(2);
     end
     py = py-axh-gap(1);

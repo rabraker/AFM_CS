@@ -1,4 +1,4 @@
-function h = ciplot(lower,upper,x,color)
+function h = ciplot(lower,upper,x,color, ax)
      
 % ciplot(lower,upper)       
 % ciplot(lower,upper,x)
@@ -30,7 +30,10 @@ end
 if find(size(upper)==(max(size(upper))))<2
   upper=upper';
 end
+if nargin < 5
+  ax = gca();
+end
 % h = fill([x fliplr(x)],[upper fliplr(lower)],colour)
-h = patch([x fliplr(x)], [upper fliplr(lower)], -1, 'FaceColor', color, 'EdgeColor', 'none');
+h = patch(ax, [x fliplr(x)], [upper fliplr(lower)], -1, 'FaceColor', color, 'EdgeColor', 'none');
 
 end
