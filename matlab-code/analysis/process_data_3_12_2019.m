@@ -45,7 +45,7 @@ cs_files = {...
 
 %
 rast_exps = {};
-for k=6:length(raster_files)
+for k=1:length(raster_files)
   raster_paths = get_raster_paths(dat_root, raster_files{k});
   rast_exps{k} = RasterExp(raster_paths);
 end
@@ -54,7 +54,7 @@ end
 x1s = [19, 19, 30, 30, 30, 86];
 x2s = [430, 441, 444 445, 445, 449];
 figbase = 10;
-for k=6:length(rast_exps)
+for k=1:length(rast_exps)
   rast_exp2 = copy(rast_exps{k});
   % uz = detrend(rast_exp2.uz);
   rast_exp2.bin_raster_really_slow(@detrend);
