@@ -3,7 +3,7 @@ addpath(fullfile(getCsRoot(), 'matlab-code', 'functions'));
 addpath(fullfile(getCsRoot(), 'matlab-code', 'functions', 'state_space_x'));
 
 md = 1;
-gam_rob = 46.4;
+
 
 
 % ------- Load Plants -----
@@ -21,6 +21,7 @@ gam_rob = 46.4;
 
 cmplx_rad = 0.9;
 % [Q1, R0, S1, P_x] = build_control_constsigma(plants.sys_recyc, cmplx_rad);
+gam_rob = 46.4;
 can_cntrl = CanonCntrlParamsChoozeZeta();
 [Q1, R0, S1, P_x] = build_control_choosezeta(plants.sys_recyc, can_cntrl);
 

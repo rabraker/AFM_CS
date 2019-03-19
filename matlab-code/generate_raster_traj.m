@@ -47,14 +47,15 @@ y_rasterdata = timeseries(linspace(0, y_height, length(x_rasterdata.Time))',...
                 x_rasterdata.Time);
 y_rasterdata.Data = y_rasterdata.Data + xy_start_mic(2);
 
-D_x = tf(Ki_x, [1 -1], Ts);
-H_x = feedback(D_x*PLANT_init_x, 1);
+xdirControl = get_xdir_standard_control();
+[y2, t2] = lsim(xdirControl.Hyr, x_rasterdata.Data*AFM.mic2volt_xy, x_rasterdata.Time);
 [y, t] = lsim(H_x, x_rasterdata.Data*AFM.mic2volt_xy, x_rasterdata.Time);
 
 figure(1); clf; hold on
 plot(x_rasterdata.Time, x_rasterdata.Data, t, y*AFM.volts2mic_xy, '--')
 plot(y_rasterdata.Time, y_rasterdata.Data);
-
+plot(t2, y2*AFM.volts2mic_xy, '--')
+%%
 
 
 % We have to interleave the x & y data like
