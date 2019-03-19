@@ -43,10 +43,18 @@ plotdriftbode = false;
 saveon = true;
 
 md = 1;
-gam_rob = 46.4;
-gam_s = sort([gam_rob]);
-exp_id_str = 'const-sig';
 
+
+% exp_id_str = 'const-sig';
+exp_id_str = 'choose-zeta';
+
+if strcmp(exp_id_str, 'const-sig')
+  gam_rob = 46.4;
+elseif strcmp(exp_id_str, 'choose-zeta')
+  gam_rob = 25;
+else
+  error('unrecognized exp_id_str: %s', exp_id_str)
+end
 % ------- Load Plants -----
 [plants, frf_data] = CanonPlants.plants_ns14(9);
 Ts  = plants.SYS.Ts;
@@ -96,10 +104,13 @@ end
 du_max_orig = StageParams.du_max;
 du_max = du_max_orig/norm(plants.gdrift_inv, Inf);
 
-cmplx_rad = 0.9;
-% [Q1, R0, S1, P_x] = build_control_constsigma(plants.sys_recyc, cmplx_rad);
-can_cntrl = CanonCntrlParamsChoozeZeta();
-[Q1, R0, S1, P_x] = build_control_choosezeta(plants.sys_recyc, can_cntrl);
+if strcmp(exp_id_str, 'const-sig')
+  cmplx_rad = 0.9;
+  [Q1, R0, S1, P_x] = build_control_constsigma(plants.sys_recyc, cmplx_rad);
+elseif strcmp(exp_id_str, 'choose-zeta')
+  can_cntrl = CanonCntrlParamsChoozeZeta();
+  [Q1, R0, S1, P_x] = build_control_choosezeta(plants.sys_recyc, can_cntrl);
+end
 
 % ------------------------- Observer Gain ---------------------------------
 can_obs_params = CanonObsParams_01();
@@ -109,11 +120,11 @@ can_obs_params.beta = 50;
 % 2). Design FeedForward gains.
 [Nx, Nu] = SSTools.getNxNu(plants.sys_recyc);
 
-gam_iter = gam_s(1);
+
 fprintf('===========================================================\n');
 
-K_lqr = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_iter, S1);
-Qp = dare(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_iter, S1);
+K_lqr = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_rob, S1);
+Qp = dare(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_rob, S1);
 
 if 1
   verbose = 0;
@@ -178,7 +189,8 @@ sims_fxpl.sys_obs_fp = sys_obsDist;
 sims_fxpl.sys_obs_fp.a = sys_obsDist.a - L_dist*sys_obsDist.c;
 
 sims_fxpl.write_control_data(controlDataPath, yref, traj_path)
-sims_fxpl.write_control_data_json('Z:\afm-cs\step-exps\LinControls01.json')
+control_path = fullfile(PATHS.step_exp, sprintf('LinControls-%s.json', exp_id_str))
+sims_fxpl.write_control_data_json(control_path)
 
 %%
 
@@ -189,7 +201,7 @@ sims_fxpl.write_control_data_json('Z:\afm-cs\step-exps\LinControls01.json')
 % --------------------------- LINEAR Experiment ---------------------------
 
 fprintf('===========================================================\n');
-fprintf('Starting Experiments for gamma = %\n', gam_iter);
+fprintf('Starting Experiments for gamma = %\n', gam_rob);
 fprintf('===========================================================\n');
 % Build the u-reset.
 if 1
