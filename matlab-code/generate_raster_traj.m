@@ -19,9 +19,9 @@ PLANT_init_x = plants.PLANT;
 
 
 % Trace is one line at sec_line. The whole period is trace and re-trace.
-raster_freq = 1; % Hz.
+raster_freq = 6; % Hz.
 image_side = 5; % micro-meters.
-npix = 256;
+npix = 512;
 xy_start_mic = [-image_side/2, -image_side/2]*0;
 
 
@@ -69,7 +69,7 @@ for k=1:2:length(xy_data)
     j = j+1;
 end
 
-%%
+
 % scan_type: 0=raster, 1=CS
 % write it to a .json file
 
@@ -101,24 +101,24 @@ dat= struct('raster_freq', raster_freq,...
 
 savejson('', dat,  opts);
 
-%%
 
-import scanning_v0.*
-meta = struct('raster_freq', raster_freq, 'npix', npix,...
-              'width', image_side);
-% OLD METHOD, READING .MAT FILE IN LABVIEW
-data_name = sprintf('raster_scan_%dpix_%dmic_%.2dHz.csv',npix,image_side, raster_freq);
-
-target_dir = sprintf('%dmicrons', image_side);
-data_root = PATHS.raster_image_data('5microns', 'parents_csv');
-
-data_in_path = fullfile(data_root, data_name)
-meta_path = strrep(data_in_path, '.csv', '.json');
-data_in_path = fullfile(data_root, data_name)
-meta_path = strrep(data_in_path, '.csv', '.mat');
-
-csvwrite(data_in_path, xy_data);
-save(meta_path, 'meta');
+% 
+% import scanning_v0.*
+% meta = struct('raster_freq', raster_freq, 'npix', npix,...
+%               'width', image_side);
+% % OLD METHOD, READING .MAT FILE IN LABVIEW
+% data_name = sprintf('raster_scan_%dpix_%dmic_%.2dHz.csv',npix,image_side, raster_freq);
+% 
+% target_dir = sprintf('%dmicrons', image_side);
+% data_root = PATHS.raster_image_data('5microns', 'parents_csv');
+% 
+% data_in_path = fullfile(data_root, data_name)
+% meta_path = strrep(data_in_path, '.csv', '.json');
+% data_in_path = fullfile(data_root, data_name)
+% meta_path = strrep(data_in_path, '.csv', '.mat');
+% 
+% csvwrite(data_in_path, xy_data);
+% save(meta_path, 'meta');
 
 
 
