@@ -1,6 +1,9 @@
 % Created 2019-01-10 Thu 17:04
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
+\usepackage{setspace}
+\doublespacing
+
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{graphicx}
@@ -36,44 +39,20 @@
 
 \maketitle
 \tableofcontents
-\section{Outline}
-I claim that I have fulfilled my Comps obligation to cut CS Time in half. I did not say that I would improve it to an order of magnitude faster than potential raster scanning, only that I would do the CS scan in 40 seconds. I have achieved that.  Here is how I did it.
 
-\begin{itemize}
-\item Dramatically reduce the disturbances impinging on the $z$-axis. Those disturbances in part severely limited the the achievable $z$-axis control bandwidth, because increased BW just amplified those disturbances.
-\item Compensate for the $z$-piezo bending mode via inversion. Also, compensate for the varying DC-gains between cantilevers, so that PI gain largely stays unchanged. This is automated, and done as pre-step to imaging (or for the day).
-  \begin{itemize}
-  \item show bode plots with several KI gains with and w/o Dinv.
-  \item Show raster row signal with and w/o Dinv.
-  \end{itemize}
-\item Forget about lifting the cantilever far enough to actually break contact. Rather, only pull away far enough that the deflection signal stays low, even while we run across the surface.
-\item $\mu$-path connections.
-\item The damage metric, and why SSIM/PSNR suck.
-\item Improved post-processing. 
-  \begin{itemize}
-  \item Aligning images via cross-correlation.
-  \item Dynamic detrending.
-  \item TV-denoising.
-  \end{itemize}
-\end{itemize}
+\section{Introduction}
+This chapter is a story of rising tides and all ships being lifted. I wish to give raster scanning a fair shake. Therefore, where appropriate, the improvements made to CS scanning are also applied to raster scanning. This improves the results for methods, compared to chapter XX. Raster scanning appears to improve more.
 
 \section{Z-axis disturbance Reduction}
-Dramatically reduce the disturbances impinging on the $z$-axis. Those disturbances in part severely limited the the achievable $z$-axis control bandwidth, because increased BW just amplified those disturbances.
+I've already written about this. It could go in here, but makes more sense on its own. 
 
-\subsection{Paste in what I've already written.}
-Compensate for the $z$-piezo bending mode via inversion. Also, compensate for the varying DC-gains between cantilevers, so that PI gain largely stays unchanged. This is automated, and done as pre-step to imaging (or for the day).
-  
-  \begin{itemize}
-  \item show bode plots with several KI gains with and w/o Dinv.
-  \item Show raster row signal with and w/o Dinv.
-  \end{itemize}
+The upshot is that by dramatically reducing the disturbances impinging on the $z$-axis, we are in a position to increase the bandwidth without introducing building dynamics into our images.
 
-
-\section{Z-axis Control}
+\section{Z-axis Control Design}
 With the disturbances attenuated, we can now increase the $z$-axis bandwidth. The main challenge to increasing the bandwidth is the bending mode resonance at 215 Hz, which can be seen in the FRF from $u_Z$ to $d_{fl}$ in Fig.~\ref{fig:z_control} (blue curve). We address this by inverting the complex pole-zero pair at 215 Hz. There are multiple advantages to this method: first an inverse compensator still makes sense in the forward loop if the feedback path is broken and we are applying control in open-loop, a situation that can occur during parts of the CS cycle. Second, as we discuss further below, the inverse compensator requires no tuning as it is defined only by a fit to the measured frequency response and this can be almost completely automated. Using this method, I am able to achieve a closed-loop bandwidth of about 350 Hz.
 
 % In principle, we should be able to push the bandwidth beyond that mode, but because the cancellation is imperfect and the mode appears to be non-linear, we keep the roll-off below so that the closed loop bandwidth is about ~Hz.
-\begin{figure}
+\begin{figure}[b!]
   \centering
   \includesvg[scale=0.9]{figures/z_control_design.svg}
   \caption{}
@@ -101,19 +80,41 @@ One challenge to this approach is the system gain and resonance at 215~Hz change
 To deal with this, I incorporated a (mostly) automated system ID routine into the imaging software. This routine first obtains an FRF of the mode (the same set of points as in Fig.~\ref{fig:z_evolution}) and then first a 2-pole 2-zero model to the mode and finally passes that data into the imaging package. One of the benefits of this approach is that the different cantilever gains become normalized to unity, which makes re-tuning the control system after changing tips far easier to non-existent.
 
 \subsection{Caveats to Inversion}
-It seems that inversion favors raster scanning over CS. The issue, I believe and need to demonstrate more fully, is that the nature of the resonance can shift depending on the setpoint and especially the input magnitude (for sinusoidal inputs). During CS, we ask the system to operate over a wider range, and thus these non-linearties play a larger role. This is evident in Fig XX, where we have connected multiple $\mu$-paths together. What we see is oscillations after the engagement and in the first scan, but which decay after the first hole. Thus, the inversion is more than capable when operating in the limited range around which it was identified, but performance degrades during the approach, which is away from the point at which it was identified.
+It seems that inversion favors raster scanning over CS. The issue, I believe and need to demonstrate more fully, is that the nature of the resonance can shift depending on the setpoint and especially the input magnitude (for sinusoidal inputs). During CS, we ask the system to operate over a wider range, and thus these non-linearties play a larger role. This is evident in Fig.~\ref{fig:dinv_CS_decay}, where we have connected multiple $\mu$-paths together. What we see is oscillations after the engagement and in the first scan, but which decay after the first hole. Thus, the inversion is more than capable when operating in the limited range around which it was identified, but performance degrades during the approach, which is away from the point at which it was identified.
 
+\begin{figure}
+  \centering
+  \includesvg[scale=0.8]{figures/dinv_CS_cycle_decay.svg}
+  \caption{}
+  \label{fig:dinv_CS_decay}
+\end{figure}
 
-It is \emph{possible} that the oscillations are from the XY plane being transmitted via sample tilt to the cantilever. I do not think this is the case, because the slowest resonance in the $XY$-plane is like 350~Hz and these oscillations are dominated by 215~Hz.
+It is \emph{possible} that the oscillations are from the XY plane being transmitted via sample tilt to the cantilever. I do not think this is the case, because the slowest resonance in the $XY$-plane is like 350~Hz and these oscillations are dominated by 215~Hz. However, as we see in Section~\ref{sec:results:final}, the amplitude of these oscillations is dwarfed by the uncertainty introduced by CS, and so we do not pursue the issue further.
 
-\section{Cantilever does not need to disengage.} Forget about lifting the cantilever far enough to actually break contact. Rather, only pull away far enough that the deflection signal stays low, even while we run across the surface.
+\section{Cantilever does not need to fully disengage.} Forget about lifting the cantilever far enough to actually break contact. Rather, only pull away far enough that the deflection signal stays low, even while we run across the surface.
 
 Why? Ultimately the concern is damage to the sample and tip, which is directly caused by the force imparted by the cantilever probe. The deflection signal, though calibrated (meaning it does not directly lead to a value in $kN$), is proportional to that force, because it is proportional to how much the cantilever is bent. I.e., a large (towards $+\infty$) deflection implies the spring force of the cantilever is pushing hard into the sample, thereby inducing damage. In a typical imaging scenario, we choose a deflection setpoint, say $-0.3$~[v], and have in some way decided that this is sufficient, all else being equal, to not damage things too much.
 
 Thus, rather than completely dis-engaging the tip from the surface, I propose to simply move the setpoint towards $-\infty$ during the $XY$-move. If this new setpoint is sufficiently far away, the deflection signal will stay below the scanning setpoint, which we had decided was a ''safe'' value. One challenge here is that about a quarter of the time, the new setpoint far enough away that the probe may snap away from the sample surface anyway. If the move-setpoint more negative than the free value of the deflection, then, because the sensor is saturated, the integrator will wind up and saturate the actuator. To deal with this, we need an anti-windup protection during the transition part the CS cycle.
 
 \section{$\mu$-path connections}
-In general, it should be possible to reduce the CS imaging time by optimizing the order of the $\mu$-path scans. This is related to the traveling salesman problem, but a key difference is that the locations of arrival and depature from a given ``city'' are different. A related idea is to connect multiple $\mu$-paths together. For example, if the $\mu$-paths are one pixel apart, it does not make sense to go through an entire CS cycle of lifting the tip away from the sample surface, moving in the $XY$-plane, and re-engaging the tip, waiting for it to settle and finally starting the next scan. Rather, for $\mu$-paths within a certain threshold, it makes sense to leave the tip on the surface and simply move to the next location at a speed not exceeding the given scan rate. 
+In general, it should be possible to reduce the CS imaging time by optimizing the order of the $\mu$-path scans. This is related to the traveling salesman problem (TSP), but a key difference is that the locations of arrival and departure from a given ``city'' are different. A related idea is to connect multiple $\mu$-paths together. For example, if the $\mu$-paths are one pixel apart, it does not make sense to go through an entire CS cycle of lifting the tip away from the sample surface, moving in the $XY$-plane, and re-engaging the tip, waiting for it to settle and finally starting the next scan. Rather, for $\mu$-paths within a certain threshold, it makes sense to leave the tip on the surface and simply move to the next location at a speed not exceeding the given scan rate. Of course connecting the paths could be worked into a modified dual-mode TSP type problem, where the salesmen has the choice to fly or drive to the next city. If the next city is nearby, the constant overhead of air travel makes no sense, so he drives.
+
+Here, I take a greedy approach to the connection problem. The decision to connect two $\mu$-paths requires
+\begin{enumerate}
+\item An estimate for how long a typical CS cycle takes. In the CS cycle, the time it takes to get from the end of one scan to the beginning of the next is given by
+  \begin{equation}
+    t_{next} = t_{up} + t_{xy-move} + t_{down} + t_{settle}.
+  \end{equation}
+  I estimate these numbers from prior data by taking the mean amount of time over all CS cycles for each stage.
+\item An estimate for how long it would take to scan our way over to the next measurement location. This is simply
+  \begin{equation}
+    t_{scan-to} = \sqrt{(x_{next}-x_{now})^2 + (y_{next}-y_{now})^2) }/ v
+    \end{equation}
+    where $v$ is the scan velocity.
+\end{enumerate}
+(i) an estimate for how long it would and sequentially search through a set of $\mu$-paths
+
 
 \section{Improved post-processing}
 \subsection{Aligning images via cross-correlation.}
@@ -133,7 +134,7 @@ This is basically the same, or at least heavily inspired by Yufan's approach. Th
 
 There is some evidence that this is a bad idea from a metrological point of view because \eqref{eqn:breg1} does not appear to unit DC-gain. In other words, if $\mu$ is too small, the humps in the image get squashed, yet we need $\mu$ large to eliminate the noise. Therefore, I will show metrics for both.
 
-\section{The Metrics and Setting Expectations}
+\section{Limitations of the Metrics and CS}
 In an effort to provide some sort of quantitative comparison between images, we consider three metrics. The first two compare a master image to some corrupted version
 
 The first is the Structural Similarity Index (SSIM) \cite{wang_image_2004}. The second is the Peak Signal to Noise Ratio (PSNR) \cite{Luo_nano_2015}. Both metrics compare a master image to some distorted version, and have been primarily developed by the image processing community in an effort to provide a quantitative measure of image corruption, e.g., when comparing compression algorithms.
@@ -153,14 +154,19 @@ where the constants $C_1$ and $C_2$ are regularizing constants to prevent singul
 
 Both metrics have been used before to compare \emph{simulations} of CS reconstruction in the context of AFM \cite{oxvig_structure_2017, Luo_nano_2015}. We believe, however, that the numbers presented here in Table~\ref{tab:metrics} should be interpreted with some caution as it remains somewhat of an open question of how to best compare \emph{experimental} images from AFM.
 
-
-
-However, in AFM imaging, pure image quality is not the only concern, particularly for delicate samples. In addition, we need a figure of merit for how much damage was done to specimen during the imaging process. While this is not really a concern while imaging a hard calibration grating, it plays a prominent role biological samples. In general, damage occurs while scanning into an uphill region, which results in a positive $z$ error signal. The actual damage done by a given $z_e$ will depend on the spring constant of the cantilever and the softness of the specimen. Nonetheless, we can use the positive deviations of $z_e$ as a relative measure of damage between different control gains or scanning methods, for a given cantiliver and specimen. This motivates a metric we term the relative damage index (RDI), which we define as 
+\begin{figure}
+  \centering
+  \includesvg[scale=1]{figures/damage_illustration.svg}
+  \caption{The RDI metric defined in \eqref{eqn:RDI} penalizes everything in the red shaded region and does not penalize anything in the green shaded region.}
+  \label{fig:damage_illustrate}
+\end{figure}
+However, in AFM imaging, pure image quality is not the only concern, particularly for delicate samples. In addition, we need a figure of merit for how much damage was done to specimen during the imaging process. While this is not really a concern while imaging a hard calibration grating, it plays a prominent role biological samples. In general, damage occurs while scanning into an uphill region, which results in a positive $z$-error signal. The actual damage done by a given $z_e$ will depend on the spring constant of the cantilever and the softness of the specimen. Nonetheless, we can use the positive deviations of $z_e$ as a relative measure of damage between different control gains or scanning methods, for a given cantiliver and specimen. This motivates a metric we term the relative damage index (RDI), which we define as 
 \begin{equation}
   \text{RDI} = \frac{1}{NT_s}\sum_{k=0}^{N-1} \left(\max(0,~z_{dk}-r_{\textrm{scan}})\right)^2 \label{eqn:RDI}
 \end{equation}
-where, $N$ is the total number of samples in a given scan, $z_{dk}$ is the deflection signal at sample $k$ and $r_{\textrm{scan}})$ is the scanning setpoint. The RDI is basically the power in positive deflection.
-By excluding negative values of the deflection, we do not penalize the CS algorithm while it is re-engaging with the specimen \emph{unless} it overshoots the scanning setpoint, which we do want to penalize. 
+where, $N$ is the total number of samples in a given scan, $z_{dk}$ is the deflection signal at sample $k$ and $r_{\textrm{scan}})$ is the scanning setpoint. 
+The RDI is basically the power in positive deflection.
+By excluding negative values of the deflection, we do not penalize the CS algorithm while it is re-engaging with the specimen \emph{unless} it overshoots the scanning setpoint, which we do want to penalize. This is illustrated in Fig.~\ref{fig:damage_illustrate}, which shows several CS cycles with a poorly tuned controller.
 
 What kind of numbers are reasonably to expect from these metrics? I.e., how do we know when to stop optimizing? In the following two subsections,  we consider two things: (i) quality metrics for a batch of slow raster scans all taken at the same slow speed of 0.5~Hz. and (ii) CS simulations, where we sample an actual raster image (the master) with the same sampling pattern we implement 
 
@@ -213,7 +219,7 @@ We need to characterize how much of the poor quality is due to CS itself and how
 
 We note several things. The halos show up here. The reconstructed images are noisy and the PSNR and SSIM numbers are quite low. The CS experts probably say this is due to the $\mu$-paths introducing too much coherence in the measurements or that the image isn't sparse enough for the number of measurements we took. The TV denoising helps the SSIM metric but doesn't do much for the PSNR.
 
-\section{Experimental Results}
+\section{Experimental Results}\label{sec:results:final}
 We did some scans. Here are some pictures. There are also some tables so this all appears scientific.
 
 \bibliographystyle{IEEEtran}

@@ -1,6 +1,12 @@
-% [figs, axs] = make_cs_traj_figs(figbase, how_many)
 function [figs, axs] = make_cs_traj_figs(figbase, how_many)
-  
+% [figs, axs] = make_cs_traj_figs(figbase, how_many)
+% 
+% The order is:
+%   axs =  ax_ze, how_many >=1
+%   axs += ax_ze, how_many >=2
+%   axs += ax_y,  how_many >=3
+%   axs += ax_y,  how_many >=4
+
   Fig_uz = figure(20+figbase); clf
   ax1 = gca();
   figs = {Fig_uz};
