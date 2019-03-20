@@ -253,16 +253,18 @@ classdef CsExp < handle
       else
         idx_shift = 0;
       end
-      tmove = self.state_times(1+idx_shift);
-      tlower = self.state_times(2+idx_shift);
-      tsettle = self.state_times(3+idx_shift);
-      tscan = self.state_times(4+idx_shift);
-      tup = self.state_times(5+idx_shift);
-
+      s_times = self.get_state_times()
+      tmove = s_times.move;
+      tlower = s_times.tdown;
+      tsettle = s_times.tsettle;
+      tscan = s_times.scan;
+      tup = s_times.tup;
+      t_con = s_times.connect;
+      total = s_times.total;
       fprintf(['Total times\n--------\n',...
-               'move   |  lower  |  settle  | scan   |   up  |  total   |\n']);
-      fprintf('%.3f  | %.3f   | %.3f    | %.3f | %.3f |  %.3f  |\n', tmove,...
-        tlower, tsettle, tscan, tup, sum(self.state_times(1+idx_shift:end)));
+               'move   |  lower  |  settle  | scan   |connect |   up  |  total   |\n']);
+      fprintf('%.3f  | %.3f   | %.3f    | %.3f | %.3f | %.3f |  %.3f   |\n', tmove,...
+        tlower, tsettle, tscan, t_con, tup, total);
     end
 
     function [x_k, y_k, uz_k, ze_k, t_k] = get_state_cycle_k(self, k, state)
