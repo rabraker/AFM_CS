@@ -23,7 +23,7 @@ plants = CanonPlants.plants_ns14(9);
 PLANT_init_x = plants.PLANT;
 
 %-------------- Define scan Params -------------------------
-Ts = 40e-6;
+
 TsTicks = 1600;
 Ki_x = 0.01;
 
@@ -31,9 +31,10 @@ if 1
     width =5;  % microns
     npix = 512;  % image resolution.
     mu_length = 0.5;  % 1000 nm. length of the horizontal mu-path. 
-    sub_sample_frac = 0.15;  % Percent of pixels to subsample. 
+    sub_sample_frac = 0.10;  % Percent of pixels to subsample. 
+    raster_freq = 1;  % hz
 end
-
+N_prescan = 50;
 % Unit conversions.
 pix_per_micron = npix/width;
 mu_pix = ceil(mu_length*pix_per_micron);
@@ -41,20 +42,18 @@ mu_pix = ceil(mu_length*pix_per_micron);
 % ************************************************
 % ************************************************
 rng(1)
-Ts = 40e-6;  % AFM sample rate. 
-Fs = 1/Ts;
+
 microns2volts = 1/5;  %10/50;
-raster_freq = 1;  % hz
+
 raster_period = 1/raster_freq;
 
 microns_per_second = width/(raster_period/2);
-pixels_per_second = pix_per_micron * microns_per_second;
-volts_per_second = microns_per_second*microns2volts
-volts_per_sample = volts_per_second * Ts;  % Ts = seconds per sample
+volts_per_second = microns_per_second*microns2volts;
+volts_per_sample = volts_per_second * AFM.Ts;  % Ts = seconds per sample
 
 % Convert mu-path length in pixels to volts
 mu_micron = (1/pix_per_micron) * mu_pix;
-mu_volts = mu_micron * microns2volts
+mu_volts = mu_micron * microns2volts;
 mu_Nsamples = ceil(mu_volts / volts_per_sample);
 
 
@@ -69,27 +68,21 @@ fprintf('Actual  sub sample fraction: %f\n', actual_sub_sample_frac)
 
 
 I = ones(npix,npix)-pix_mask;
-I = flipud(I); % why the fuck does it start from the top???
 figure(1)
 imshow(I)
 
 % '------------------correct by overscan for ramp ramp set ---------------
 N = mu_Nsamples;
-x_rate = volts_per_sample;
-% G = PLANT_init_x;
-% D = tf([0.01, 0], [1 -1], Ts);
-% H = feedback(D*G, 1);
+
 % N-1 because x0 is sample 1.
 xdirControl = get_xdir_standard_control();
-x_N =  (N-1)*x_rate;
-N_extra = mu_overscan(xdirControl.Hyr, x_rate, mu_Nsamples, 1)+10
-%
+x_N =  (N-1)*volts_per_sample;
+N_extra = mu_overscan(xdirControl.Hyr, volts_per_sample, mu_Nsamples, 1, N_prescan)+10
+
 mu_Nsamples_extra = N+N_extra;
-
-
   
-mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, Ts,...
-  'overscan_samples', N_extra, 'pre_pad_samples', 250)
+mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, AFM.Ts,...
+  'overscan_samples', N_extra, 'pre_pad_samples', N_prescan);
 if 0
   % Magic numbers for connection threshold radius.
   tcon_min = 0.04;
@@ -120,7 +113,7 @@ fprintf('File root:\n%s\n', data_root)
 fprintf('File name:\n%s\n', fname)
 
 
-
+%%
 mpt.write_data_json(fpath_json)
 
 %%
