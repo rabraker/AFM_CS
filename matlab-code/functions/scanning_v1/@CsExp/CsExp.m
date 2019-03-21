@@ -195,6 +195,32 @@ classdef CsExp < handle
 
     end
 
+    function h = plot_traj_in_time_interval_by_state(self, t0, t1, state_name,...
+        traj_name, ax, t_offset, varargin)
+      
+      idx_s = self.get_idx_by_state_in_time_range(state_name, t0, t1);
+      
+      for k=1:length(idx_s)
+        h = plot(ax, self.t(idx_s{k})-t_offset, self.(traj_name)(idx_s{k}), varargin{:});
+        hold(ax, 'on')
+      end
+    end
+    
+    function h = plot_traj_from_csidx_by_state(self, idx_start, idx_end, state_name,...
+        traj_name, ax, t_offset, varargin)
+      
+      for k=idx_start:idx_end
+        idx = self.idx_state_s.(state_name){k};
+        h = plot(ax, self.t(idx)-t_offset, self.(traj_name)(idx), varargin{:});
+        hold(ax, 'on')
+      end
+    end    
+    % ************************************************************************ %
+    % ******************* methods in other files ***************************** %
+    
+    [idx_cell, N_min]= get_idx_by_state_in_time_range(self,...
+        state_name, t_start, t_end)
+      
     % Defined in psd_from_intervals.m
     [sig_psd, freqs, k] = psd_from_intervals(self, signal, state, ...
                                              starts, ends)
@@ -253,7 +279,7 @@ classdef CsExp < handle
       else
         idx_shift = 0;
       end
-      s_times = self.get_state_times()
+      s_times = self.get_state_times();
       tmove = s_times.move;
       tlower = s_times.tdown;
       tsettle = s_times.tsettle;
