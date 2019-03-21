@@ -21,29 +21,30 @@ gg = zpk(z(end-1:end), p(1:2), 1, G.Ts);
 hole_depth = (20);
 
 chan_map = ChannelMap([1:5]);
-exp_date = '3-12-2019'
+exp_date = '3-18-2019'
 % ----------------------- Load and Process CS-data -----------------------------
 dat_root = PATHS.raster_image_data(size_dir, exp_date);
 
 % ----------------------- Load and Process raster-data -------------------------
 raster_files = {...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-12-2019-01.csv',...
-'raster_scan_512pix_5mic_01Hz_out_3-12-2019-02.csv',...
-'raster_scan_512pix_5mic_02Hz_out_3-12-2019-02.csv',...
-'raster_scan_512pix_5mic_04Hz_out_3-12-2019-02.csv',...
-'raster_scan_512pix_5mic_05Hz_out_3-12-2019-02.csv',...
-'raster_scan_512pix_5mic_06Hz_out_3-12-2019-02.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-18-2019-01.csv',...
+'raster_scan_512pix_5mic_01Hz_out_3-18-2019-01.csv',...
+'raster_scan_512pix_5mic_02Hz_out_3-18-2019-01.csv',...
+'raster_scan_512pix_5mic_04Hz_out_3-18-2019-01.csv',...
+'raster_scan_512pix_5mic_06Hz_out_3-18-2019-01.csv',...
+'raster_scan_512pix_5mic_08Hz_out_3-18-2019-01.csv',...
+'raster_scan_512pix_5mic_10Hz_out_3-18-2019-01.csv',...
 };
 
 cs_files = {...
-'cs-traj-512pix-10perc-500nm-5mic-01Hz-250prescan-isconnect_out_3-12-2019-01.csv',...
-'cs-traj-512pix-10perc-500nm-5mic-02Hz-250prescan-isconnect_out_3-12-2019-01.csv',...
-'cs-traj-512pix-10perc-500nm-5mic-03Hz-250prescan-isconnect_out_3-12-2019-01.csv',...
-'cs-traj-512pix-10perc-500nm-5mic-04Hz-250prescan-isconnect_out_3-12-2019-01.csv',...
-'cs-traj-512pix-7perc-500nm-5mic-02Hz-250prescan-isconnect_out_3-12-2019-01.csv',...
+'cs-traj-512pix-10perc-500nm-5mic-01Hz-250prescan-notconnect_out_3-18-2019-01.csv',...
+'cs-traj-512pix-10perc-500nm-5mic-01Hz-250prescan-notconnect_out_3-18-2019-02.csv',...
+'cs-traj-512pix-10perc-500nm-5mic-02Hz-250prescan-isconnect_out_3-18-2019-01.csv',...
+'cs-traj-512pix-10perc-500nm-5mic-04Hz-250prescan-notconnect_out_3-18-2019-01.csv',...
+'cs-traj-512pix-15perc-500nm-5mic-05Hz-250prescan-notconnect_out_3-18-2019-01.csv',...
 };
 
-%%
+%
 rast_exps = {};
 for k=1:length(raster_files)
   raster_paths = get_raster_paths(dat_root, raster_files{k});
@@ -51,16 +52,14 @@ for k=1:length(raster_files)
 end
 
 
-x1s = [19, 19, 30, 30, 30, 86];
-x2s = [430, 441, 444 445, 445, 449];
+x1s = [30, 39, 40, 44, 42, 45, 44, 44];
+x2s = [498, 455, 458 458, 460, 459, 459];
 figbase = 10;
 for k=1:length(rast_exps)
-  rast_exp2 = copy(rast_exps{k});
-  % uz = detrend(rast_exp2.uz);
-  rast_exp2.bin_raster_really_slow(@detrend);
+  rast_exps{k}.bin_raster_really_slow(@detrend);
   
-  pixmats_raw{k} = rast_exp2.pix_mat(1:end, 1:end);
-  % pixmats{k} = pixmats_raw{k};
+  pixmats_raw{k} = rast_exps{k}.pix_mat(1:end, 1:end);
+%   pixmats{k} = pixmats_raw{k};
   pixmats{k} = pin_along_column(pixmats_raw{k}, x1s(k), x2s(k));
   pixmats{k} = pixmats{k} - mean(pixmats{k}(:));
   stit = sprintf('(raster) %.2f Hz', rast_exps{k}.meta_in.raster_freq);
@@ -70,15 +69,9 @@ for k=1:length(rast_exps)
   
 end
 
-%%
-figure(37)
-t6 = (0:length(rast_exps{6}.uz)-1)'*AFM.Ts;
-plot(t6, rast_exps{6}.uz)
 
-figure(38)
-plot(t6, rast_exps{6}.ze)
 
-%%
+
 data_root = PATHS.cs_image_data(size_dir, exp_date);
 cs_exps = {};
 for k=1:length(cs_files)
@@ -90,11 +83,12 @@ for k=1:length(cs_files)
   cs_exps{k}.print_state_times();
   cs_exps{1}.sub_sample_frac()
 end
-
+%
+%%
 [~, axs] = make_cs_traj_figs(figbase, 4);
 cs_exps{5}.plot_all_cycles(axs{1:4});
 %%
-clc
+
 cs_exps{1}.process_cs_data(false, []);
 cs_exps{1}.sub_sample_frac()
 %%
@@ -107,12 +101,12 @@ for k=1:length(cs_exps)
   fprintf('nperc=%.3f\n', sum(cs_exps{k}.pix_mask(:))/cs_exps{k}.npix^2);
   ht = cs_exps{k}.feature_height;
   if bp
-    cs_exps{k}.solve_bp(true, use_dct2, opts);
+    cs_exps{k}.solve_bp(false, use_dct2, opts);
 
     fprintf('Finished solving bp problem #%d\n', k);
-    stit = sprintf('(CS) %.2f Hz equiv, \\%% %.2f sampling\nTotal time: %.2f',...
+    stit = sprintf('(CS) %.2f Hz equiv, \\%% (%.2f, %.2f) sampling\nTotal time: %.2f',...
       cs_exps{k}.meta_in.tip_velocity/(cs_exps{k}.meta_in.width * 2),...
-      cs_exps{k}.meta_in.actual_sub_samble_perc,...
+      cs_exps{k}.meta_in.actual_sub_samble_perc, cs_exps{k}.sub_sample_frac(),...
       length(cs_exps{k}.x)*cs_exps{k}.Ts);
     
     f10=mkfig(1001 + 2*k, 6, 7.5); clf
@@ -127,7 +121,7 @@ for k=1:length(cs_exps)
 
 end
 %%
-mu = 200;
+mu = 400;
 Img_filts = {};
 mxs = [];
 for k=1:length(cs_exps)
@@ -159,6 +153,7 @@ scan_metrics{1} = ScanMetrics('ssim', 1, 'psnr', Inf,...
 
 figure(3000);clf;
 h = subplott(3,4);
+fprintf('\n')
 for k=2:length(rast_exps)
   imk = pixmats{k} - mean(pixmats{k}(:));
   if ~isinf(mu)
@@ -166,6 +161,7 @@ for k=2:length(rast_exps)
   end
   imk_slice = imk(slice, slice);
   im1_ontok_fit = norm_align(imk_slice, im_master);
+%   [im1_ontok_fit, imk_slice] = align_by_metric(im_master, imk, [], 'psnr');
   [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice);
   damage = rast_exps{k}.damage_metric();
   quality = rast_exps{k}.quality_metric();
@@ -264,21 +260,25 @@ end
 
 
 %%
-S = scan_metrics_table(scan_metrics)
-fid = fopen('notes/tables/cs_raster_table_3-12-2019_mu100_dct1.tex', 'w+');
-fprintf(fid, '%s', S);
+S1 = scan_metrics_table(scan_metrics)
+
+S2 = state_times_table(cs_exps)
+S3 = mpt_connect_table(cs_stats)
+
+%%
+fid = fopen('notes/tables/cs_raster_table_3-18-2019_mu100_dct2.tex', 'w+');
+fprintf(fid, '%s', S1);
 fclose(fid);
 
-S = state_times_table(cs_exps)
-fid = fopen('notes/tables/cs_state_times_table_3-12-2019_mu100_dct1.tex', 'w+');
-fprintf(fid, '%s', S);
+fid = fopen('notes/tables/cs_state_times_table_3-18-2019_mu100_dct2.tex', 'w+');
+fprintf(fid, '%s', S2);
 fclose(fid);
 
 
-S = mpt_connect_table(cs_stats)
 
-fid = fopen('notes/tables/cs_connect_table_3-12-2019_mu100_dct1.tex', 'w+');
-fprintf(fid, '%s', S);
+
+fid = fopen('notes/tables/cs_connect_table_3-18-2019_mu100_dct2.tex', 'w+');
+fprintf(fid, '%s', S3);
 fclose(fid);
 
 function S = mpt_connect_table(cs_stats)

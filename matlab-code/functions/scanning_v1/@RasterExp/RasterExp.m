@@ -27,6 +27,8 @@ classdef RasterExp <matlab.mixin.Copyable
     x;
     y;
     pix_mat;
+    pix_mat_pinned;
+    pin_idx_s;
     pix_mask;
 %     UserData;
   end

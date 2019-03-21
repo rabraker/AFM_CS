@@ -21,27 +21,30 @@ gg = zpk(z(end-1:end), p(1:2), 1, G.Ts);
 hole_depth = (20);
 
 chan_map = ChannelMap([1:5]);
-exp_date = '3-12-2019'
+exp_date = '3-20-2019'
 % ----------------------- Load and Process CS-data -----------------------------
 dat_root = PATHS.raster_image_data(size_dir, exp_date);
 
 % ----------------------- Load and Process raster-data -------------------------
 raster_files = {...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-12-2019-01.csv',...
-'raster_scan_512pix_5mic_01Hz_out_3-12-2019-02.csv',...
-'raster_scan_512pix_5mic_02Hz_out_3-12-2019-02.csv',...
-'raster_scan_512pix_5mic_04Hz_out_3-12-2019-02.csv',...
-'raster_scan_512pix_5mic_05Hz_out_3-12-2019-02.csv',...
-'raster_scan_512pix_5mic_06Hz_out_3-12-2019-02.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-20-2019-01.csv',...
+'raster_scan_512pix_5mic_01Hz_out_3-20-2019-01.csv',...
+'raster_scan_512pix_5mic_04Hz_out_3-20-2019-01.csv',...
+'raster_scan_512pix_5mic_05Hz_out_3-20-2019-01.csv',...
+'raster_scan_512pix_5mic_08Hz_out_3-20-2019-01.csv',...
+'raster_scan_512pix_5mic_10Hz_out_3-20-2019-01.csv',...
+};
+cs_files = {...
+'cs-traj-512pix-10perc-500nm-5mic-01Hz-250prescan-notconnect_out_3-20-2019-01.csv',...
+'cs-traj-512pix-10perc-500nm-5mic-02Hz-250prescan-notconnect_out_3-20-2019-01.csv',...
+'cs-traj-512pix-10perc-500nm-5mic-04Hz-250prescan-notconnect_out_3-20-2019-01.csv',...
+'cs-traj-512pix-10perc-500nm-5mic-05Hz-250prescan-notconnect_out_3-20-2019-01.csv',...
+'cs-traj-512pix-15perc-500nm-5mic-01Hz-250prescan-notconnect_out_3-20-2019-01.csv',...
+'cs-traj-512pix-15perc-500nm-5mic-02Hz-250prescan-notconnect_out_3-20-2019-01.csv',...
+'cs-traj-512pix-15perc-500nm-5mic-04Hz-250prescan-notconnect_out_3-20-2019-01.csv',...
+'cs-traj-512pix-15perc-500nm-5mic-05Hz-250prescan-notconnect_out_3-20-2019-01.csv',...
 };
 
-cs_files = {...
-'cs-traj-512pix-10perc-500nm-5mic-01Hz-250prescan-isconnect_out_3-12-2019-01.csv',...
-'cs-traj-512pix-10perc-500nm-5mic-02Hz-250prescan-isconnect_out_3-12-2019-01.csv',...
-'cs-traj-512pix-10perc-500nm-5mic-03Hz-250prescan-isconnect_out_3-12-2019-01.csv',...
-'cs-traj-512pix-10perc-500nm-5mic-04Hz-250prescan-isconnect_out_3-12-2019-01.csv',...
-'cs-traj-512pix-7perc-500nm-5mic-02Hz-250prescan-isconnect_out_3-12-2019-01.csv',...
-};
 
 %%
 rast_exps = {};
@@ -49,35 +52,29 @@ for k=1:length(raster_files)
   raster_paths = get_raster_paths(dat_root, raster_files{k});
   rast_exps{k} = RasterExp(raster_paths);
 end
+%%
 
-
-x1s = [19, 19, 30, 30, 30, 86];
-x2s = [430, 441, 444 445, 445, 449];
+x1s = [30, 47, 53, 51, 59, 51];
+x2s = [496, 465, 464, 468, 472, 465];
 figbase = 10;
 for k=1:length(rast_exps)
-  rast_exp2 = copy(rast_exps{k});
-  % uz = detrend(rast_exp2.uz);
-  rast_exp2.bin_raster_really_slow(@detrend);
+  rast_exps{k}.bin_raster_really_slow(@detrend);
   
-  pixmats_raw{k} = rast_exp2.pix_mat(1:end, 1:end);
-  % pixmats{k} = pixmats_raw{k};
-  pixmats{k} = pin_along_column(pixmats_raw{k}, x1s(k), x2s(k));
-  pixmats{k} = pixmats{k} - mean(pixmats{k}(:));
+  pixmats_raw{k} = rast_exps{k}.pix_mat(1:end, 1:end);
+%   rast_exps{k}.pix_mat_pinned = pixmats_raw{k};
+  pixmat_ = pin_along_column(rast_exps{k}.pix_mat, x1s(k), x2s(k));
+  
+  rast_exps{k}.pix_mat_pinned = pixmat_ - mean(pixmat_(:));
+  rast_exps{k}.pin_idx_s = [x1s(k), x2s(k)];
   stit = sprintf('(raster) %.2f Hz', rast_exps{k}.meta_in.raster_freq);
-  plot_raster_data(pixmats{k}, figbase*k, stit)
+  plot_raster_data(rast_exps{k}.pix_mat_pinned, figbase*k, stit)
   % stit = sprintf('(raw) scan %d', k);
   % plot_raster_data(pixmats_raw{k}, (figbase-5)*k, stit)
-  
 end
-
 %%
-figure(37)
-t6 = (0:length(rast_exps{6}.uz)-1)'*AFM.Ts;
-plot(t6, rast_exps{6}.uz)
-
-figure(38)
-plot(t6, rast_exps{6}.ze)
-
+for k=1:length(rast_exps)
+  rast_exps{k}.save()
+end
 %%
 data_root = PATHS.cs_image_data(size_dir, exp_date);
 cs_exps = {};
@@ -88,19 +85,18 @@ for k=1:length(cs_files)
   cs_exps{k} = CsExp(cs_paths, 'feature_height', hole_depth, 'gg', gg);
   % cs_exps{k} = CsExp(cs_paths, 'feature_height', hole_depth);
   cs_exps{k}.print_state_times();
-  cs_exps{1}.sub_sample_frac()
+  cs_exps{k}.sub_sample_frac()
 end
 
 [~, axs] = make_cs_traj_figs(figbase, 4);
-cs_exps{5}.plot_all_cycles(axs{1:4});
-%%
-clc
-cs_exps{1}.process_cs_data(false, []);
-cs_exps{1}.sub_sample_frac()
+cs_exps{end}.plot_all_cycles(axs{1:4});
+
+
 %%
 bp = true;
 use_dct2 = true;
-opts = l1qc_dct_opts('l1_tol', 0.005);
+thresh = (20/7)*(1/1000)*20;
+opts = l1qc_dct_opts('l1_tol', 0.001);
 for k=1:length(cs_exps)
   cs_exps{k}.process_cs_data(false, []);
   fprintf('finished processing raw CS data...\n');
@@ -121,15 +117,20 @@ for k=1:length(cs_exps)
     
     ImshowDataView.setup(f10);
     cb_exp =  @(event_obj)cs_exps{k}.dataview_callback(event_obj, ax4, ax4_2);
-    ImshowDataView.imshow(cs_exps{k}.Img_bp, [], ax4, ax4_2, cb_exp)
+    ImshowDataView.imshow(cs_exps{k}.Img_bp-mean(cs_exps{k}.Img_bp(:)),...
+      [-thresh, thresh], ax4, ax4_2, cb_exp)
     title(ax4, stit)
   end
 
+  cs_exps{k}.save();
 end
 %%
-mu = 200;
+mu = Inf;
 Img_filts = {};
 mxs = [];
+thresh = (20/7)*(1/1000)*20;
+DRng = 2*thresh;
+
 for k=1:length(cs_exps)
 Img_filts{k} = cs_exps{k}.Img_bp - min(cs_exps{k}.Img_bp(:));
 if ~isinf(mu)
@@ -141,11 +142,11 @@ mxs = [mxs; mx];
 mesh(Img_filts{k}), colormap('gray')
 end
 
-slice = 25:512-25;
-
-im_master = pixmats{1} - mean(pixmats{1}(:));
+slice = 30:512-30;
+master_idx = 2;
+im_master = rast_exps{master_idx}.pix_mat_pinned - mean(rast_exps{master_idx}.pix_mat_pinned(:));
 if ~isinf(mu)
-  im_master = SplitBregmanROF(im_master, mu, 0.001);
+  %im_master = SplitBregmanROF(im_master, mu, 0.001);
 end
 fprintf('---------------------------------------------------\n');
 scan_metrics = {};
@@ -159,14 +160,20 @@ scan_metrics{1} = ScanMetrics('ssim', 1, 'psnr', Inf,...
 
 figure(3000);clf;
 h = subplott(3,4);
-for k=2:length(rast_exps)
-  imk = pixmats{k} - mean(pixmats{k}(:));
+fprintf('\n')
+j=1;
+for k=1:length(rast_exps)
+  if k == master_idx
+    continue;
+  end
+  imk = rast_exps{k}.pix_mat_pinned - mean(rast_exps{k}.pix_mat_pinned(:));
   if ~isinf(mu)
-    imk = SplitBregmanROF(imk, mu, 0.001);
+    %imk = SplitBregmanROF(imk, mu, 0.001);
   end
   imk_slice = imk(slice, slice);
   im1_ontok_fit = norm_align(imk_slice, im_master);
-  [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice);
+%   [im1_ontok_fit, imk_slice] = align_by_metric(im_master, imk, [], 'psnr');
+  [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice, DRng);
   damage = rast_exps{k}.damage_metric();
   quality = rast_exps{k}.quality_metric();
   
@@ -178,12 +185,13 @@ for k=2:length(rast_exps)
     'type', 'raster');
   
 %   subplot(2,4,k-1)
-  imshowpair(im1_ontok_fit, imk_slice, 'parent', h(k-1));
-  title(h(k-1), sprintf('raster (%.1f Hz)', csm.rate));
+  imshowpair(im1_ontok_fit, imk_slice, 'parent', h(j));
+  title(h(j), sprintf('raster (%.1f Hz)', csm.rate));
   fprintf('(raster %.1f Hz) psnr: %.4f, ssm: %.4f, damage: %.4f, time: %.4f\n',...
     rast_exps{k}.meta_in.raster_freq, psn_1k, ssm_1k, damage, csm.time);
 
   scan_metrics{end+1} = csm;
+  j=j+1;
 end
 
 
@@ -196,7 +204,7 @@ for k=1:length(cs_exps)
   end
   imk_slice = imk(slice, slice);
   im1_ontok_fit = norm_align(imk_slice, im_master);
-  [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice);
+  [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice, DRng);
 
   damage = cs_exps{k}.damage_metric();
   quality = cs_exps{k}.quality_metric();
@@ -224,61 +232,29 @@ for k=1:length(cs_exps)
 end
 
 %%
-% compare CS-sim based on slow raster.
-im_master = pixmats{1} - mean(pixmats{1}(:));
-
-[n, m] = size(im_master);
-opts = l1qc_dct_opts('l1_tol', 0.0001, 'verbose', 1);
-cs_idx = [1, 5];
-rast_idx = [2,3];
-for k=1:2
-  pix_mask = cs_exps{cs_idx(k)}.pix_mask;
-  im_rast_sim = pixmats{rast_idx(k)} - mean(pixmats{rast_idx(k)}(:));
-  figure(4)
-  imagesc(pix_mask)
-  
-  cs_sims{k} = CsSim(im_rast_sim, pix_mask);
-  cs_sims{k}.solve_bp(false, use_dct2, opts);
-  imk = cs_sims{k}.Img_bp;
-  if ~isinf(mu)
-    imk = SplitBregmanROF(imk, mu, 0.001);
-  end
-  imk_slice = imk(slice, slice);
-  
-  im1_ontok_fit = norm_align(imk_slice, im_master);
-  [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice);
-  
-  
-  stit = sprintf('(CS-sim \\%% %f) psnr: %.4f, ssm: %.4f',...
-    cs_exps{k}.sub_sample_frac()*100, psn_1k, ssm_1k);
-  fprintf('%s\n', stit);
-%   cs_exps{cs_idx(k)}.meta_in.actual_sub_samble_perc
-  figure(k+4000);
-  imagesc(imk)
-  colormap('gray')
-  title(stit)
-  
-end
 
 
 
+
+S1 = scan_metrics_table(scan_metrics)
+
+S2 = state_times_table(cs_exps)
+S3 = mpt_connect_table(cs_stats)
 
 %%
-S = scan_metrics_table(scan_metrics)
-fid = fopen('notes/tables/cs_raster_table_3-12-2019_mu100_dct1.tex', 'w+');
-fprintf(fid, '%s', S);
+fid = fopen('notes/tables/cs_raster_table_3-18-2019_mu100_dct2.tex', 'w+');
+fprintf(fid, '%s', S1);
 fclose(fid);
 
-S = state_times_table(cs_exps)
-fid = fopen('notes/tables/cs_state_times_table_3-12-2019_mu100_dct1.tex', 'w+');
-fprintf(fid, '%s', S);
+fid = fopen('notes/tables/cs_state_times_table_3-18-2019_mu100_dct2.tex', 'w+');
+fprintf(fid, '%s', S2);
 fclose(fid);
 
 
-S = mpt_connect_table(cs_stats)
 
-fid = fopen('notes/tables/cs_connect_table_3-12-2019_mu100_dct1.tex', 'w+');
-fprintf(fid, '%s', S);
+
+fid = fopen('notes/tables/cs_connect_table_3-18-2019_mu100_dct2.tex', 'w+');
+fprintf(fid, '%s', S3);
 fclose(fid);
 
 function S = mpt_connect_table(cs_stats)
