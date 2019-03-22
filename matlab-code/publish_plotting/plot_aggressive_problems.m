@@ -84,10 +84,10 @@ for j=1:length(traj_names)
       state_name, traj_names{j}, h_j, 0, 'color', indc{1, k});
   end
   xlim(h_j, xlm1);
-  
+  grid(h_j, 'on')
   ylabel(h_j, [names{j} ' [v]'], 'FontSize', 12);
   if j<3
-    set(h_j, 'XTick', [])
+    set(h_j, 'XTickLabel', [])
   else
     xlabel(h_j, 'time [s]')
   end
@@ -107,8 +107,9 @@ for j=1:length(traj_names)
       state_name, traj_names{j}, h_j, 0, 'color', indc{1, k});
     xlim(h_j, xlm2)
     hands(k).DisplayName = indc{2, k};
+    grid(h_j, 'on')
     if j<3
-      set(h_j, 'XTick', [])
+      set(h_j, 'XTickLabel', [])
     else
       xlabel(h_j, 'time [s]')
     end
@@ -124,3 +125,4 @@ set(leg, 'location', 'northeast')
 %%
 
 save_fig(Fig, 'notes/figures/aggresiveD_y_perturbs_z')
+save_fig(Fig, '~/gradschool/thesis/plots_mpc_slf/figures/aggresiveD_y_perturbs_z')
