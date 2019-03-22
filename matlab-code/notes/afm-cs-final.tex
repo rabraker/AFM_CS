@@ -82,6 +82,8 @@ To deal with this, I incorporated a (mostly) automated system ID routine into th
 \subsection{Caveats to Inversion}
 It seems that inversion favors raster scanning over CS. The issue, I believe and need to demonstrate more fully, is that the nature of the resonance can shift depending on the setpoint and especially the input magnitude (for sinusoidal inputs). During CS, we ask the system to operate over a wider range, and thus these non-linearties play a larger role. This is evident in Fig.~\ref{fig:dinv_CS_decay}, where we have connected multiple $\mu$-paths together. What we see is oscillations after the engagement and in the first scan, but which decay after the first hole. Thus, the inversion is more than capable when operating in the limited range around which it was identified, but performance degrades during the approach, which is away from the point at which it was identified.
 
+\textbf{ACTUALLY:} maybe this is really just larger oscillations from a larger move size??
+
 \begin{figure}
   \centering
   \includesvg[scale=0.8]{figures/dinv_CS_cycle_decay.svg}
@@ -89,7 +91,6 @@ It seems that inversion favors raster scanning over CS. The issue, I believe and
   \label{fig:dinv_CS_decay}
 \end{figure}
 
-It is \emph{possible} that the oscillations are from the XY plane being transmitted via sample tilt to the cantilever. I do not think this is the case, because the slowest resonance in the $XY$-plane is like 350~Hz and these oscillations are dominated by 215~Hz. However, as we see in Section~\ref{sec:results:final}, the amplitude of these oscillations is dwarfed by the uncertainty introduced by CS, and so we do not pursue the issue further.
 
 \section{Cantilever does not need to fully disengage.} Forget about lifting the cantilever far enough to actually break contact. Rather, only pull away far enough that the deflection signal stays low, even while we run across the surface.
 
@@ -221,6 +222,47 @@ We note several things. The halos show up here. The reconstructed images are noi
 
 \section{Experimental Results}\label{sec:results:final}
 We did some scans. Here are some pictures. There are also some tables so this all appears scientific.
+
+\begin{figure}
+    \includesvg[scale=1]{figures/cs_raster_images_3-20-2019}
+    \caption{}  
+    \label{fig:resultsF1_images}
+\end{figure}
+
+\begin{figure}
+    \includesvg[scale=1]{figures/cs_raster_images_err_3-20-2019}
+    \caption{}  
+    \label{fig:resultsF1_errs}
+\end{figure}
+
+Impressive, Science Tables:
+\begin{table}[htbp]
+  \centering
+      \caption{Performance metrics for the scans taken on 3-10-2019.  All images filtered with TV denoising, $\mu$=100.}
+      \begin{tabular}{cccccc}
+        \input{tables/cs_raster_table_3-20-2019_muInf_dct2.tex}
+      \end{tabular}
+      \label{tab:rast_vs_cs_v1}
+\end{table}
+
+
+Another awesome Science Table:
+\begin{table}
+  \centering
+  \caption{Breakdown of state times for the CS scans listed in Table~\ref{tab:rast_vs_cs_v1}. All times are in seconds. All images filtered with TV denoising, $\mu$=100.}
+  \begin{tabular}{cccccccc}
+    \input{tables/cs_state_times_table_3-20-2019_muInf_dct2.tex}
+  \end{tabular}
+\end{table}
+
+And finally a Science Figure showing rows of pixels.
+
+\begin{figure}
+    \includesvg[scale=1]{figures/cs_raster_pixel_rows_3-20-2019.svg}
+    \caption{Rows of pixels, as indicated by the red lines in Fig.~\ref{fig:resultsF1_images}. For clarity, not all images are included.}  
+    \label{fig: }
+\end{figure}
+
 
 \bibliographystyle{IEEEtran}
 \bibliography{/home/arnold/bib_pdf/main_bibliography}

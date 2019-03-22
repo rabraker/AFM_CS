@@ -54,8 +54,8 @@ for k=1:length(raster_files)
 end
 %%
 
-x1s = [30, 47, 53, 51, 59, 51];
-x2s = [496, 465, 464, 468, 472, 465];
+x1s = [30, 47, 53, 51, 59, 60];
+x2s = [496, 465, 464, 468, 472, 424];
 figbase = 10;
 for k=1:length(rast_exps)
   rast_exps{k}.bin_raster_really_slow(@detrend);
@@ -125,6 +125,23 @@ for k=1:length(cs_exps)
   cs_exps{k}.save();
 end
 %%
+Fig1 = mkfig(3000, 7, 9); clf;
+ha1 = tight_subplot(4, 3, [0.025, 0.015], [.01, .02], [.02, .02], true);
+
+Fig_err = mkfig(3001, 7, 9); clf
+ha_err = tight_subplot(4, 3, [0.025, 0.015], [.01, .02], [.02, .02], true);
+
+Fig_rows = mkfig(3002, 7, 4.5); clf
+ha_row = tight_subplot(2, 1, [0.1, 0.015], [.1, .05], [.05, .02], false);
+xlabel(ha_row(2), 'x-direction pixel')
+ylabel(ha_row(1), 'height')
+title(ha_row(1), 'raster')
+title(ha_row(2), 'CS')
+ylabel(ha_row(2), 'height')
+
+grid(ha_row(1), 'on')
+grid(ha_row(2), 'on')
+
 mu = Inf;
 Img_filts = {};
 mxs = [];
@@ -132,14 +149,14 @@ thresh = (20/7)*(1/1000)*20;
 DRng = 2*thresh;
 
 for k=1:length(cs_exps)
-Img_filts{k} = cs_exps{k}.Img_bp - min(cs_exps{k}.Img_bp(:));
-if ~isinf(mu)
-  Img_filts{k} = SplitBregmanROFAn(Img_filts{k}, mu, 0.001);
-end
-figure(101+k)
-mx = max(Img_filts{k}(:)) - min(Img_filts{k}(:));
-mxs = [mxs; mx];
-mesh(Img_filts{k}), colormap('gray')
+  Img_filts{k} = cs_exps{k}.Img_bp - min(cs_exps{k}.Img_bp(:));
+  if ~isinf(mu)
+    Img_filts{k} = SplitBregmanROFAn(Img_filts{k}, mu, 0.001);
+  end
+%   figure(101+k)
+  mx = max(Img_filts{k}(:)) - min(Img_filts{k}(:));
+  mxs = [mxs; mx];
+%   mesh(Img_filts{k}), colormap('gray')
 end
 
 slice = 30:512-30;
@@ -150,22 +167,12 @@ if ~isinf(mu)
 end
 fprintf('---------------------------------------------------\n');
 scan_metrics = {};
-scan_metrics{1} = ScanMetrics('ssim', 1, 'psnr', Inf,...
-  'quality', rast_exps{1}.damage_metric(),...
-  'damage', rast_exps{1}.quality_metric(),...
-  'rate', rast_exps{1}.meta_in.raster_freq,...
-  'time', rast_exps{1}.time_total,...
-  'coverage', 100,...
-  'type', 'raster');
-
-figure(3000);clf;
-h = subplott(3,4);
+row_idx = 220;
 fprintf('\n')
 j=1;
+excludes = [1];
+do_rows = [2, 4, 6];
 for k=1:length(rast_exps)
-  if k == master_idx
-    continue;
-  end
   imk = rast_exps{k}.pix_mat_pinned - mean(rast_exps{k}.pix_mat_pinned(:));
   if ~isinf(mu)
     %imk = SplitBregmanROF(imk, mu, 0.001);
@@ -183,21 +190,59 @@ for k=1:length(rast_exps)
     'time', rast_exps{k}.time_total,...
     'coverage', 100,...
     'type', 'raster');
+    
+  scan_metrics{end+1} = csm;
   
-%   subplot(2,4,k-1)
-  imshowpair(im1_ontok_fit, imk_slice, 'parent', h(j));
-  title(h(j), sprintf('raster (%.1f Hz)', csm.rate));
+  if ~isempty(intersect(k, excludes))
+    continue;
+  end
+
+  im_err = im1_ontok_fit - imk_slice;
+  imagesc(ha_err(j), im_err, [-thresh, thresh]);
+  colormap(ha_err(j), 'gray');
+  
+  
+  imagesc(ha1(j), imk, [-thresh, thresh]);
+  colormap(ha1(j), 'gray');
+  stit = sprintf('raster (%.1f Hz)', csm.rate);
+  if k==2 
+    stit_err = sprintf('(master) raster (%.1f Hz)', csm.rate);
+  else
+    stit_err = stit;
+  end
+
+  if ~isempty(intersect(k, do_rows))
+    hold(ha1(j), 'on')
+    hold(ha_row(1), 'on')
+    
+    plot(ha1(j), [1, 512], [row_idx, row_idx], 'r');
+    hl_row = plot(ha_row(1), imk(row_idx, :));
+    hl_row.DisplayName = sprintf('%.1f Hz', csm.rate);
+  end
+  title(ha_err(j), stit_err);
+  title(ha1(j), stit);
+  
   fprintf('(raster %.1f Hz) psnr: %.4f, ssm: %.4f, damage: %.4f, time: %.4f\n',...
     rast_exps{k}.meta_in.raster_freq, psn_1k, ssm_1k, damage, csm.time);
 
-  scan_metrics{end+1} = csm;
+  set(ha1(j), 'XTickLabel', [], 'YTickLabel', []);
+  set(ha_err(j), 'XTickLabel', [], 'YTickLabel', []);
+  
   j=j+1;
 end
 
 
+axes(ha_row(1))
+leg1 = legend();
+set(leg1, 'Position', [0.8451 0.7680 0.1297 0.1021])
+
+
+j = length(rast_exps);
 fprintf('---------------------------------------------------\n');
 cs_stats = {};
+do_rows = [1, 4, 5, 8];
 for k=1:length(cs_exps)
+
   imk = cs_exps{k}.Img_bp - mean(cs_exps{k}.Img_bp(:));
   if ~isinf(mu)
     imk = SplitBregmanROF(imk, mu, 0.001);
@@ -218,57 +263,74 @@ for k=1:length(cs_exps)
   
   fprintf('(CS %.1f Hz, %% %.1f, %.1f) psnr: %.4f, ssm: %.4f, damage: %.4f, time: %.4f\n',...
     csm.rate, csm.coverage, cs_exps{k}.sub_sample_frac*100, psn_1k, ssm_1k, damage, csm.time);
-  
-%   figure(3000+k+length(rast_exps));
-% subplot(2,4,k+length(rast_exps)-1)
-  imshowpair(im1_ontok_fit, imk_slice, 'parent', h(k+length(rast_exps)-1));
-  title(h(length(rast_exps)+k-1), sprintf('CS (%.1f \\%%, %.1f Hz)', csm.coverage, csm.rate));
- 
-  scan_metrics{end+1} = csm;
+
+    scan_metrics{end+1} = csm;
   [t_cycle_avg, t_connect] = cs_exps{k}.estimate_mpt_connect_savings();
   cs_stats{k, 1} = csm;
-  cs_stats{k,2} = t_cycle_avg;
-  cs_stats{k,3} = t_connect;
+  cs_stats{k, 2} = t_cycle_avg;
+  cs_stats{k, 3} = t_connect;
+  
+  if k==3 || k==7
+    continue
+  end
+  im_err = im1_ontok_fit - imk_slice;
+  imagesc(ha_err(j), im_err, [-thresh, thresh]);
+  colormap(ha_err(j), 'gray');
+
+  imagesc(ha1(j), imk, [-thresh, thresh]);
+  colormap(ha1(j), 'gray');
+
+  title(ha1(j), sprintf('CS (%.1f \\%%, %.1f Hz)', csm.coverage, csm.rate));
+  title(ha_err(j), sprintf('CS (%.1f \\%%, %.1f Hz)', csm.coverage, csm.rate));
+  
+  set(ha1(j), 'XTickLabel', [], 'YTickLabel', []);
+  set(ha_err(j), 'XTickLabel', [], 'YTickLabel', []);
+
+  if ~isempty(intersect(k, do_rows))
+    hold(ha1(j), 'on')
+    hold(ha_row(2), 'on')
+    
+    plot(ha1(j), [1, 512], [row_idx, row_idx], 'r');
+    hl_row = plot(ha_row(2), imk(row_idx, :));
+    hl_row.DisplayName = sprintf('%.1f Hz, %.1f \\%%', csm.rate, csm.coverage);
+  end
+  
+
+  
+  j=j+1;
 end
+%%
+axes(ha_row(2))
+leg2 = legend();
+set(leg2, 'NumColumns', 2, 'Position', [0.6218 0.4039 0.3577 0.0709])
+%%
+% 'Position', [0.6884 0.3921 0.2039 0.1389],
+set(ha1(end), 'Visible', 'off')
+set(ha_err(end), 'Visible', 'off')
+
+
+save_fig(Fig1, 'notes/figures/cs_raster_images_3-20-2019')
+save_fig(Fig_err, 'notes/figures/cs_raster_images_err_3-20-2019')
+save_fig(Fig_rows, 'notes/figures/cs_raster_pixel_rows_3-20-2019')
+
+
+
 
 %%
-
-
-
 
 S1 = scan_metrics_table(scan_metrics)
 
 S2 = state_times_table(cs_exps)
-S3 = mpt_connect_table(cs_stats)
 
-%%
-fid = fopen('notes/tables/cs_raster_table_3-18-2019_mu100_dct2.tex', 'w+');
+
+
+fid = fopen('notes/tables/cs_raster_table_3-20-2019_muInf_dct2.tex', 'w+');
 fprintf(fid, '%s', S1);
 fclose(fid);
 
-fid = fopen('notes/tables/cs_state_times_table_3-18-2019_mu100_dct2.tex', 'w+');
+fid = fopen('notes/tables/cs_state_times_table_3-20-2019_muInf_dct2.tex', 'w+');
 fprintf(fid, '%s', S2);
 fclose(fid);
-
-
-
-
-fid = fopen('notes/tables/cs_connect_table_3-18-2019_mu100_dct2.tex', 'w+');
-fprintf(fid, '%s', S3);
-fclose(fid);
-
-function S = mpt_connect_table(cs_stats)
-  S = 'coverage &  rate (Hz) & skipped cycle time (est) & connect time \\';
-  S = sprintf('%s\n\\toprule\n', S);
-  for k=1:length(cs_stats)
-    csm = cs_stats{k, 1};
-    t_cycle_est = cs_stats{k, 2};
-    t_connect = cs_stats{k,3};
-    S = sprintf('%s %.2f & %.2f & %.2f & %.1f \\\\\n', S,...
-      csm.coverage, csm.rate, t_cycle_est, t_connect);
-  end
-end
-
 
 
 function S = scan_metrics_table(csm_s)
@@ -278,7 +340,7 @@ function S = scan_metrics_table(csm_s)
   for k=1:length(csm_s)
     csm = csm_s{k};
     if strcmp(csm.type, 'CS')
-      description = sprintf('CS (%.2f)\\%%', csm.coverage);
+      description = sprintf('CS (%.2f~\\%%)', csm.coverage);
     else
       description = 'raster';
     end
@@ -292,7 +354,7 @@ function S = state_times_table(cs_exps)
   S = sprintf('%s\n\\toprule\n', S);
   for k=1:length(cs_exps)
     cst = cs_exps{k}.get_state_times();
-    description = sprintf('%.1f Hz, %.2f\\%%',...
+    description = sprintf('%.1f Hz, %.2f~\\%%',...
       cs_exps{k}.meta_in.tip_velocity/(cs_exps{2}.meta_in.width * 2),...
       cs_exps{k}.meta_in.actual_sub_samble_perc);
   
