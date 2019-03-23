@@ -74,30 +74,21 @@ x1s = [36,   37, 46,   51, 50,   52,  57, 55];
 x2s = [450, 455, 460, 463, 465, 467. 474, 474];
 figbase = 10;
 for k=1:length(rast_exps)
-  rast_exp2 = copy(rast_exps{k});
-%   uz = detrend(rast_exp2.uz);
-  rast_exp2.bin_raster_really_slow(@detrend);
+  rast_exps{k}.bin_raster_really_slow(@detrend);
   
-  pixmats_raw{k} = rast_exp2.pix_mat(1:end-1, 1:end-1);
-  pixmats{k} = pixmats_raw{k};
-  pixmats{k} = pin_along_column(pixmats_raw{k}, x1s(k), x2s(k));
-%   pixmats{k} = pixmats{k} - mean(pixmats{k}(:));
+  pixmats_raw{k} = rast_exps{k}.pix_mat(1:end, 1:end);
+%   rast_exps{k}.pix_mat_pinned = pixmats_raw{k};
+  pixmat_ = pin_along_column(rast_exps{k}.pix_mat, x1s(k), x2s(k));
+  
+  rast_exps{k}.pix_mat_pinned = pixmat_ - mean(pixmat_(:));
+  rast_exps{k}.pin_idx_s = [x1s(k), x2s(k)];
   stit = sprintf('(raster) %.2f Hz', rast_exps{k}.meta_in.raster_freq);
-  plot_raster_data(pixmats{k}, figbase*k, stit)
-%   stit = sprintf('(raw) scan %d', k);
+  plot_raster_data(rast_exps{k}.pix_mat_pinned, figbase*k, stit)
 end
-%%
 
 for k=1:length(rast_exps)
-  
-  damage = rast_exps{k}.damage_metric();
-  quality = rast_exps{k}.quality_metric();
-  fprintf('scan %d, damage = %g, quality=%g\n', k, damage, quality);
-  
+  rast_exps{k}.save()
 end
-
-
-
 
 %%
 slice = 25:511-25;
@@ -123,7 +114,7 @@ for j=1:2
   
   fprintf('---------------------------------------------------\n');
   ax_iter = 1;
-  for k=[1,2,3,4,5,6,7] %length(rast_exps)
+  for k=[1,2,3,4,5,7] %length(rast_exps)
     if k== imm_idx
       continue;
     end
