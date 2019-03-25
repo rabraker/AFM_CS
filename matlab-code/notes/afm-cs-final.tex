@@ -94,7 +94,13 @@ The issue, I believe and need to demonstrate more fully, is that the nature of t
 \end{figure}
 
 \section{Description of Modified CS Cycle}\label{sec:modfied_cs_cycle}
-Describe what is different from Section~\ref{chap:cs_init}. These are (i) pre-scan during $z$-axis settling period, (ii) inverting the bending mode, and (iii) do not intentially disengage; (iv) at the end of a scan, return to state-0, so that everything remains in closed loop.
+Describe what is different from Section~\ref{chap:cs_init}. These are (i) pre-scan during $z$-axis settling period, (ii) inverting the bending mode, and (iii) do not intentionally disengage; (iv) at the end of a scan, return to state-0, so that everything remains in closed loop.
+\begin{figure}
+  \centering
+    \includesvg[width=.9\textwidth]{figures/state-machine-final.svg}
+    \caption{Diagram of the state-machine implemented in the final design.}
+    \label{fig:sm_final}
+\end{figure}
 
 \subsection{Cantilever does not need to fully disengage.} Forget about lifting the cantilever far enough to actually break contact. Rather, only pull away far enough that the deflection signal stays low, even while we run across the surface.
 
@@ -129,7 +135,12 @@ $\tilde{Y} = Y_{i^*:i^*+487, j^*:j^*+487}$. For an example of this in action, se
 
 
 \subsection{Dynamic detrending}
-Because our AFM is not equipped with a $Z$-axis sensor, it is important to remove as much drift as possible from the $u_Z$ control signal, otherwise, this slow dynamic will corrupt the final image. 
+Because our AFM is not equipped with a $Z$-axis sensor, it is important to remove as much drift as possible from the $u_Z$ control signal, otherwise, this slow dynamic will corrupt the final image. This can partly be mitigated by doing an image after the AFM has been on for a long time, e.g., 20 minutes, and especially after taking several slow raster scans. We can also detrend some of the drift by fitting a line
+\begin{equation}
+  d_k = \alpha + \beta t_k + \gamma \log\left(\frac{t_k}{0.1}\right)
+\end{equation}
+where $t_k$ is the time at the $k$-th sampling period and $\alpha$, $\beta$, and $\gamma$ are the parameters to be fit. This is a combination of a time-domain drift model \cite{Jung_open_loop_2000} and a linear fit which accounts for sample tilt. This line is fit to the entire set of $u_Z$ control data and subtracted.
+
 
 \subsection{ TV-denoising}
 Some of the noise in image recovered via BPDN can be reduced by solving the optimization problem
