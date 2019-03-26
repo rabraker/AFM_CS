@@ -61,7 +61,7 @@ With the disturbances attenuated, we can now increase the $z$-axis bandwidth. Th
 Thus, the entire $z$-axis controller consists of a PI controller, $D_I(z)$ cascaded with the resonance inversion, $D^{-1}(z)$. For comparison, the red curve in Fig.~\ref{fig:z_control} shows the closed-loop FRF without the inverse compensator.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.5]{figures/AFM_loop_Dinv-crop.pdf}
+  \includegraphics[scale=0.5]{figures/AFM_loop_Dinv_antiwup-crop.pdf}
   \caption{Block diagram of the $Z$-axis control loop with the inverse compensator.}
   \label{fig:afm_bd_dinv}
 \end{figure}
@@ -80,11 +80,12 @@ One challenge to this approach is the system gain and resonance at 215~Hz change
 To deal with this, I incorporated a (mostly) automated system ID routine into the imaging software. This routine first obtains an FRF of the mode (the same set of points as in Fig.~\ref{fig:z_evolution}) and then first a 2-pole 2-zero model to the mode and finally passes that data into the imaging package. One of the benefits of this approach is that the different cantilever gains become normalized to unity, which makes re-tuning the control system after changing tips far easier to non-existent.
 
 \subsection{Caveats to Inversion}
+\textbf{ACTUALLY: maybe this is really just larger oscillations from a larger move size??}
+
 It seems that inversion favors raster scanning over CS.
 
 The issue, I believe and need to demonstrate more fully, is that the nature of the resonance can shift depending on the setpoint and especially the input magnitude (for sinusoidal inputs). During CS, we ask the system to operate over a wider range, and thus these non-linearties play a larger role. This is evident in Fig.~\ref{fig:dinv_CS_decay}, where we have connected multiple $\mu$-paths together. What we see is oscillations after the engagement and in the first scan, but which decay after the first hole. Thus, the inversion is more than capable when operating in the limited range around which it was identified, but performance degrades during the approach, which is away from the point at which it was identified.
 
-\textbf{ACTUALLY:} maybe this is really just larger oscillations from a larger move size??
 
 \begin{figure}
   \centering
@@ -101,6 +102,23 @@ Describe what is different from Section~\ref{chap:cs_init}. These are (i) pre-sc
     \caption{Diagram of the state-machine implemented in the final design.}
     \label{fig:sm_final}
 \end{figure}
+
+Several cycles of the modified scheme are shown in Fig.~\ref{fig:cs_cycle_final}.
+\begin{figure}
+  \centering
+  \includesvg[scale=0.85]{figures/cs_cycle.svg}
+  \caption{Several CS cycles. Each state is indicated by color.}
+  \label{fig:cs_cycle_final}
+\end{figure}
+The two main differences between the modified scheme and the one in Chapter~\ref{XX} are that
+\begin{enumerate}
+\item during tip retraction, the goal is not for the cantilever to snap off of the surface. Rather, we simply decrease $r_Z$ from $r_{Z_s}$ to $r_{Z_{up}}$. This does not imply that the cantilever \emph{never} fully disengages, as can be seen in the last cycle of Fig.~\ref{fig:cs_cycle_final}. One advantage of these scheme is that the step-input to low pass filtered by the integrator in $D_I(z)$, rather than applying the sharp step directly to the $Z$ actuator, as we did in the initial implementation. During the $XY$-move, $D_I$ is turned off. This keeps the control constant at the last value achieved during state (2), and ensures that the rapid fluctuations in the deflection signal do not inject their high frequency content into the $Z$-axis control loop.
+\item After the tip-descent, we begin scanning in a ''pre-scan'' phase (state (3)). The pre-scan phase is relatively long (250 samples), especially for the faster scan rates. The goal here is two-fold. First, the $Z$-axis deflection signal always oscillates less when the $XY$-axis is scanning as opposed to sitting still. This means that if we hold the $XY$-axis constant during the tip-settle, there will always be a brief transient where the oscillations collapse. This scheme eliminates that phenomena. The pre-scan us to eliminate the over-scan at the end of the $\mu$-path, because by the time we are ready to start taking data, the $X$-axis is in quasi-steady-state. For the current control design, the required over-scan is about 90 samples, which means the pre-scan incurs an overhead of about 160 samples per $\mu$-path.
+
+The tip settling (pre-scan) period could likely be much shorter if we a had a $Z$-axis position sensor. Part of the reason it is so long is to give the major part of the drift transient time to die out. With a position sensor, we would not care about the drift transient: the control signal drifts to keep the $Z$-position constant.
+
+\item 
+\end{enumerate}
 
 \subsection{Cantilever does not need to fully disengage.} Forget about lifting the cantilever far enough to actually break contact. Rather, only pull away far enough that the deflection signal stays low, even while we run across the surface.
 
@@ -134,7 +152,7 @@ corresponds to the lower left corner of the correct subslice. Thus, the comparis
 $\tilde{Y} = Y_{i^*:i^*+487, j^*:j^*+487}$. For an example of this in action, see the Fig.~\ref{fig:baseline_errors} in the next section.
 
 
-\subsection{Dynamic detrending}
+\subsection{Dynamic de-trending}
 Because our AFM is not equipped with a $Z$-axis sensor, it is important to remove as much drift as possible from the $u_Z$ control signal, otherwise, this slow dynamic will corrupt the final image. This can partly be mitigated by doing an image after the AFM has been on for a long time, e.g., 20 minutes, and especially after taking several slow raster scans. We can also detrend some of the drift by fitting a line
 \begin{equation}
   d_k = \alpha + \beta t_k + \gamma \log\left(\frac{t_k}{0.1}\right)
