@@ -23,6 +23,13 @@
 \usepackage{placeins}
 \usepackage{subcaption}
 
+% Indent paragraphs inside enumerate
+\usepackage{enumitem}
+\setlist{  
+  listparindent=\parindent,
+  parsep=0pt,
+}
+
 \renewcommand*{\floatpagefraction}{.7}
 \renewcommand*{\dblfloatpagefraction}{.3}
 \author{arnold braker}
@@ -43,7 +50,7 @@
 \section{Introduction}
 This chapter is a story of rising tides and all ships being lifted. I wish to give raster scanning a fair shake. Therefore, where appropriate, the improvements made to CS scanning are also applied to raster scanning. This improves the results for methods, compared to chapter XX. Raster scanning appears to improve more.
 
-\section{Z-axis disturbance Reduction}
+\section{Z-axis Disturbance Reduction}
 I've already written about this. It could go in here, but makes more sense on its own. 
 
 The upshot is that by dramatically reducing the disturbances impinging on the $z$-axis, we are in a position to increase the bandwidth without introducing building dynamics into our images.
@@ -62,7 +69,7 @@ Thus, the entire $z$-axis controller consists of a PI controller, $D_I(z)$ casca
 \begin{figure}
   \centering
   \includegraphics[scale=0.5]{figures/AFM_loop_Dinv_antiwup-crop.pdf}
-  \caption{Block diagram of the $Z$-axis control loop with the inverse compensator.}
+  \caption{Block diagram of the $Z$-axis control loop with the inverse compensator. See Section~\ref{sec:modfied_cs_cycle} for discussion of the multiplexers and anti-windup.}
   \label{fig:afm_bd_dinv}
 \end{figure}
 The addition of $D^{-1}(z)$ changes the correct signal to use to represent the sample surface. Let 
@@ -94,7 +101,7 @@ The issue, I believe and need to demonstrate more fully, is that the nature of t
   \label{fig:dinv_CS_decay}
 \end{figure}
 
-\section{Description of Modified CS Cycle}\label{sec:modfied_cs_cycle}
+\section{The Modified CS-Cycle}\label{sec:modfied_cs_cycle}
 Describe what is different from Section~\ref{chap:cs_init}. These are (i) pre-scan during $z$-axis settling period, (ii) inverting the bending mode, and (iii) do not intentionally disengage; (iv) at the end of a scan, return to state-0, so that everything remains in closed loop.
 \begin{figure}
   \centering
@@ -110,14 +117,20 @@ Several cycles of the modified scheme are shown in Fig.~\ref{fig:cs_cycle_final}
   \caption{Several CS cycles. Each state is indicated by color.}
   \label{fig:cs_cycle_final}
 \end{figure}
-The two main differences between the modified scheme and the one in Chapter~\ref{XX} are that
+The main differences between the modified scheme and the one in Chapter~\ref{XX} are that:
 \begin{enumerate}
-\item during tip retraction, the goal is not for the cantilever to snap off of the surface. Rather, we simply decrease $r_Z$ from $r_{Z_s}$ to $r_{Z_{up}}$. This does not imply that the cantilever \emph{never} fully disengages, as can be seen in the last cycle of Fig.~\ref{fig:cs_cycle_final}. One advantage of these scheme is that the step-input to low pass filtered by the integrator in $D_I(z)$, rather than applying the sharp step directly to the $Z$ actuator, as we did in the initial implementation. During the $XY$-move, $D_I$ is turned off. This keeps the control constant at the last value achieved during state (2), and ensures that the rapid fluctuations in the deflection signal do not inject their high frequency content into the $Z$-axis control loop.
-\item After the tip-descent, we begin scanning in a ''pre-scan'' phase (state (3)). The pre-scan phase is relatively long (250 samples), especially for the faster scan rates. The goal here is two-fold. First, the $Z$-axis deflection signal always oscillates less when the $XY$-axis is scanning as opposed to sitting still. This means that if we hold the $XY$-axis constant during the tip-settle, there will always be a brief transient where the oscillations collapse. This scheme eliminates that phenomena. The pre-scan us to eliminate the over-scan at the end of the $\mu$-path, because by the time we are ready to start taking data, the $X$-axis is in quasi-steady-state. For the current control design, the required over-scan is about 90 samples, which means the pre-scan incurs an overhead of about 160 samples per $\mu$-path.
+\item{
+    During tip retraction, the goal is not for the cantilever to snap off of the surface. Rather, we simply decrease $r_Z$ from $r_{Z_s}$ to $r_{Z_{up}}$. This change in setpoint is show in Fig.~\ref{} as the two references being chosen via a multiplexer.
+  
+  This does not imply that the cantilever \emph{never} fully disengages, as can be seen in the last cycle of Fig.~\ref{fig:cs_cycle_final}. One advantage of these scheme is that the step-input to low pass filtered by the integrator in $D_I(z)$, rather than applying the sharp step directly to the $Z$ actuator, as we did in the initial implementation. During the $XY$-move, $D_I$ is turned off. This keeps the control constant at the last value achieved during state (2), and ensures that the rapid fluctuations in the deflection signal do not inject their high frequency content into the $Z$-axis control loop.
+
+When the cantilever \emph{does} disengage, the integrator will windup. This happens because typically, the desired setpoint $r_{z,\textrm{up}}$ is more negative than the free (disengaged) value of the deflection. Thus, the sensor signal is essentially saturated and no matter how far the $Z$-actuator tries to move, no change will result in the deflection, leading to windup and a control signal that exceeds the actuator bounds. To deal with this, we implement an anti-windup scheme for all states where $r_Z=r_{Z,\textrm{up}}$, i.e., states (1) and (5). This is illustrated in Fig.~\ref{sec:modfied_cs_cycle}. During these states, the output of the accumulator is saturated before its own internal feedback. 
+  }
+\item{
+    After the tip-descent, we begin scanning in a ''pre-scan'' phase (state (3)). The pre-scan phase is relatively long (250 samples), especially for the faster scan rates. The goal here is two-fold. First, the $Z$-axis deflection signal always oscillates less when the $XY$-axis is scanning as opposed to sitting still. This means that if we hold the $XY$-axis constant during the tip-settle, there will always be a brief transient where the oscillations collapse. This scheme eliminates that phenomena. The pre-scan us to eliminate the over-scan at the end of the $\mu$-path, because by the time we are ready to start taking data, the $X$-axis is in quasi-steady-state. For the current control design, the required over-scan is about 90 samples, which means the pre-scan incurs an overhead of about 160 samples per $\mu$-path.
 
 The tip settling (pre-scan) period could likely be much shorter if we a had a $Z$-axis position sensor. Part of the reason it is so long is to give the major part of the drift transient time to die out. With a position sensor, we would not care about the drift transient: the control signal drifts to keep the $Z$-position constant.
-
-\item 
+}
 \end{enumerate}
 
 \subsection{Cantilever does not need to fully disengage.} Forget about lifting the cantilever far enough to actually break contact. Rather, only pull away far enough that the deflection signal stays low, even while we run across the surface.
@@ -312,6 +325,15 @@ And finally a Science Figure showing rows of pixels.
     \caption{Rows of pixels, as indicated by the red lines in Fig.~\ref{fig:resultsF1_images}. For clarity, not all images are included.}  
     \label{fig: }
 \end{figure}
+
+\section{Conclusions and Future Work Somebody Could Do}
+
+During raster scanning, the system remains largely in steady-state or quasi steady-state. The only perturbations from the condition occur either (i) at the turn-around points or (ii) when the cantilever scans over a surface feature. During the bulk of the scan across the specimen, the derivative of $X$-axis trajectory will be largely in steady state, once the transient from the turn-around decays. Similarly, for the $Y$-axis which tracks a single ramp up the entire image, the only perturbation from steady state in the derivative occurs at the start of the entire scan and from cross-coupling with the $X$-axis at the turn-arounds. 
+
+By contrast, in CS based scanning the system spends a much large portion of its time in a transient state and the $XY$-axis transients are coupled into the deflection signal via sample tilt etc. This essentially gives us two options: either increase the settling period after each transition (e.g., after each $XY$-move and after each descent) or try to increase the damping of the controllers, which will inevitably slow things down.
+Although I don't claim that the results here are ''optimal'' in this regard, I do believe for the CS20NG, that we have a reasonable trade-off. For specimens with smaller feature sizes, e.g., DNA (which is a few 
+nanometers high), it is likely that the CS-scheme would fair worse. 
+
 
 \section{More work that could be done}
 \subsection{$\mu$-path connections}
