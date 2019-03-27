@@ -335,7 +335,10 @@ Although I don't claim that the results here are ''optimal'' in this regard, I d
 nanometers high), it is likely that the CS-scheme would fair worse. 
 
 
-\section{More work that could be done}
+\subsection{MIMO control for $XY$}
+As we saw back in Section XX, our more aggressive $X$-direction controller induces substantial oscillations in the $Y$-axis. Especially for faster scan rates, the associated increase in $XY$-move time represents a non-trivial fraction of the overall scanning time. Thus, an interesting area for additional improvement would be to compensate the cross-coupling dynamics. It may be all that is needed is to develop a controller better $SISO$ controller for the $Y$-axis.
+
+
 \subsection{$\mu$-path connections}
 In general, it should be possible to reduce the CS imaging time by optimizing the order of the $\mu$-path scans. This is related to the traveling salesman problem (TSP), but a key difference is that the locations of arrival and departure from a given ``city'' are different. A related idea is to connect multiple $\mu$-paths together. For example, if the $\mu$-paths are one pixel apart, it does not make sense to go through an entire CS cycle of lifting the tip away from the sample surface, moving in the $XY$-plane, and re-engaging the tip, waiting for it to settle and finally starting the next scan. Rather, for $\mu$-paths within a certain threshold, it makes sense to leave the tip on the surface and simply move to the next location at a speed not exceeding the given scan rate. Of course connecting the paths could be worked into a modified dual-mode TSP type problem, where the salesmen has the choice to fly or drive to the next city. If the next city is nearby, the constant overhead of air travel makes no sense, so he drives.
 
@@ -354,8 +357,6 @@ Here, I take a greedy approach to the connection problem. The decision to connec
 \end{enumerate}
 (i) an estimate for how long it would and sequentially search through a set of $\mu$-paths
 
-\subsection{MIMO control for $XY$}
-As we saw back in Section XX, our more aggressive $X$-direction controller induces substantial oscillations in the $Y$-axis. Especially for faster scan rates, the associated increase in $XY$-move time represents a non-trivial fraction of the overall scanning time. Thus, an interesting area for additional improvement would be to compensate the cross-coupling dynamics. It may be all that is needed is to develop a controller better $SISO$ controller for the $Y$-axis.
 
 
 \bibliographystyle{IEEEtran}
