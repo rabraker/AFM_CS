@@ -34,7 +34,7 @@ if 1
     sub_sample_frac = 0.10;  % Percent of pixels to subsample. 
     raster_freq = 1;  % hz
 end
-N_prescan = 50;
+N_prescan = 250;
 % Unit conversions.
 pix_per_micron = npix/width;
 mu_pix = ceil(mu_length*pix_per_micron);
@@ -80,7 +80,16 @@ x_N =  (N-1)*volts_per_sample;
 N_extra = mu_overscan(xdirControl.Hyr, volts_per_sample, mu_Nsamples, 1, N_prescan)+10
 
 mu_Nsamples_extra = N+N_extra;
-  
+
+% ----- Use this to generate the mica CS pattern -------------------
+% nr = 20
+% mu = [ones(1, 63), 0];
+% row = repmat(mu, 1, 8);
+% pix_mask_ = repmat(row, nr, 1);
+% pix_mask = zeros(npix, npix);
+% pix_mask(1:nr, :) = pix_mask_;
+% figure(1);clf;imshow(pix_mask)  
+
 mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, AFM.Ts,...
   'overscan_samples', N_extra, 'pre_pad_samples', N_prescan);
 if 0
@@ -107,6 +116,7 @@ perc = floor(actual_sub_sample_frac*100);
 fname = mpt.get_fname();
 target_dir = sprintf('%dmicrons/parents', width);
 data_root = fullfile(PATHS.exp(), 'imaging', 'cs-imaging', target_dir);
+% data_root = fullfile(PATHS.exp(), 'z-bounce/parents')
 
 fpath_json = fullfile(data_root, fname);
 fprintf('File root:\n%s\n', data_root)
