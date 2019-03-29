@@ -1,4 +1,4 @@
-function [hands] = plot_all_cycles(self, ax1, ax2, ax3, ax4, bounds, to_pix)
+function [hands, legs] = plot_all_cycles(self, ax1, ax2, ax3, ax4, bounds, to_pix)
 %   [hands] = plot_all_cycles(self, ax1, ax2, ax3, ax4, bounds, to_pix)
 % Plot the color-ized cs cycles to the provided axes.
 %
@@ -142,19 +142,20 @@ end
       h_y(k).DisplayName = indc{2,k};
     end
   end
-
+  hands = [h_x, h_y, h_ze, h_uz];
+legs = [];
   if plotuz
-    legend(h_uz);
+    legs(end+1) = legend(h_uz);
   end
 
   if plotze
-    legend(h_ze);
+    legs(end+1) = legend(h_ze);
   end
   if plotx
-    legend(h_x);
+    legs(end+1) = legend(h_x);
   end
   if ploty
-    legend(h_y);
+    legs(end+1) = legend(h_y);
   end
 
   if exist('bounds', 'var') && ~isempty(bounds)

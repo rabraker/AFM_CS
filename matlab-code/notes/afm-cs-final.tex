@@ -23,6 +23,13 @@
 \usepackage{placeins}
 \usepackage{subcaption}
 
+% Indent paragraphs inside enumerate
+\usepackage{enumitem}
+\setlist{  
+  listparindent=\parindent,
+  parsep=0pt,
+}
+
 \renewcommand*{\floatpagefraction}{.7}
 \renewcommand*{\dblfloatpagefraction}{.3}
 \author{arnold braker}
@@ -43,7 +50,7 @@
 \section{Introduction}
 This chapter is a story of rising tides and all ships being lifted. I wish to give raster scanning a fair shake. Therefore, where appropriate, the improvements made to CS scanning are also applied to raster scanning. This improves the results for methods, compared to chapter XX. Raster scanning appears to improve more.
 
-\section{Z-axis disturbance Reduction}
+\section{Z-axis Disturbance Reduction}
 I've already written about this. It could go in here, but makes more sense on its own. 
 
 The upshot is that by dramatically reducing the disturbances impinging on the $z$-axis, we are in a position to increase the bandwidth without introducing building dynamics into our images.
@@ -61,8 +68,8 @@ With the disturbances attenuated, we can now increase the $z$-axis bandwidth. Th
 Thus, the entire $z$-axis controller consists of a PI controller, $D_I(z)$ cascaded with the resonance inversion, $D^{-1}(z)$. For comparison, the red curve in Fig.~\ref{fig:z_control} shows the closed-loop FRF without the inverse compensator.
 \begin{figure}
   \centering
-  \includegraphics[scale=0.5]{figures/AFM_loop_Dinv-crop.pdf}
-  \caption{Block diagram of the $Z$-axis control loop with the inverse compensator.}
+  \includegraphics[scale=0.5]{figures/AFM_loop_Dinv_antiwup-crop.pdf}
+  \caption{Block diagram of the $Z$-axis control loop with the inverse compensator. See Section~\ref{sec:modfied_cs_cycle} for discussion of the multiplexers and anti-windup.}
   \label{fig:afm_bd_dinv}
 \end{figure}
 The addition of $D^{-1}(z)$ changes the correct signal to use to represent the sample surface. Let 
@@ -80,7 +87,12 @@ One challenge to this approach is the system gain and resonance at 215~Hz change
 To deal with this, I incorporated a (mostly) automated system ID routine into the imaging software. This routine first obtains an FRF of the mode (the same set of points as in Fig.~\ref{fig:z_evolution}) and then first a 2-pole 2-zero model to the mode and finally passes that data into the imaging package. One of the benefits of this approach is that the different cantilever gains become normalized to unity, which makes re-tuning the control system after changing tips far easier to non-existent.
 
 \subsection{Caveats to Inversion}
-It seems that inversion favors raster scanning over CS. The issue, I believe and need to demonstrate more fully, is that the nature of the resonance can shift depending on the setpoint and especially the input magnitude (for sinusoidal inputs). During CS, we ask the system to operate over a wider range, and thus these non-linearties play a larger role. This is evident in Fig.~\ref{fig:dinv_CS_decay}, where we have connected multiple $\mu$-paths together. What we see is oscillations after the engagement and in the first scan, but which decay after the first hole. Thus, the inversion is more than capable when operating in the limited range around which it was identified, but performance degrades during the approach, which is away from the point at which it was identified.
+\textbf{ACTUALLY: maybe this is really just larger oscillations from a larger move size??}
+
+It seems that inversion favors raster scanning over CS.
+
+The issue, I believe and need to demonstrate more fully, is that the nature of the resonance can shift depending on the setpoint and especially the input magnitude (for sinusoidal inputs). During CS, we ask the system to operate over a wider range, and thus these non-linearties play a larger role. This is evident in Fig.~\ref{fig:dinv_CS_decay}, where we have connected multiple $\mu$-paths together. What we see is oscillations after the engagement and in the first scan, but which decay after the first hole. Thus, the inversion is more than capable when operating in the limited range around which it was identified, but performance degrades during the approach, which is away from the point at which it was identified.
+
 
 \begin{figure}
   \centering
@@ -89,39 +101,76 @@ It seems that inversion favors raster scanning over CS. The issue, I believe and
   \label{fig:dinv_CS_decay}
 \end{figure}
 
-It is \emph{possible} that the oscillations are from the XY plane being transmitted via sample tilt to the cantilever. I do not think this is the case, because the slowest resonance in the $XY$-plane is like 350~Hz and these oscillations are dominated by 215~Hz. However, as we see in Section~\ref{sec:results:final}, the amplitude of these oscillations is dwarfed by the uncertainty introduced by CS, and so we do not pursue the issue further.
+\section{The Modified CS-Cycle}\label{sec:modfied_cs_cycle}
+Describe what is different from Section~\ref{chap:cs_init}. These are (i) pre-scan during $z$-axis settling period, (ii) inverting the bending mode, and (iii) do not intentionally disengage; (iv) at the end of a scan, return to state-0, so that everything remains in closed loop.
+\begin{figure}
+  \centering
+    \includesvg[width=.9\textwidth]{figures/state-machine-final.svg}
+    \caption{Diagram of the state-machine implemented in the final design.}
+    \label{fig:sm_final}
+\end{figure}
 
-\section{Cantilever does not need to fully disengage.} Forget about lifting the cantilever far enough to actually break contact. Rather, only pull away far enough that the deflection signal stays low, even while we run across the surface.
+Several cycles of the modified scheme are shown in Fig.~\ref{fig:cs_cycle_final}.
+\begin{figure}
+  \centering
+  \includesvg[scale=0.85]{figures/cs_cycle.svg}
+  \caption{Several CS cycles. Each state is indicated by color.}
+  \label{fig:cs_cycle_final}
+\end{figure}
+The main differences between the modified scheme and the one in Chapter~\ref{XX} are that:
+\begin{enumerate}
+\item{
+    During tip retraction, the goal is not for the cantilever to snap off of the surface. Rather, we simply decrease $r_Z$ from $r_{Z_s}$ to $r_{Z_{up}}$. This change in setpoint is show in Fig.~\ref{} as the two references being chosen via a multiplexer.
+  
+  This does not imply that the cantilever \emph{never} fully disengages, as can be seen in the last cycle of Fig.~\ref{fig:cs_cycle_final}. One advantage of these scheme is that the step-input to low pass filtered by the integrator in $D_I(z)$, rather than applying the sharp step directly to the $Z$ actuator, as we did in the initial implementation. During the $XY$-move, $D_I$ is turned off. This keeps the control constant at the last value achieved during state (2), and ensures that the rapid fluctuations in the deflection signal do not inject their high frequency content into the $Z$-axis control loop.
+
+When the cantilever \emph{does} disengage, the integrator will windup. This happens because typically, the desired setpoint $r_{z,\textrm{up}}$ is more negative than the free (disengaged) value of the deflection. Thus, the sensor signal is essentially saturated and no matter how far the $Z$-actuator tries to move, no change will result in the deflection, leading to windup and a control signal that exceeds the actuator bounds. To deal with this, we implement an anti-windup scheme for all states where $r_Z=r_{Z,\textrm{up}}$, i.e., states (1) and (5). This is illustrated in Fig.~\ref{sec:modfied_cs_cycle}. During these states, the output of the accumulator is saturated before its own internal feedback. 
+  }
+\item{
+    After the tip-descent, we begin scanning in a ''pre-scan'' phase (state (3)). The pre-scan phase is relatively long (250 samples), especially for the faster scan rates. The goal here is two-fold. First, the $Z$-axis deflection signal always oscillates less when the $XY$-axis is scanning as opposed to sitting still. This means that if we hold the $XY$-axis constant during the tip-settle, there will always be a brief transient where the oscillations collapse. This scheme eliminates that phenomena. The pre-scan us to eliminate the over-scan at the end of the $\mu$-path, because by the time we are ready to start taking data, the $X$-axis is in quasi-steady-state. For the current control design, the required over-scan is about 90 samples, which means the pre-scan incurs an overhead of about 160 samples per $\mu$-path.
+
+The tip settling (pre-scan) period could likely be much shorter if we a had a $Z$-axis position sensor. Part of the reason it is so long is to give the major part of the drift transient time to die out. With a position sensor, we would not care about the drift transient: the control signal drifts to keep the $Z$-position constant.
+}
+\end{enumerate}
+
+\subsection{Cantilever does not need to fully disengage.} Forget about lifting the cantilever far enough to actually break contact. Rather, only pull away far enough that the deflection signal stays low, even while we run across the surface.
 
 Why? Ultimately the concern is damage to the sample and tip, which is directly caused by the force imparted by the cantilever probe. The deflection signal, though calibrated (meaning it does not directly lead to a value in $kN$), is proportional to that force, because it is proportional to how much the cantilever is bent. I.e., a large (towards $+\infty$) deflection implies the spring force of the cantilever is pushing hard into the sample, thereby inducing damage. In a typical imaging scenario, we choose a deflection setpoint, say $-0.3$~[v], and have in some way decided that this is sufficient, all else being equal, to not damage things too much.
 
 Thus, rather than completely dis-engaging the tip from the surface, I propose to simply move the setpoint towards $-\infty$ during the $XY$-move. If this new setpoint is sufficiently far away, the deflection signal will stay below the scanning setpoint, which we had decided was a ''safe'' value. One challenge here is that about a quarter of the time, the new setpoint far enough away that the probe may snap away from the sample surface anyway. If the move-setpoint more negative than the free value of the deflection, then, because the sensor is saturated, the integrator will wind up and saturate the actuator. To deal with this, we need an anti-windup protection during the transition part the CS cycle.
 
-\section{$\mu$-path connections}
-In general, it should be possible to reduce the CS imaging time by optimizing the order of the $\mu$-path scans. This is related to the traveling salesman problem (TSP), but a key difference is that the locations of arrival and departure from a given ``city'' are different. A related idea is to connect multiple $\mu$-paths together. For example, if the $\mu$-paths are one pixel apart, it does not make sense to go through an entire CS cycle of lifting the tip away from the sample surface, moving in the $XY$-plane, and re-engaging the tip, waiting for it to settle and finally starting the next scan. Rather, for $\mu$-paths within a certain threshold, it makes sense to leave the tip on the surface and simply move to the next location at a speed not exceeding the given scan rate. Of course connecting the paths could be worked into a modified dual-mode TSP type problem, where the salesmen has the choice to fly or drive to the next city. If the next city is nearby, the constant overhead of air travel makes no sense, so he drives.
-
-Here, I take a greedy approach to the connection problem. The decision to connect two $\mu$-paths requires
-\begin{enumerate}
-\item An estimate for how long a typical CS cycle takes. In the CS cycle, the time it takes to get from the end of one scan to the beginning of the next is given by
-  \begin{equation}
-    t_{next} = t_{up} + t_{xy-move} + t_{down} + t_{settle}.
-  \end{equation}
-  I estimate these numbers from prior data by taking the mean amount of time over all CS cycles for each stage.
-\item An estimate for how long it would take to scan our way over to the next measurement location. This is simply
-  \begin{equation}
-    t_{scan-to} = \sqrt{(x_{next}-x_{now})^2 + (y_{next}-y_{now})^2) }/ v
-    \end{equation}
-    where $v$ is the scan velocity.
-\end{enumerate}
-(i) an estimate for how long it would and sequentially search through a set of $\mu$-paths
-
 
 \section{Improved post-processing}
-\subsection{Aligning images via cross-correlation.}
+\subsection{Aligning images via cross-correlation}
+To get metrics that are meaningful in any sense, we need the master image and the comparee to be aligned.
+We take two steps to help ensure this.
+First, during each batch of images, the nPoint stage remains under closed loop control.
+Between images, the FPGA control loop idles in state-0, as discussed above in Section~\ref{sec:modfied_cs_cycle}.
+This was not necessary duing the initial implementation because then, the nPoint stage was controlled by the nPoint PI controller.
+While this helps things substantially, there is still an alignment issue between subsequent images, which I believe stems from the original Agilent piezo tube, which is a three axis tube.
+The $XY$-axes of the tube are uncontrolled during imaging, and in fact, after a firmware upgrade, the option to close the $XY$-loop has been grayed out in the PicoView software.
+
+To deal with this, we compare sub-slices of the master image and the comparee. The results in this chapter use a sub-image obtained by removing a border of 25 pixels from each edge. Thus, the original 512$\times$512 pixel image becomes a 487$\times$487 pixel image. Let $X$ represent the original, master image and
+${\tilde X=X_{25:487, 25:487}}$. To find the correct subslice of the comparree, we use a two dimensional cross-correlation, which is defined as
 \begin{equation}
-  Z_{k,\ell} = \sum_{m=0}^{M-1}\sum_{n=0}^{N-1} X_{m-k, n-\ell}Y_{m-k, n-\ell}
+  Z_{k,\ell} = \sum_{m=0}^{M-1}\sum_{n=0}^{N-1} \tilde{X}_{m-k, n-\ell}Y_{m-k, n-\ell}.
 \end{equation}
-\subsection{Dynamic detrending}
+where $Y$ is the comparee.
+
+The index of the maximum value of the matrix $Z$
+\begin{equation}
+(i^*,j^*) = \textrm{arg~} \max_{i,j}Z_{i,j}
+\end{equation}
+corresponds to the lower left corner of the correct subslice. Thus, the comparisons will computed against
+$\tilde{Y} = Y_{i^*:i^*+487, j^*:j^*+487}$. For an example of this in action, see the Fig.~\ref{fig:baseline_errors} in the next section.
+
+
+\subsection{Dynamic de-trending}
+Because our AFM is not equipped with a $Z$-axis sensor, it is important to remove as much drift as possible from the $u_Z$ control signal, otherwise, this slow dynamic will corrupt the final image. This can partly be mitigated by doing an image after the AFM has been on for a long time, e.g., 20 minutes, and especially after taking several slow raster scans. We can also detrend some of the drift by fitting a line
+\begin{equation}
+  d_k = \alpha + \beta t_k + \gamma \log\left(\frac{t_k}{0.1}\right)
+\end{equation}
+where $t_k$ is the time at the $k$-th sampling period and $\alpha$, $\beta$, and $\gamma$ are the parameters to be fit. This is a combination of a time-domain drift model \cite{Jung_open_loop_2000} and a linear fit which accounts for sample tilt. This line is fit to the entire set of $u_Z$ control data and subtracted.
 
 
 \subsection{ TV-denoising}
@@ -171,16 +220,31 @@ By excluding negative values of the deflection, we do not penalize the CS algori
 What kind of numbers are reasonably to expect from these metrics? I.e., how do we know when to stop optimizing? In the following two subsections,  we consider two things: (i) quality metrics for a batch of slow raster scans all taken at the same slow speed of 0.5~Hz. and (ii) CS simulations, where we sample an actual raster image (the master) with the same sampling pattern we implement 
 
 \begin{figure}
+  % ------------ 0.5 Hz ---------------------
   \begin{subfigure}{.48\textwidth}
     \includesvg[width=1\textwidth]{figures/baseline_errors_noalign.svg}
-    \caption{}
+    \caption{0.5~Hz, no alignment.}
     \label{fig:rast_unaligned}
   \end{subfigure}
+  \hfill
   \begin{subfigure}{.48\textwidth}
     \includesvg[width=1\textwidth]{figures/baseline_errors_aligned.svg}
-      \caption{}
+      \caption{0.5~Hz, with alignment.}
     \label{fig:baseline_errors_aligned}
   \end{subfigure}
+% ------------ 1.0 Hz ---------------------
+    \begin{subfigure}{.48\textwidth}
+    \includesvg[width=1\textwidth]{figures/baseline_errors_noalign_1Hz.svg}
+    \caption{1.0~Hz, no alignment.}
+    \label{fig:rast_unaligned}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{.48\textwidth}
+    \includesvg[width=1\textwidth]{figures/baseline_errors_aligned_1Hz.svg}
+      \caption{1.0~Hz, with alignment.}
+    \label{fig:baseline_errors_aligned}
+  \end{subfigure}
+% 
   \caption{Errors between a ''master'' and 6 different raster scans, all taken sequentially and at a scan rate of 0.5 Hz. (a) Errors without alignment (b) The same data as above in (a) but aligned via cross correlation.}
   \label{fig:baseline_errors}
 \end{figure}
@@ -200,16 +264,16 @@ In this section, we consider a raster scan taken at 0.5~Hz. We then consider CS 
 
 \begin{figure}[h!]
   \begin{subfigure}{1\textwidth}
-      \includesvg[width=.87\textwidth]{figures/cs_sim_0p5Hz_raster.svg}
+      \includesvg[width=.87\textwidth]{figures/cs_sim_1Hz_raster.svg}
   \caption{}
   \label{fig:cs_sim_0p5}
   \end{subfigure}
   \begin{subfigure}{1\textwidth}
-    \includesvg[width=.87\textwidth]{figures/cs_sim_0p5Hz_raster_from1Hz.svg}
+    \includesvg[width=.87\textwidth]{figures/cs_sim_1Hz_raster_from1Hz.svg}
     \caption{}
     \label{fig:cs_sim_raster_0p5_1p0}
   \end{subfigure}
-  \caption{CS simulations. (a) The top left panel is a 0.5 Hz raster scan. The rest of the panels were sub-sampled with a mu-path mask with the indicated sampling fraction and reconstructed with BPDN. (b) subsampled images taken from a 1~Hz raster scan and compared to the same 0.5~Hz scan. Comparing the 0.5~Hz raster scan to the 1.0~Hz scan yields PSNR=17.91 and SSIM=0.57.}
+  \caption{CS simulations. (a) The top left panel is a 1.0 Hz raster scan. The rest of the panels were sub-sampled with a mu-path mask with the indicated sampling fraction and reconstructed with BPDN. (b) subsampled images taken from a separate 1~Hz raster scan and compared to the same original 1~Hz scan. Comparing the two 1~Hz raster scans yields PSNR=25.02, SSIM=0.76.}
   \label{fig:cs_sim_against_raster}
 \end{figure}
 
@@ -221,6 +285,79 @@ We note several things. The halos show up here. The reconstructed images are noi
 
 \section{Experimental Results}\label{sec:results:final}
 We did some scans. Here are some pictures. There are also some tables so this all appears scientific.
+
+\begin{figure}
+    \includesvg[scale=1]{figures/cs_raster_images_3-20-2019}
+    \caption{}  
+    \label{fig:resultsF1_images}
+\end{figure}
+
+\begin{figure}
+    \includesvg[scale=1]{figures/cs_raster_images_err_3-20-2019}
+    \caption{}  
+    \label{fig:resultsF1_errs}
+\end{figure}
+
+Impressive, Science Tables:
+\begin{table}[htbp]
+  \centering
+      \caption{Performance metrics for the scans taken on 3-10-2019.  All images filtered with TV denoising, $\mu$=100.}
+      \begin{tabular}{cccccc}
+        \input{tables/cs_raster_table_3-20-2019_muInf_dct2.tex}
+      \end{tabular}
+      \label{tab:rast_vs_cs_v1}
+\end{table}
+
+
+Another awesome Science Table:
+\begin{table}
+  \centering
+  \caption{Breakdown of state times for the CS scans listed in Table~\ref{tab:rast_vs_cs_v1}. All times are in seconds. All images filtered with TV denoising, $\mu$=100.}
+  \begin{tabular}{cccccccc}
+    \input{tables/cs_state_times_table_3-20-2019_muInf_dct2.tex}
+  \end{tabular}
+\end{table}
+
+And finally a Science Figure showing rows of pixels.
+
+\begin{figure}
+    \includesvg[scale=1]{figures/cs_raster_pixel_rows_3-20-2019.svg}
+    \caption{Rows of pixels, as indicated by the red lines in Fig.~\ref{fig:resultsF1_images}. For clarity, not all images are included.}  
+    \label{fig: }
+\end{figure}
+
+\section{Conclusions and Future Work Somebody Could Do}
+
+During raster scanning, the system remains largely in steady-state or quasi steady-state. The only perturbations from the condition occur either (i) at the turn-around points or (ii) when the cantilever scans over a surface feature. During the bulk of the scan across the specimen, the derivative of $X$-axis trajectory will be largely in steady state, once the transient from the turn-around decays. Similarly, for the $Y$-axis which tracks a single ramp up the entire image, the only perturbation from steady state in the derivative occurs at the start of the entire scan and from cross-coupling with the $X$-axis at the turn-arounds. 
+
+By contrast, in CS based scanning the system spends a much large portion of its time in a transient state and the $XY$-axis transients are coupled into the deflection signal via sample tilt etc. This essentially gives us two options: either increase the settling period after each transition (e.g., after each $XY$-move and after each descent) or try to increase the damping of the controllers, which will inevitably slow things down.
+Although I don't claim that the results here are ''optimal'' in this regard, I do believe for the CS20NG, that we have a reasonable trade-off. For specimens with smaller feature sizes, e.g., DNA (which is a few 
+nanometers high), it is likely that the CS-scheme would fair worse. 
+
+
+\subsection{MIMO control for $XY$}
+As we saw back in Section XX, our more aggressive $X$-direction controller induces substantial oscillations in the $Y$-axis. Especially for faster scan rates, the associated increase in $XY$-move time represents a non-trivial fraction of the overall scanning time. Thus, an interesting area for additional improvement would be to compensate the cross-coupling dynamics. It may be all that is needed is to develop a controller better $SISO$ controller for the $Y$-axis.
+
+
+\subsection{$\mu$-path connections}
+In general, it should be possible to reduce the CS imaging time by optimizing the order of the $\mu$-path scans. This is related to the traveling salesman problem (TSP), but a key difference is that the locations of arrival and departure from a given ``city'' are different. A related idea is to connect multiple $\mu$-paths together. For example, if the $\mu$-paths are one pixel apart, it does not make sense to go through an entire CS cycle of lifting the tip away from the sample surface, moving in the $XY$-plane, and re-engaging the tip, waiting for it to settle and finally starting the next scan. Rather, for $\mu$-paths within a certain threshold, it makes sense to leave the tip on the surface and simply move to the next location at a speed not exceeding the given scan rate. Of course connecting the paths could be worked into a modified dual-mode TSP type problem, where the salesmen has the choice to fly or drive to the next city. If the next city is nearby, the constant overhead of air travel makes no sense, so he drives.
+
+Here, I take a greedy approach to the connection problem. The decision to connect two $\mu$-paths requires
+\begin{enumerate}
+\item An estimate for how long a typical CS cycle takes. In the CS cycle, the time it takes to get from the end of one scan to the beginning of the next is given by
+  \begin{equation}
+    t_{next} = t_{up} + t_{xy-move} + t_{down} + t_{settle}.
+  \end{equation}
+  I estimate these numbers from prior data by taking the mean amount of time over all CS cycles for each stage.
+\item An estimate for how long it would take to scan our way over to the next measurement location. This is simply
+  \begin{equation}
+    t_{scan-to} = \sqrt{(x_{next}-x_{now})^2 + (y_{next}-y_{now})^2) }/ v
+    \end{equation}
+    where $v$ is the scan velocity.
+\end{enumerate}
+(i) an estimate for how long it would and sequentially search through a set of $\mu$-paths
+
+
 
 \bibliographystyle{IEEEtran}
 \bibliography{/home/arnold/bib_pdf/main_bibliography}
