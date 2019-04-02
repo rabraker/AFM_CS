@@ -54,12 +54,12 @@ xlm = [3.8566    4.2150];
 ylm = [-0.9478    0.4434]
 set(ha, 'XLim', xlm, 'YLim', ylm)
 
-h_ok = ciplot([ylm(1), ylm(1)], [ref, ref], xlm, 'g', ha);
+% h_ok = ciplot([ylm(1), ylm(1)], [ref, ref], xlm, 'g', ha);
 h_no = ciplot([ref, ref], [ylm(2), ylm(2)], xlm, 'r', ha);
-alpha(h_ok, '0.25')
+% alpha(h_ok, '0.25')
 alpha(h_no, '0.25')
 
-h_ok.DisplayName = 'No Penalty';
+% h_ok.DisplayName = 'No Penalty';
 h_no.DisplayName = 'Penalize';
 xlabel(ha, 'time [s]')
 ylabel(ha, 'deflection [V]')
@@ -68,5 +68,5 @@ title(ha, '')
 leg = legend();
 set(leg, 'NumColumns', 2, 'location', 'northwest')
 
-save_fig(Fig, 'notes/figures/damage_illustration')
+save_fig(Fig, fullfile(PATHS.thesis_fig_final, 'damage_illustration'))
 %%
