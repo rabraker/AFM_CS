@@ -30,14 +30,14 @@ dat_root = PATHS.raster_image_data(size_dir, exp_date);
 
 % ----------------------- Load and Process raster-data -------------------------
 raster_files = {...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-01.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-02.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-03.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-04.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-05.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-06.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-07.csv',...
-'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-08.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-09.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-10.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-11.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-12.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-13.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-14.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-15.csv',...
+'raster_scan_512pix_5mic_5.00e-01Hz_out_3-13-2019-16.csv',...
 };
 
 
@@ -55,26 +55,25 @@ width = rast_exps{1}.width;
 stit = sprintf('Scan %d', k)
 
 clc
-N_damage = 100;
-for k=1:length(rast_exps)
-  ze{k} = rast_exps{k}.ze;
-  ze{k} = resample(ze{k}, 1, 2); % half the sample rate
-  ze{k} = ze{k} - (-0.3); %mean(ze1);
-  ze_sort{k} = sort(ze{k}(ze{k}>0), 'descend');
-  %   sum(ze_sort{k}(1:N_damage))/N_damage
-  sum(ze{k}(ze{k}>0)) / length(ze{k}(ze{k}>0))
-end
+% N_damage = 100;
+% for k=1:length(rast_exps)
+%   ze{k} = rast_exps{k}.ze;
+%   ze{k} = resample(ze{k}, 1, 2); % half the sample rate
+%   ze{k} = ze{k} - (-0.3); %mean(ze1);
+%   ze_sort{k} = sort(ze{k}(ze{k}>0), 'descend');
+%   %   sum(ze_sort{k}(1:N_damage))/N_damage
+%   sum(ze{k}(ze{k}>0)) / length(ze{k}(ze{k}>0))
+% end
 
 
 %%
 clc
 
-
 x1s = [45,   45, 50,   50, 50,   52,  57, 55];
 x2s = [450, 455, 455, 463, 419, 467. 474, 474];
 figbase = 10;
 for k=1:length(rast_exps)
-%   rast_exps{k}.bin_raster_really_slow(@detrend);
+  rast_exps{k}.bin_raster_really_slow(@detrend);
   
   pixmats_raw{k} = rast_exps{k}.pix_mat;
 %   pixmats{k} = pixmats_raw{k};
