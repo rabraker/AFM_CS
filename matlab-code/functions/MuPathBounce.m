@@ -8,9 +8,16 @@ classdef MuPathBounce < handle
     XR_volt_starts;
     YR_volt_starts;
     samps_per_bounce;
+    
+    pre_pad_samples=0;
   end
   methods
-    function self = MuPathBounce(N_paths, samps_per_bounce)
+    function self = MuPathBounce(N_paths, samps_per_bounce, varargin)
+      p = inputParser();
+      p.addParameter('pre_pad_samples', 0);
+      p.parse(varargin{:});
+      
+      self.pre_pad_samples =  p.Results.pre_pad_samples;
       self.N_paths = N_paths;
       self.XR_volt_starts = zeros(N_paths, 1);
       self.YR_volt_starts = zeros(N_paths, 1);
@@ -31,7 +38,7 @@ classdef MuPathBounce < handle
               'scan_type', 1,...
               'mu_length', 0,...
               'overscan_samples', 0,...
-              'pre_scan_samples', 0,...
+              'pre_scan_samples', self.pre_pad_samples,...
               'tip_velocity', 0,...
               'actual_sub_samble_perc', 0,...
               'fpga_input', vec(:)',...
