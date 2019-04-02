@@ -75,6 +75,10 @@ classdef PATHS
       PATH = fullfile(folder_path, fname);
     end
     
+    function PATH = thesis_fig_final
+      PATH = fullfile(PATHS.thesis_root, 'plots-afm-cs-final', 'figures');
+    end
+    
     function PATH = note_fig(fname)
       PATH = fullfile(PATHS.CS_root, 'matlab-code', 'notes', 'figures');
       if nargin >0
