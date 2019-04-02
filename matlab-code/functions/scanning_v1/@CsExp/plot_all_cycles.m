@@ -1,5 +1,5 @@
-function [hands, legs] = plot_all_cycles(self, ax1, ax2, ax3, ax4, bounds, to_pix)
-%   [hands] = plot_all_cycles(self, ax1, ax2, ax3, ax4, bounds, to_pix)
+function [hands, legs] = plot_all_cycles(self, ax1, ax2, ax3, ax4, bounds, xy_scl)
+%   [hands] = plot_all_cycles(self, ax1, ax2, ax3, ax4, bounds, xy_scl)
 % Plot the color-ized cs cycles to the provided axes.
 %
 % Usage
@@ -25,9 +25,10 @@ function [hands, legs] = plot_all_cycles(self, ax1, ax2, ax3, ax4, bounds, to_pi
 %                                   y, and ze, or u_z and x, respectivily.
 %
   
-if ~exist('to_pix', 'var')
-  to_pix=false;
-end
+  if ~exist('xy_scl', 'var')
+    xy_scl=1;
+  end
+  
 % First, parse the input. 
   if isa(ax1, 'char') && strcmp(ax1, 'all')
     plotx=true;
@@ -132,11 +133,11 @@ end
       h_ze(k).DisplayName = indc{2,k};
     end
     if plotx
-      h_x(k) = plot_cell_of_timeseries(ax3, idx_cell, self.x, 'color', indc{1, k});
+      h_x(k) = plot_cell_of_timeseries(ax3, idx_cell, self.x  * xy_scl, 'color', indc{1, k});
       h_x(k).DisplayName = indc{2,k};
     end
     if ploty
-      h_y(k) = plot_cell_of_timeseries(ax4, idx_cell, self.y, 'color', indc{1, k});
+      h_y(k) = plot_cell_of_timeseries(ax4, idx_cell, self.y * xy_scl, 'color', indc{1, k});
       %     y_k = self.y(idx_state);
       %     h_y(k) = plot(ax4, t_k, y_k, 'color', indc{1, k});
       h_y(k).DisplayName = indc{2,k};
