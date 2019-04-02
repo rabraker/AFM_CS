@@ -61,7 +61,9 @@ end
 %%
 
 % Cs simulations using raster data.
-im_rast_sim = rast_exps{1}.pix_mat_pinned;
+master_idx = 1;
+rfreq_master = rast_exps{master_idx}.meta_in.raster_freq;
+im_rast_sim = rast_exps{master_idx}.pix_mat_pinned;
 im_rast_sim = im_rast_sim - mean(im_rast_sim(:));
 use_dct2=false;
 
@@ -101,7 +103,7 @@ F1 = mkfig(3000, 7, 4.55); clf
 thresh = (20/7)*(1/1000)*20;
 
 imagesc(ha(1), im_rast_sim, [-thresh, thresh])
-title(ha(1), 'master (0.5 Hz)')
+title(ha(1), sprintf('master (%.1f Hz)', rfreq_master))
 set(ha(1), 'YTick', [], 'XTick', [])
 
 for k=1:length(sub_sample_frac_s)
@@ -123,7 +125,7 @@ for k=1:length(sub_sample_frac_s)
   set(ha(k+1), 'YTick', [], 'XTick', [])
 end
 %%
-save_fig(F1, 'notes/figures/cs_sim_1Hz_raster', false)
+save_fig(F1, fullfile(PATHS.thesis_root, 'plots-afm-cs-final/figures/cs_sim_1Hz_raster'), false)
 
 
 
@@ -152,7 +154,7 @@ F2 = mkfig(3001, 7, 4.5); clf
 thresh = (20/7)*(1/1000)*20;
 
 imagesc(ha(1), im_rast_sim, [-thresh, thresh])
-title(ha(1), 'master (0.5 Hz)')
+title(ha(1), sprintf('master (%.1f Hz)', rfreq_master))
 set(ha(1), 'YTick', [], 'XTick', [])
 
 for k=1:length(sub_sample_frac_s)
@@ -184,7 +186,7 @@ im1_ontok_fit = norm_align(imk_slice, im_rast_sim);
 fprintf('(master to 1hz) PSNR=%.2f, SSIM=%.2f\n', psn_1k, ssm_1k);
 
 %%
-save_fig(F2, 'notes/figures/cs_sim_1Hz_raster_from1Hz', false)
+save_fig(F2, fullfile(PATHS.thesis_root,'plots-afm-cs-final/figures/cs_sim_1Hz_raster_from1Hz'), false)
 
 
 
