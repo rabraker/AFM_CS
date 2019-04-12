@@ -12,7 +12,7 @@ clc
 samps_per_path = 1500;
 pre_scan_samples = 250;
 Npaths = 160
-mpb = MuPathBounce(15, samps_per_path, 'pre_pad_samples', pre_scan_samples)
+mpb = MuPathBounce(Npaths, samps_per_path, 'pre_pad_samples', pre_scan_samples)
 
 
 % Unit conversions.
