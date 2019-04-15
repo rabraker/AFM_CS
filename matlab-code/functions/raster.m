@@ -10,7 +10,7 @@
 %  ------
 %   freq - desired triangle wave freqency
 %   Ts     sample period
-%   tend   end time of the triangle wave
+%   Nperiod total number of periods. Default is 1.
 %   coerce 0, 1 (optional)
 %   shift: a time to shift the raster pattern by. if shift= -1/4*period,
 %           then the pattern will start at the negative peak value.
@@ -24,8 +24,11 @@
 
 
 function [rasterdata, truefreq, points_per_line]...
-                       = raster(freq, Ts, tend, varargin)
+                       = raster(freq, Ts, Nperiod, varargin)
 
+if ~exist('Nperiod', 'var') || isempty(Nperiod)
+    Nperiod = 1;
+end
 defcoerce = 0;
 defshift = 0;
 p = inputParser;
@@ -62,9 +65,12 @@ taplushalf = floor((tvec + opts.shift)/a + 1/2);
 y = (2/a)*((tvec + opts.shift)- a*taplushalf);
 y = y.*(-1).^taplushalf;
 
-
-
-rasterdata = timeseries(y, tvec);
+Y_all = [];
+for k=1:Nperiod
+    Y_all = [Y_all; y];
+end
+tvec_all = (0:length(Y_all)-1)'*Ts;
+rasterdata = timeseries(Y_all, tvec_all);
 truefreq = 1/period;
 end
 
