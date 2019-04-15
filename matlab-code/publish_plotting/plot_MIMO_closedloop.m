@@ -46,8 +46,11 @@ K_lqr2 = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q2, R2+gam_rob2, S2);
 
 
 % [~, ~, Hyr] = ss_loops_delta_dist(plants.SYS, plants.sys_recyc, sys_obsDist, K_lqr1, L_dist);
-
-[Gz_frf,~, DDz] = get_gz_dz();
+%%
+Gxyz_frd = get_H();
+ 
+Gzz = Gxyz_frd(3,3);
+[DDz, Dki, Dinv] = get_gz_dz(Gzz);
 
 
 % Gz_interp = interp1(Gz_frf.Frequency, Gz_frf.ResponseData(:), mf_full.modelFit.frf.freqs_Hz);
@@ -56,11 +59,11 @@ K_lqr2 = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q2, R2+gam_rob2, S2);
 % Gxyz(1,3,:) = 0;
 
 % Gxyz_frd = frd(Gxyz, mf_full.modelFit.frf.freqs_Hz, 'FrequencyUnit', 'Hz', 'Ts', AFM.Ts);
- Gxyz_frd = get_H();
 
-[HH1] = close_three_axis(plants.SYS, plants.sys_recyc, sys_obsDist, K_lqr1, L_dist, Gxyz_frd, Dy, 0.5*DDz);
 
-[HH2] = close_three_axis(plants.SYS, plants.sys_recyc, sys_obsDist, K_lqr2, L_dist, Gxyz_frd, Dy, 0.5*DDz);
+[HH1] = close_three_axis(plants.SYS, plants.sys_recyc, sys_obsDist, K_lqr1, L_dist, Gxyz_frd, Dy, Dki, Dinv);
+
+[HH2] = close_three_axis(plants.SYS, plants.sys_recyc, sys_obsDist, K_lqr2, L_dist, Gxyz_frd, Dy, Dki, Dinv);
 
 
 
@@ -127,7 +130,7 @@ function H_frd = get_H()
   
 end
 
-function [G_frf, freqs, DD] = get_gz_dz()
+function [DD, D_ki, D_inv] = get_gz_dz(Gzz)
   root = fullfile(PATHS.sysid, 'z_axis_evolution', 'batch-1');
   file = 'first_res_fit-3-17-2019-1.json';
   dat = loadjson(fullfile(root, file));
@@ -136,13 +139,24 @@ function [G_frf, freqs, DD] = get_gz_dz()
   ss_data = SweptSinesOnline(ss_fname);
   freqs = ss_data.freq_s;
   
-  G_frf = frd(ss_data.FC_s(:,2)./ss_data.FC_s(:,1), ss_data.freq_s, AFM.Ts, 'FrequencyUnit', 'Hz');
+%   G_frf = frd(ss_data.FC_s(:,2)./ss_data.FC_s(:,1), ss_data.freq_s, AFM.Ts, 'FrequencyUnit', 'Hz');
+  
+  idx1 = find(Gzz.Frequency < 180, 1, 'last');
+  idx2 = find(Gzz.Frequency > 230, 1, 'first');
   
   
-  KI = -0.03;
+  gd0 = tf(dat.Dinv_den, dat.Dinv_Num, AFM.Ts)/dat.K
+  sos_fos = SosFos(gd0);
+  lg = LogCostZPK(Gzz.ResponseData(idx1:idx2), Gzz.Frequency(idx1:idx2)*2*pi, sos_fos);
+  lg.solve_lsq(1)
+  D = lg.sos_fos.realize();
+  
+  D_inv = 1/D;
+  
+  KI = -0.05;
   
 %   D_inv = frd(tf(dat.Dinv_Num, dat.Dinv_den, AFM.Ts),  freqs,  'FrequencyUnit', 'Hz');
-  D_inv = tf(dat.Dinv_Num, dat.Dinv_den, AFM.Ts)
+%   D_inv = tf(dat.Dinv_Num, dat.Dinv_den, AFM.Ts)
   D_ki = zpk([], [1], KI, AFM.Ts);
   
   DD = D_ki * D_inv;
@@ -154,7 +168,7 @@ function [G_frf, freqs, DD] = get_gz_dz()
 
 end
 
-function [HH] = close_three_axis(sys, sys_recyc, sys_obs, KxKu, LxLd, Gxyz_frf, Dy, Dz)
+function [HH] = close_three_axis(sys, sys_recyc, sys_obs, KxKu, LxLd, Gxyz_frf, Dy, Dki, Dinv)
   Ts = sys.Ts;
   Kx = KxKu(1:end-1);
   Ku = KxKu(end);
@@ -175,78 +189,55 @@ function [HH] = close_three_axis(sys, sys_recyc, sys_obs, KxKu, LxLd, Gxyz_frf, 
 
   K_c = [KxKu, Nbar];
   K_c(end-1) = K_c(end-1)-1;
-  D1 = ss(AA_, LL_, K_c, 0, Ts);
-  D2 = ss(AA_, BB_, -K_c, Nbar, Ts);
+  D2x = ss(AA_, LL_, K_c, 0, Ts);     % The feedback
+  Mx = ss(AA_, BB_, -K_c, Nbar, Ts); % The feedforward
 
   % % Estimated state feedback loop gain:
-  Loop = sys*D1;
+  Loop = sys*D2x;
   Sens = 1/(1+Loop);
 
-  Hyr = ((sys*D2*Sens));
+  Hyr = ((sys*Mx*Sens));
   Hyd = minreal( sys*Sens);
   
- 
-  DD2 = [D2, 0, 0;
-         0,  Dy, 0;
-         0, 0, Dz];
-  DD1 = [D1, 0, 0;
+%    R-->[ M ]--->O---->[ D1 ]-->[ G ]--+---> y
+%                 |                     |           
+%                 +-----[ D2 ]<---------+
+%
+% y =        G*D1
+%      --------------- * M * R
+%      I + D2*G*G1
+
+  M = [Mx, 0, 0;
+         0,  1, 0;
+         0, 0, 1];
+     
+  DD2 = [D2x, 0, 0;
+         0,   1, 0;
+         0,   0, 1];
+  DD1 = [1, 0, 0;
          0, Dy, 0;
-          0, 0, Dz];
+         0, 0,  Dki*Dinv];
   I = eye(3);
+
   
+  HH = (Gxyz_frf*DD1 / (I + DD2*Gxyz_frf*DD1)) * M;
   
-  
-  HH = (Gxyz_frf*DD2) / (I + Gxyz_frf*DD1);
-%   HH = Gxyz_frf / (I + Gxyz_frf*DD1);
-  
+% % %   DD2 = [D2, 0, 0;
+% % %          0,  Dy, 0;
+% % %          0, 0, 0];
+% % %   DD1 = [D1, 0, 0;
+% % %          0, Dy, 0;
+% % %           0, 0, Dki*Dinv];
+% % %   I = eye(3);
+% % %   
+% % %   M1 = (Gxyz_frf*DD2);
+% % %   M1(3,3) = Dki;
+% % %   
+% % %   HH = M1 / (I + Gxyz_frf*DD1);
+% % % %   HH = Gxyz_frf / (I + Gxyz_frf*DD1);
+% % %   
 
 
 end
 
 
-
-function [HH] = close_two_axis(sys, sys_recyc, sys_obs, KxKu, LxLd, Gxy, Dy, Dz)
-  Ts = sys.Ts;
-  Kx = KxKu(1:end-1);
-  Ku = KxKu(end);
-  Nbar = SSTools.getNbar(sys_recyc, KxKu);
-
-  Ld = LxLd(end);
-  Lx = LxLd(1:end-1);
-  Cd = sys_obs.c(end);
-
-  A_tilde = sys.a - sys.b*Kx - Lx*sys.c;
-
-  AA_ = [A_tilde, sys.b-sys.b*Ku, -(sys.b*Nbar+Lx*Cd);
-       -Kx,     1-Ku,             -Nbar;
-       -Ld*sys.c,    0,              1-Ld*Cd];
-
-  BB_ = [sys.b*Nbar; Nbar; 0];
-  LL_ = [Lx; 0; Ld];
-
-  K_c = [KxKu, Nbar];
-  K_c(end-1) = K_c(end-1)-1;
-  D1 = ss(AA_, LL_, K_c, 0, Ts);
-  D2 = ss(AA_, BB_, -K_c, Nbar, Ts);
-
-  % % Estimated state feedback loop gain:
-  Loop = sys*D1;
-  Sens = 1/(1+Loop);
-
-  Hyr = ((sys*D2*Sens));
-  Hyd = minreal( sys*Sens);
-  
- 
-  DD2 = [D2, 0, 0;
-    0,  Dy, 0];
-%     0, 0, Dz];
-  DD1 = [D1, 0, 0;
-         0, Dy, 0];
-%     0, 0, Dz];
-  I = eye(3);
-  
-  HH = Gxy*DD2/(I + Gxy*DD1);
-  
-  HH = minreal(HH);
-
-end

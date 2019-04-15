@@ -7,7 +7,8 @@ file = 'first_res_fit-3-17-2019-1.json';
 
 Fig = mkfig(1, 5, 4); clf
 [ha, pos] = tight_subplot(1, 1, [.02, .01 ], [.1, 0.03], [.1, .05]);
-
+k = 1
+name = ''
 if k==1
   prefix='(A) ';
 else

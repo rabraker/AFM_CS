@@ -17,7 +17,7 @@ function save_fig(fig, fpath_no_ext, for_presentation)
     bg = fig_color_presentation();
   else
     ext = '.svg';
-    bg = fig_color();
+    bg = [1, 1, 1]; %fig_color();
   end
 
   % Check to see if fpath has a file extension:

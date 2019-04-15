@@ -18,6 +18,9 @@ classdef PATHS
     function path = thesis_root()
       path = '/home/arnold/gradschool/thesis';
     end
+    function path = defense_fig()
+      path = '/home/arnold/gradschool/thesis/defense/presentation/figures';
+    end
     function [ PATH ] = step_exp()
       % PATH constant to where all experimental data for step experiments 
       % (for the x-y plane) is stored for the.
