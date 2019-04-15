@@ -82,14 +82,15 @@ for k=1:length(cs_files)
   cs_paths = get_cs_paths(data_root, cs_files{k});
   % cs_exps{k} = CsExp(cs_paths, 'feature_height', hole_depth, 'gg', gg);
   gg = @(u, idx_state_s) log_creep_detrend(u, idx_state_s);
-  cs_exps{k} = CsExp(cs_paths, 'feature_height', hole_depth, 'gg', gg);
+  cs_exps{k} = CsExp(cs_paths, 'feature_height', hole_depth, 'gg', gg,...
+      'load_full', true);
   % cs_exps{k} = CsExp(cs_paths, 'feature_height', hole_depth);
   cs_exps{k}.print_state_times();
   cs_exps{k}.sub_sample_frac()
 end
-
+%%
 [~, axs] = make_cs_traj_figs(figbase, 4);
-cs_exps{end}.plot_all_cycles(axs{1:4});
+cs_exps{1}.plot_all_cycles(axs{1:4});
 
 
 %%
