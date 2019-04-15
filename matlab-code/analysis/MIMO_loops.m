@@ -18,7 +18,7 @@ mf_full = load(full_mod_path);
 Gxy = mf_full.modelFit.G_all_axes(1:3,:);
 
 % ------- Load Plants -----
-[plants, frf_data] = CanonPlants.plants_ns14(9);
+[plants, frf_data] = CanonPlants.plants_ns14(9, 2);
 Ts  = plants.SYS.Ts;
 Dy = zpk([0], [1], 0.01, AFM.Ts);
 
@@ -42,7 +42,7 @@ can_obs_params.beta = 50;
 gam_rob1 = 25;
 K_lqr1 = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_rob1, S1);
 
-gam_rob2 = 100;
+gam_rob2 = 25;
 K_lqr2 = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q2, R2+gam_rob2, S2);
 
 
