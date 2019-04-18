@@ -1,9 +1,31 @@
+clear all
+clc
+% Options
+figbase  = 50;
+verbose = 0;
+controlParamName = 'LinControls01.csv';
+refTrajName      = 'ref_traj_track.csv';
+outputDataName = 'exp01outputBOTH.csv';
+% Build data paths
 
-% The problem of connecting the cantilevar end to the sample surface is the
-% same is finding where a circle and line intersect. Show that we did this
-% correctly.
+addpath(fullfile(getCsRoot(), 'matlab-code', 'functions'));
+addpath(fullfile(getCsRoot(), 'matlab-code', 'functions', 'state_space_x'));
+
+full_mod_path = fullfile(PATHS.sysid, 'xy-axis_sines_info_intsamps_quickFourierCoef_11-11-2018xydrive-01.mat');
+mf_full = load(full_mod_path);
 
 
+Gxyz = mf_full.modelFit.frf.all_axes; 
+F1 = mkfig(1, 3.5, 3); clf
+ax = tight_subplot(1,1, 0.01, [0.14, 0.02], [0.15, 0.02])
+
+h1 = frf_bode_mag(squeeze(Gxyz(3,1, :)), mf_full.modelFit.frf.freqs_Hz, ax, 'Hz', '-b');
+h1.DisplayName = '$G_{u_X, Z}$';
+legend(h1, 'location', 'southwest', 'FontSize', 16);
+
+save_fig(F1, fullfile(PATHS.defense_fig(), 'frf_Guxz'), true);
+
+%%
 clc
 ell = 3;
 yb = 1.5;
@@ -58,10 +80,10 @@ plot(xl_1, yy, 'x')
 
 F = figure(1); clf
 set(F, 'Position', [-1286 389 600 200], 'Color', 'w');
-ax = axes('Position', [0.080 0.200 0.8913 0.8535]);
+ax = axes('Position', [0.0610 0.1100 0.8913 0.8535]);
 ax.NextPlot = 'replaceChildren';
 
-ax2 = axes('Position', [0.5864 0.2200 0.3300 0.4745], 'XTick', [], 'YTick', []);
+ax2 = axes('Position', [0.5864 0.1400 0.3300 0.4745], 'XTick', [], 'YTick', []);
 ax2.NextPlot = 'replaceChildren';
 
 
@@ -117,8 +139,6 @@ for k=1:length(t)
   % return
   
   ylim(ax, [-0.1, 2.5])
-  xlabel(ax, 'x', 'FontSize', 16)
-  ylabel(ax, 'z', 'FontSize', 16)
   
   x(k) = xo;
   z(k) = yl(xl_1);
@@ -130,7 +150,6 @@ for k=1:length(t)
   ylim(ax2, [-1, 1]*1.05);
   set(h1, 'DisplayName', '$x(t)$')
   set(h2, 'DisplayName', '$z(t)$')
-
   leg = legend(ax2, [h1, h2]);
   set(leg, 'NumColumns', 2, 'Position', [0.5864 0.6098 0.2566 0.1398],...
     'FontSize', 12)
@@ -148,19 +167,6 @@ for k=1:length(t)
     delete(h2);
   end
 end
-%%
-% file extension is added automatically. Matlab is shitty and wont do MP4 on
-% linux. Convert later with 
-% >>> ffmpeg -i sample_tilt.avi sample_tilt.mp4
-v = VideoWriter('~/gradschool/thesis/defense/presentation/sample_tilt')
-% v = VideoWriter('~/matlab/afm-cs/matlab-code/notes/figures/sample_tilt')
-
-
-open(v)
-for k=1:length(Frames)
-  v.writeVideo(Frames(k))
-end
-v.close()
 
 %%
 function h = draw_cantilevar(ax, y_tip_base, x_tip, cant_base_ht);
