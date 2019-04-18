@@ -1,4 +1,5 @@
-% [pix_idx, pix_mask_mat] = muPathMaskGen(mupathLength,n,m,samplingRatio,RepeatSampling)
+% [pix_mask_mat, pix_idx] = mu_path_mask(mupath_len, n, m, samplingRatio, repeat_sampling)
+%
 % Return Mu path sampling mask
 %
 % Arguments

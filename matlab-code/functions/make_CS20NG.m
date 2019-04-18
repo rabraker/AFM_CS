@@ -1,3 +1,5 @@
+% img_mat = make_CS20NG(x_start, y_start, npix, nholes)
+%
 function img_mat = make_CS20NG(x_start, y_start, npix, nholes)
   
   % Make these options later
