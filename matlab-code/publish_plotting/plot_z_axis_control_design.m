@@ -1,5 +1,5 @@
 addpath functions
-close all
+% close all
 root = fullfile(PATHS.sysid, 'z_axis_evolution', 'batch-1');
 file = 'first_res_fit-3-17-2019-1.json';
 
@@ -24,28 +24,35 @@ h(k).DisplayName = [prefix name];
 ss_fname = fullfile(root, 'ALL-axis_sines_info_intsamps_quickFourierCoef_3-17-2019-01.json');
 ss_data = SweptSinesOnline(ss_fname);
 
-G_frf = frd(ss_data.FC_s(:,2)./ss_data.FC_s(:,1), ss_data.freq_s, AFM.Ts, 'FrequencyUnit', 'Hz');
+G_frf = -frd(ss_data.FC_s(:,2)./ss_data.FC_s(:,1), ss_data.freq_s, AFM.Ts, 'FrequencyUnit', 'Hz');
 
 
-KI = -0.03;
+KI = 0.05;
 
 D_inv = frd(tf(dat.Dinv_Num, dat.Dinv_den, AFM.Ts),  ss_data.freq_s,  'FrequencyUnit', 'Hz');
 
-D_ki = zpk([], [1], KI, AFM.Ts);
+KI_norm = KI*dat.K;
+
+D_ki = zpk([], [1], KI_norm, AFM.Ts);
 
 DD = D_ki * D_inv;
 
-D_ki_frf = frd(D_ki, ss_data.freq_s,  'FrequencyUnit', 'Hz');
-DD_frf = frd(DD, ss_data.freq_s, 'FrequencyUnit', 'Hz');
-Dinv_frf = frd(D_inv, ss_data.freq_s, 'FrequencyUnit', 'Hz');
+% D_ki_frf = frd(D_ki, ss_data.freq_s,  'FrequencyUnit', 'Hz');
+% DD_frf = frd(DD, ss_data.freq_s, 'FrequencyUnit', 'Hz');
+% Dinv_frf = frd(D_inv, ss_data.freq_s, 'FrequencyUnit', 'Hz');
+% Loop = DD_frf * G_frf;
+% Loop_noinv = D_ki_frf * G_frf;
+% Huz_d = feedback(D_ki_frf, D_inv*G_frf);
+% Hyr = feedback(D_ki_frf*D_inv*G_frf, 1);
+% Hyr_noinv = feedback(D_ki_frf,  G_frf);
 
-Loop = DD_frf * G_frf;
-Loop_noinv = D_ki_frf * G_frf;
+Loop = DD * G_frf;
+Loop_noinv = D_ki * G_frf;
 
 
-Huz_d = feedback(D_ki_frf, D_inv*G_frf);
-Hyr = feedback(D_ki_frf*D_inv*G_frf, 1);
-Hyr_noinv = feedback(D_ki_frf,  G_frf);
+Huz_d = feedback(D_ki, D_inv*G_frf);
+Hyr = feedback(D_ki*D_inv*G_frf, 1);
+Hyr_noinv = feedback(D_ki,  G_frf);
 
 
 F2 = mkfig(2, 7, 4); clf
@@ -66,7 +73,7 @@ leg = legend([h1, h2, h3, h4]);
 set(leg, 'Location', 'southwest', 'FontSize', 12);
 
 save_fig(F2, fullfile(PATHS.thesis_fig_final, 'z_control_design'));
-%%
+
 bandwidth(Huz_d)/2/pi
 bandwidth(Hyr)/2/pi
 
