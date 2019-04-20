@@ -65,7 +65,7 @@ master_idx = 1;
 rfreq_master = rast_exps{master_idx}.meta_in.raster_freq;
 im_rast_sim = rast_exps{master_idx}.pix_mat_pinned;
 im_rast_sim = im_rast_sim - mean(im_rast_sim(:));
-use_dct2=false;
+use_dct2=true;
 
 [n, m] = size(im_rast_sim);
 opts = l1qc_dct_opts('l1_tol', 0.0001, 'verbose', 1);
@@ -97,7 +97,8 @@ for k=1:length(sub_sample_frac_s)
   fprintf('done\n');
 end
 
-mu = Inf;
+
+mu = 300;
 F1 = mkfig(3000, 7, 4.55); clf
 [ha, pos] = tight_subplot(2, 3, [.05, .01 ], [.01, .04], .015);
 thresh = (20/7)*(1/1000)*20;
@@ -106,14 +107,17 @@ imagesc(ha(1), im_rast_sim, [-thresh, thresh])
 title(ha(1), sprintf('master (%.1f Hz)', rfreq_master))
 set(ha(1), 'YTick', [], 'XTick', [])
 
+metric_s = zeros(length(sub_sample_frac_s), 4);
+%%
 for k=1:length(sub_sample_frac_s)
   imk = cs_sims{k}.Img_bp;
   if ~isinf(mu)
     imk = SplitBregmanROF(imk, mu, 0.001);
   end
 %   im1_ontok_fit = norm_align(, im_rast_sim);
-  [psn_1k, ssm_1k] = ssim_psnr_norm(im_rast_sim, cs_sims{k}.Img_bp);
-  
+  [psn_1k, ssm_1k] = ssim_psnr_norm(imk, cs_sims{k}.Img_bp);
+  metric_s(k, 1:2) = [psn_1k, ssm_1k];
+    
   stit = sprintf('\\%% %.2f: psnr=%.2f, ssm=%.2f',...
     cs_sims{k}.sample_frac()*100, psn_1k, ssm_1k);
   fprintf('%s\n', stit);
@@ -129,7 +133,7 @@ save_fig(F1, fullfile(PATHS.thesis_root, 'plots-afm-cs-final/figures/cs_sim_1Hz_
 
 
 
-%% ---------------------------------------------------------------------------
+% ---------------------------------------------------------------------------
 im_rast_sim2 = rast_exps{2}.pix_mat_pinned;
 im_rast_sim2 = im_rast_sim2 - mean(im_rast_sim2(:));
 
@@ -147,7 +151,7 @@ for k=1:length(sub_sample_frac_s)
   fprintf('done\n');
 end
 %
-mu = Inf;
+mu = 300;
 slice = 25:1:cs_sims2{k}.npix-25;
 F2 = mkfig(3001, 7, 4.5); clf
 [ha, pos] = tight_subplot(2, 3, [.05, .01 ], [.01, .04], .015);
@@ -156,7 +160,8 @@ thresh = (20/7)*(1/1000)*20;
 imagesc(ha(1), im_rast_sim, [-thresh, thresh])
 title(ha(1), sprintf('master (%.1f Hz)', rfreq_master))
 set(ha(1), 'YTick', [], 'XTick', [])
-
+%%
+fprintf(' & PSNR(B vs A) & SSIM (B vs A)\\\\ \n');
 for k=1:length(sub_sample_frac_s)
   imk = cs_sims2{k}.Img_bp;
   if ~isinf(mu)
@@ -165,10 +170,11 @@ for k=1:length(sub_sample_frac_s)
   imk_slice = imk(slice, slice);
   im1_ontok_fit = norm_align(imk_slice, im_rast_sim);
   [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice);
+  metric_s(k, 3:4) = [psn_1k, ssm_1k];
   
   stit = sprintf('\\%% %.2f: PSNR=%.2f, SSIM=%.2f',...
     cs_sims2{k}.sample_frac()*100, psn_1k, ssm_1k);
-  fprintf('%s\n', stit);
+  fprintf('%.2f & %.2f \\\\ \n', psn_1k, ssm_1k);
 %   cs_exps{cs_idx(k)}.meta_in.actual_sub_samble_perc
  
   imagesc(ha(k+1), imk, [-thresh, thresh])
@@ -177,18 +183,32 @@ for k=1:length(sub_sample_frac_s)
   set(ha(k+1), 'YTick', [], 'XTick', [])
   
 end
-%%
+%
 imk = im_rast_sim2;
 imk_slice = imk(slice, slice);
 im1_ontok_fit = norm_align(imk_slice, im_rast_sim);
 [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice);
-  
+  %%
 fprintf('(master to 1hz) PSNR=%.2f, SSIM=%.2f\n', psn_1k, ssm_1k);
 
-%%
+%
 save_fig(F2, fullfile(PATHS.thesis_root,'plots-afm-cs-final/figures/cs_sim_1Hz_raster_from1Hz'), false)
+%%
+S1 = metrics_table(metric_s, sub_sample_frac_s);
 
+fid = fopen(fullfile(PATHS.cs_final_table, 'cs_sims_table.tex'), 'w+')
+fprintf(fid, '%s', S1);
+fclose(fid)
 
+function s = metrics_table(metrics, fracs)
+    s = sprintf('& \\multicolumn{2}{c}{A vs A} & \\multicolumn{2}{c}{B vs A} \\\\\n');
+    s = sprintf('%s sampling & PSNR & SSIM & PSNR & SSIM \\\\ \n', s);
+    s = sprintf('%s\\toprule\n', s);
+    for k=1:size(metrics, 1)
+        s = sprintf('%s%.2f & %.2f & %.2f & %.2f & %.2f\\\\\n', s, fracs(k), metrics(k,:));
+    end
+
+end
 
 % ---------------------------------------------------------------------------- %
 % ---------------------- Local Functions ------------------------------------- %

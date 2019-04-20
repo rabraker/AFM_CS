@@ -50,9 +50,12 @@ cs_files = {...
 rast_exps = {};
 for k=1:length(raster_files)
   raster_paths = get_raster_paths(dat_root, raster_files{k});
-  rast_exps{k} = RasterExp(raster_paths);
+  rast_exps{k} = RasterExp(raster_paths, 'load_full', true);
+  if rast_exps{k}.time_total == 0
+      rast_exps{k}.time_total = rast_exps{k}.samps_per_period*rast_exps{k}.npix*AFM.Ts;
+  end
 end
-%%
+%
 
 x1s = [30, 47, 53, 51, 59, 60];
 x2s = [496, 465, 464, 468, 472, 424];
@@ -70,6 +73,7 @@ for k=1:length(rast_exps)
   plot_raster_data(rast_exps{k}.pix_mat_pinned, figbase*k, stit)
   % stit = sprintf('(raw) scan %d', k);
   % plot_raster_data(pixmats_raw{k}, (figbase-5)*k, stit)
+
 end
 %%
 for k=1:length(rast_exps)
@@ -89,12 +93,17 @@ for k=1:length(cs_files)
   cs_exps{k}.sub_sample_frac()
 end
 %%
+for k=1:length(cs_exps)
+  cs_exps{k}.save()
+end
+%%
 [~, axs] = make_cs_traj_figs(figbase, 4);
 cs_exps{1}.plot_all_cycles(axs{1:4});
 
 
 %%
 bp = true;
+recalc = false;
 use_dct2 = true;
 thresh = (20/7)*(1/1000)*20;
 opts = l1qc_dct_opts('l1_tol', 0.001);
@@ -104,7 +113,7 @@ for k=1:length(cs_exps)
   fprintf('nperc=%.3f\n', sum(cs_exps{k}.pix_mask(:))/cs_exps{k}.npix^2);
   ht = cs_exps{k}.feature_height;
   if bp
-    cs_exps{k}.solve_bp(true, use_dct2, opts);
+    cs_exps{k}.solve_bp(recalc, use_dct2, opts);
 
     fprintf('Finished solving bp problem #%d\n', k);
     stit = sprintf('(CS) %.2f Hz equiv, \\%% %.2f sampling\nTotal time: %.2f',...
@@ -123,27 +132,27 @@ for k=1:length(cs_exps)
     title(ax4, stit)
   end
 
-  cs_exps{k}.save();
+%   cs_exps{k}.save();
 end
 %%
 Fig1 = mkfig(3000, 7, 9); clf;
 ha1 = tight_subplot(4, 3, [0.025, 0.015], [.01, .02], [.02, .02], true);
 
 Fig_err = mkfig(3001, 7, 9); clf
-ha_err = tight_subplot(4, 3, [0.025, 0.015], [.01, .02], [.02, .02], true);
-
+ha_err = tight_subplot(4, 3, [0.025, 0.015], [.01, .02], [.05, .02], true);
+%%
 Fig_rows = mkfig(3002, 7, 4.5); clf
-ha_row = tight_subplot(2, 1, [0.1, 0.015], [.1, .05], [.05, .02], false);
-xlabel(ha_row(2), 'x-direction pixel')
-ylabel(ha_row(1), 'height')
-title(ha_row(1), 'raster')
-title(ha_row(2), 'CS')
-ylabel(ha_row(2), 'height')
+ha_row = tight_subplot(2, 1, [0.1, 0.015], [.1, .05], [.085, .02], false);
+xlabel(ha_row(2), 'x-direction pixel', 'FontSize', 14)
+ylabel(ha_row(1), 'height [nm]', 'FontSize', 14)
+title(ha_row(1), 'raster', 'FontSize', 14)
+title(ha_row(2), 'CS', 'FontSize', 14)
+ylabel(ha_row(2), 'height [nm]', 'FontSize', 14)
 
 grid(ha_row(1), 'on')
 grid(ha_row(2), 'on')
 
-mu = Inf;
+mu = 300;
 Img_filts = {};
 mxs = [];
 thresh = (20/7)*(1/1000)*20;
@@ -217,7 +226,7 @@ for k=1:length(rast_exps)
     hold(ha_row(1), 'on')
     
     plot(ha1(j), [1, 512], [row_idx, row_idx], 'r');
-    hl_row = plot(ha_row(1), imk(row_idx, :));
+    hl_row = plot(ha_row(1), imk(row_idx, :)*AFM.volts2nm_z());
     hl_row.DisplayName = sprintf('%.1f Hz', csm.rate);
   end
   title(ha_err(j), stit_err);
@@ -233,9 +242,10 @@ for k=1:length(rast_exps)
 end
 
 
+set(ha_row(1), 'XLim', [1, 512])
 axes(ha_row(1))
 leg1 = legend();
-set(leg1, 'Position', [0.8451 0.7680 0.1297 0.1021])
+set(leg1, 'NumColumns', 3, 'FontSize', 11, 'Position', [0.5574 0.8968 0.4223 0.0500])
 
 
 j = length(rast_exps);
@@ -292,7 +302,7 @@ for k=1:length(cs_exps)
     hold(ha_row(2), 'on')
     
     plot(ha1(j), [1, 512], [row_idx, row_idx], 'r');
-    hl_row = plot(ha_row(2), imk(row_idx, :));
+    hl_row = plot(ha_row(2), imk(row_idx, :)*AFM.volts2nm_z());
     hl_row.DisplayName = sprintf('%.1f Hz, %.1f \\%%', csm.rate, csm.coverage);
   end
   
@@ -300,36 +310,43 @@ for k=1:length(cs_exps)
   
   j=j+1;
 end
-%%
+
+set(ha_row(2), 'XLim', [1, 512])
 axes(ha_row(2))
 leg2 = legend();
-set(leg2, 'NumColumns', 2, 'Position', [0.6218 0.4039 0.3577 0.0709])
+set(leg2, 'NumColumns', 4, 'FontSize', 11, 'Position', [0.1032 0.4253 0.8589 0.0500])
 %%
-% 'Position', [0.6884 0.3921 0.2039 0.1389],
+
 set(ha1(end), 'Visible', 'off')
 set(ha_err(end), 'Visible', 'off')
 
 
-save_fig(Fig1, 'notes/figures/cs_raster_images_3-20-2019')
-save_fig(Fig_err, 'notes/figures/cs_raster_images_err_3-20-2019')
-save_fig(Fig_rows, 'notes/figures/cs_raster_pixel_rows_3-20-2019')
+% save_fig(Fig1, 'notes/figures/cs_raster_images_3-20-2019')
+% save_fig(Fig_err, 'notes/figures/cs_raster_images_err_3-20-2019')
+
+save_fig(Fig1, fullfile(PATHS.cs_final_fig(), 'cs_raster_images_3-20-2019'), false)
+save_fig(Fig_err, fullfile(PATHS.cs_final_fig(), 'cs_raster_images_err_3-20-2019'),false)
+save_fig(Fig_rows, fullfile(PATHS.cs_final_fig(), 'cs_raster_pixel_rows_3-20-2019'), false)
+
 
 
 
 
 %%
 
-S1 = scan_metrics_table(scan_metrics)
+% skip the 0.5Hz scan
+sm = scan_metrics(2:end)
+S1 = scan_metrics_table(sm)
 
 S2 = state_times_table(cs_exps)
 
 
 
-fid = fopen('notes/tables/cs_raster_table_3-20-2019_muInf_dct2.tex', 'w+');
+fid = fopen(fullfile(PATHS.cs_final_table(), 'cs_raster_table_3-20-2019_muInf_dct2.tex'), 'w+');
 fprintf(fid, '%s', S1);
 fclose(fid);
 
-fid = fopen('notes/tables/cs_state_times_table_3-20-2019_muInf_dct2.tex', 'w+');
+fid = fopen(fullfile(PATHS.cs_final_table(), 'cs_state_times_table_3-20-2019_muInf_dct2.tex'), 'w+');
 fprintf(fid, '%s', S2);
 fclose(fid);
 
