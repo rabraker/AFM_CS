@@ -2,10 +2,12 @@ clc
 clear
 %%
 % close all
+clear PATHS
 addpath functions/scanning_v1/
 addpath ~/matlab/dependencies/l1c/
 addpath ~/matlab/dependencies/l1c/lib
 addpath cs_simulations/splitBregmanROF_mex/
+addpath ~/matlab/afm-cs/matlab-code/functions/
 % initialize paths.
 init_paths();
 figbase = 20;
@@ -82,10 +84,13 @@ N_mu = length(cs_exps{ii_mu}.idx_state_s.scan);
 
 UZ_mu = 0;
 UZ_mu_skip = 0;
+UZ_mu_jump = 0;
+
 XK_skip=0;
 YK_skip=0;
 
 n_skip=0;
+n_jump=0;
 skips = [9:8:160*5];
 % for k = 1:N_mu
 %   idxk = cs_exps{ii_mu}.idx_state_s.scan{k};
@@ -125,19 +130,20 @@ for k = 1:N_mu
     UZ_mu_skip = UZK + UZ_mu_skip;
     XK_skip = XK + XK_skip;
     YK_skip = YK + YK_skip;
-    n_skip = n_skip+1;
-    
-%   else
-%     figure(2000)
-%     plot(xk)
-%     k
-% %     keyboard
+    n_skip = n_skip + 1;
+  end
+  
+  if ~isempty(intersect(k, skips))
+        UZ_mu_jump = UZK + UZ_mu_jump;
+        n_jump = n_jump + 1;
   end
 end
 
 
 UZ_mu = UZ_mu/N_mu;
 UZ_mu_skip = UZ_mu_skip/n_skip;
+UZ_mu_jump = UZ_mu_jump/n_jump;
+
 
 width = 3.5;
 height = 3;
@@ -148,11 +154,21 @@ margw = [0.15, .025];
 
 ax3 = tight_subplot(1, 1, gap, margh, margw, false);
 
+F2 = mkfig(20, width, height); clf
+ax2 = tight_subplot(1, 1, gap, margh, margw, false);
+
+h0 = semilogx(ax2, freqs, 10*log10(abs(UZ_mu_skip)));
+h0.DisplayName = 'no-jump'
+hold(ax2, 'on')
+h1 = semilogx(ax2, freqs, 10*log10(abs(UZ_mu_jump)));
+h1.DisplayName = '5-micron jump'
+
+
 % h1 = semilogx(freqs, 10*log10(abs(UZ_mu)));
 % h1.DisplayName = '$\mu$-path (whole)'
 % hold on
 h2 = semilogx(ax3, freqs, 10*log10(abs(UZ_mu_skip)));
-hold on
+hold(ax3, 'on')
 % semilogx(ax3, freqs, 10*log10(XK_skip))
 % semilogx(ax3, freqs, 10*log10(YK_skip))
 
@@ -161,11 +177,20 @@ h2.DisplayName = '$\mu$-path (pre-scan+scan)'
 
 h3 = semilogx(ax3, freqs_b, 10*log10(abs(UZ_b)));
 h3.DisplayName = 'z-bounce (no scan)'
-leg = legend([h2, h3], 'Position', [0.1481 0.1288 0.7262 0.1712], 'FontSize', 14)
+leg2 = legend([h2, h3], 'Position', [0.1481 0.1288 0.7262 0.1712], 'FontSize', 14);
 grid(ax3, 'on')
 xlabel(ax3, 'Hz')
 ylabel(ax3, 'PSD')
+
+grid(ax2, 'on')
+xlabel(ax2, 'Hz')
+ylabel(ax2, 'PSD')
+leg1 = legend([h0, h1], 'Position', [0.1492 0.1286 0.5084 0.1712], 'FontSize', 14);
+%%
 save_fig(F3, fullfile(PATHS.defense_fig(), 'prescan_zbounce_PSD'), true)
+save_fig(F3, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/prescan_zbounce_PSD'), false)
+
+save_fig(F2, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/prescan_5mic_vs_still_PSD'), false)
 %%
 width = 3.5;
 height = 3;
@@ -208,6 +233,10 @@ ylabel(ax2, '$u_z$', 'FontSize', 14)
 xlabel(ax1, 'time [s]', 'FontSize', 14)
 xlabel(ax2, 'time [s]', 'FontSize', 14)
 
+%%
+save_fig(F1, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/zbounce_uz_example'), false)
+save_fig(F2, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/prescan_uz_example'), false)
+
 save_fig(F2, fullfile(PATHS.defense_fig(), 'prescan_uz_example'), true)
 save_fig(F1, fullfile(PATHS.defense_fig(), 'zbounce_uz_example'), true)
 %%
@@ -216,17 +245,21 @@ axs1 = tight_subplot(2, 1, gap, margh, margw, false);
 
 F4 = mkfig(24, width, height); clf
 axs2 = tight_subplot(2, 1, gap, margh, margw, false);
-title(axs1(1), 'z-bounce (no scan)', 'FontSize', 14)
-title(axs2(1), '$\mu$-path (pre-scan + scan)', 'FontSize', 14)
+
+F5 = mkfig(25, width, height); clf
+axs2 = tight_subplot(2, 1, gap, margh, margw, false);
+
+title(axs1(1), '$xy$ fixed', 'FontSize', 14)
+% title(axs2(1), '$\mu$-path', 'FontSize', 14)
 
 zbounce = true;
 plot_uz_time_range(cs_exps{1}, axs1(1), tstart, tend, zbounce, 'uz');
-zbounce = false;
+zbounce = true;
 plot_uz_time_range(cs_exps{1}, axs1(2), tstart, tend, zbounce, 'x');
 
 
 
-zbounce = true;
+zbounce = false;
 plot_uz_time_range(cs_exps{2}, axs2(1), tstart, tend, zbounce, 'uz');
 zbounce = false;
 plot_uz_time_range(cs_exps{2}, axs2(2), tstart, tend, zbounce, 'x');
@@ -250,16 +283,19 @@ ylim(axs1(2), [-0.5, 5])
 
 ylabel(axs1(1), '$u_z$~[v]', 'FontSize', 14)
 ylabel(axs1(2), '$x$~[$\mu$m]', 'FontSize', 14)
-xlabel(axs1(1), 'time [s]', 'FontSize', 14)
+xlabel(axs1(2), 'time [s]', 'FontSize', 14)
 
 ylabel(axs2(1), '$u_z$~[v]', 'FontSize', 14)
 ylabel(axs2(2), '$x$~[$\mu$m]', 'FontSize', 14)
 xlabel(axs2(2), 'time [s]', 'FontSize', 14)
 
+%%
+save_fig(F3, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/zbounce_uz__mv_example'), false)
+save_fig(F4, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/prescan_uz_mv_example'), false)
 
 
-save_fig(F3, fullfile(PATHS.defense_fig(), 'prescan_uz_mv_example'), true)
-save_fig(F4, fullfile(PATHS.defense_fig(), 'zbounce_uz__mv_example'), true)
+save_fig(F3, fullfile(PATHS.defense_fig(), 'zbounce_uz__mv_example'), true)
+save_fig(F4, fullfile(PATHS.defense_fig(), 'prescan_uz_mv_example'), true)
 %%
 function plot_uz_time_range(cse, ax, tstart, tend, zbounce, signal)
 indc = {'k',        'r',   [0, .75, .75],       'b',        [.93 .69 .13], 'm';
