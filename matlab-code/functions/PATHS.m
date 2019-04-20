@@ -8,13 +8,18 @@ classdef PATHS
   methods (Static)
     function [ PATH ] = exp()
       % PATH constant to where all experimental data is stored for the
-           if ispc
+      if ispc
         PATH = 'Z:\afm-cs';
       else
         PATH = '/media/labserver/afm-cs';
       end
     end
-    
+    function path = cs_final_fig()
+      path = '/home/arnold/gradschool/thesis/plots-afm-cs-final/figures';
+    end
+    function path = cs_final_table()
+      path = '/home/arnold/gradschool/thesis/plots-afm-cs-final/tables';
+    end
     function path = thesis_root()
       path = '/home/arnold/gradschool/thesis';
     end
