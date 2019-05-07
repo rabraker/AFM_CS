@@ -16,8 +16,9 @@ classdef frf2ss
     
     methods
         function self = frf2ss(frf, freqs_rad, Nd, opts)
-          % This should be a 3d array with No 
-          %  rows, Ni columns and length(t) pages.
+        % self = frf2ss(frf, freqs_rad, Nd, opts)
+        % This should be a 3d array with No
+        %  rows, Ni columns and length(t) pages.
             sz = size(frf);
             if length(sz) == 2
               frf = reshape(frf, 1, 1, []);
