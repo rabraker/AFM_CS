@@ -213,7 +213,7 @@ tend = 4.68; %3.5 + to;
 zbounce = true;
 plot_uz_time_range(cs_exps{1}, ax1, tstart, tend, zbounce, 'uz');
 zbounce = false;
-plot_uz_time_range(cs_exps{2}, ax2, tstart, tend, zbounce, 'uz');
+h = plot_uz_time_range(cs_exps{2}, ax2, tstart, tend, zbounce, 'uz');
 
 grid(ax1, 'on')
 grid(ax2, 'on')
@@ -233,6 +233,7 @@ ylabel(ax2, '$u_z$', 'FontSize', 14)
 xlabel(ax1, 'time [s]', 'FontSize', 14)
 xlabel(ax2, 'time [s]', 'FontSize', 14)
 
+leg = legend(h, 'Position', [0.4921 0.5415 0.3977 0.3542], 'FontSize', 12);
 %%
 save_fig(F1, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/zbounce_uz_example'), false)
 save_fig(F2, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/prescan_uz_example'), false)
@@ -240,64 +241,40 @@ save_fig(F2, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/prescan_u
 save_fig(F2, fullfile(PATHS.defense_fig(), 'prescan_uz_example'), true)
 save_fig(F1, fullfile(PATHS.defense_fig(), 'zbounce_uz_example'), true)
 %%
-F3 = mkfig(23, width, height); clf
-axs1 = tight_subplot(2, 1, gap, margh, margw, false);
-
-F4 = mkfig(24, width, height); clf
-axs2 = tight_subplot(2, 1, gap, margh, margw, false);
 
 F5 = mkfig(25, width, height); clf
 axs2 = tight_subplot(2, 1, gap, margh, margw, false);
 
 title(axs1(1), '$xy$ fixed', 'FontSize', 14)
-% title(axs2(1), '$\mu$-path', 'FontSize', 14)
-
-zbounce = true;
-plot_uz_time_range(cs_exps{1}, axs1(1), tstart, tend, zbounce, 'uz');
-zbounce = true;
-plot_uz_time_range(cs_exps{1}, axs1(2), tstart, tend, zbounce, 'x');
-
-
 
 zbounce = false;
 plot_uz_time_range(cs_exps{2}, axs2(1), tstart, tend, zbounce, 'uz');
 zbounce = false;
-plot_uz_time_range(cs_exps{2}, axs2(2), tstart, tend, zbounce, 'x');
+h = plot_uz_time_range(cs_exps{2}, axs2(2), tstart, tend, zbounce, 'x');
 
-grid(axs1(1), 'on')
+
 grid(axs2(1), 'on')
-grid(axs1(2), 'on')
 grid(axs2(2), 'on')
 
-ylim(axs1(1), [0.06, 0.12])
 ylim(axs2(1), [0.06, 0.12])
 
-xlim(axs1(1), [4.572, 4.71])
-xlim(axs1(2), [4.572, 4.71])
 
 xlim(axs2(1), [4.61, 4.78])
 xlim(axs2(2), [4.61, 4.78])
 
 ylim(axs2(2), [-0.5, 5])
-ylim(axs1(2), [-0.5, 5])
-
-ylabel(axs1(1), '$u_z$~[v]', 'FontSize', 14)
-ylabel(axs1(2), '$x$~[$\mu$m]', 'FontSize', 14)
-xlabel(axs1(2), 'time [s]', 'FontSize', 14)
 
 ylabel(axs2(1), '$u_z$~[v]', 'FontSize', 14)
 ylabel(axs2(2), '$x$~[$\mu$m]', 'FontSize', 14)
 xlabel(axs2(2), 'time [s]', 'FontSize', 14)
 
+legend(h, 'location', 'northeast');
 %%
-save_fig(F3, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/zbounce_uz__mv_example'), false)
-save_fig(F4, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/prescan_uz_mv_example'), false)
 
-
-save_fig(F3, fullfile(PATHS.defense_fig(), 'zbounce_uz__mv_example'), true)
-save_fig(F4, fullfile(PATHS.defense_fig(), 'prescan_uz_mv_example'), true)
+save_fig(F5, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/prescan_uz_mv_example'), false)
+save_fig(F5, fullfile(PATHS.defense_fig(), 'prescan_uz_mv_example'), true)
 %%
-function plot_uz_time_range(cse, ax, tstart, tend, zbounce, signal)
+function hands = plot_uz_time_range(cse, ax, tstart, tend, zbounce, signal)
 indc = {'k',        'r',   [0, .75, .75],       'b',        [.93 .69 .13], 'm';
         'xy-move', 'tip down', 'tip settle',  '$\mu$-path scan', 'tip up', 'connect'};
     if signal == 'x'
@@ -307,6 +284,7 @@ indc = {'k',        'r',   [0, .75, .75],       'b',        [.93 .69 .13], 'm';
     end
     hold(ax, 'on')
     state_s = {'move', 'tdown', 'tsettle', 'scan', 'tup'};
+    hands = gobjects(length(state_s), 1);
     for k=1:length(state_s)
         if k==4 && zbounce
             clr = indc{1,3};
@@ -320,8 +298,10 @@ indc = {'k',        'r',   [0, .75, .75],       'b',        [.93 .69 .13], 'm';
         for j=1:length(idxs)
             t = cse.t(idxs{j});
             uzk = cse.(signal)(idxs{j});
-            plot(ax, t, uzk*scl, 'Color', clr);
+            h = plot(ax, t, uzk*scl, 'Color', clr);
         end
+        h.DisplayName = indc{2, k};
+        hands(k) = h;
     end
 end
 

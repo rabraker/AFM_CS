@@ -45,8 +45,8 @@ cs_exps = {};
 for k=1:3 %length(cs_files)
   cs_paths = get_cs_paths(data_root_s, cs_files{k});
   % cs_exps{k} = CsExp(cs_paths, 'feature_height', hole_depth, 'gg', gg);
-%   gg = @(u, idx_state_s) log_creep_detrend(u, idx_state_s);
-  gg = zpk([], [], 1, AFM.Ts);
+  gg = @(u, idx_state_s) log_creep_detrend(u, idx_state_s);
+%   gg = zpk([], [], 1, AFM.Ts);
   cs_exps{k} = CsExp(cs_paths, 'feature_height', hole_depth, 'gg', gg, 'load_full', true);
   cs_exps{k}.uz = cs_exps{k}.uz - min(cs_exps{k}.uz);
   % cs_exps{k} = CsExp(cs_paths, 'feature_height', hole_depth);
@@ -71,14 +71,9 @@ cs_exps{2}.plot_all_cycles(axs3{1:3});
 
 linkaxes([axs1{:}, axs3{:}], 'x')
 %%
-% set(axs1{1}, 'YLim', [-0.25, 0.25])
-% set(axs1{2}, 'YLim', [-0.4, 0])
-% 
-% set(axs2{1}, 'YLim', [-0.25, 0.25])
-% set(axs2{2}, 'YLim', [-0.4, 0])
 
 
-width = 7;
+width = 6;
 height = 6;
 gap = 0.05;
 margh = 0.1;
@@ -87,8 +82,8 @@ margh = [0.1, .05];
 margw = [0.08, .04];
 
 F1 = mkfig(21, width, height); clf
-ax1 = tight_subplot(2, 3, gap, margh, margw, false);
-ax1 = reshape(ax1', 3, 2)';
+ax1 = tight_subplot(2, 2, gap, margh, margw, false);
+ax1 = reshape(ax1', 2, 2)';
 %
 % F2 = mkfig(22, width, height); clf
 % ax2 = tight_subplot(2, 1, gap, margh, margw, false);
@@ -99,17 +94,19 @@ tstart1 = 2.12; %3.46 + to;
 tend1 = 2.24; %3.5 + to;
 
 zbounce = false;
-plot_uz_time_range(cs_exps{1}, ax1(1,1), tstart1, tend1, zbounce, 'uz');
-plot_uz_time_range(cs_exps{1}, ax1(2, 1), tstart1, tend1, zbounce, 'ze');
+ze_sub = -0.448;
+pre_ext = 150;
+plot_uz_time_range(cs_exps{1}, ax1(1,1), tstart1, tend1, zbounce, 'uz', 4/AFM.volts2nm_z, pre_ext);
+h = plot_uz_time_range(cs_exps{1}, ax1(2, 1), tstart1, tend1, zbounce, 'ze', ze_sub, pre_ext)
+%
+% plot_uz_time_range(cs_exps{2}, ax1(1, 2), tstart1, tend1, zbounce, 'uz');
+% plot_uz_time_range(cs_exps{2}, ax1(2, 2), tstart1, tend1, zbounce, 'ze');
 
-plot_uz_time_range(cs_exps{2}, ax1(1, 2), tstart1, tend1, zbounce, 'uz');
-plot_uz_time_range(cs_exps{2}, ax1(2, 2), tstart1, tend1, zbounce, 'ze');
-
-plot_uz_time_range(cs_exps{3}, ax1(1, 3), tstart1, tend1, zbounce, 'uz');
-plot_uz_time_range(cs_exps{3}, ax1(2, 3), tstart1, tend1, zbounce, 'ze');
+plot_uz_time_range(cs_exps{3}, ax1(1, 2), tstart1, tend1, zbounce, 'uz', 0, pre_ext);
+plot_uz_time_range(cs_exps{3}, ax1(2, 2), tstart1, tend1, zbounce, 'ze', ze_sub, pre_ext);
 
 %
-for j=1:3
+for j=1:2
     for k=1:2
         grid(ax1(k, j), 'on')
         
@@ -120,8 +117,8 @@ ylim(ax1(1, :), [-0.06, 1.2]*AFM.volts2nm_z)
 % ylim(ax1(1), [-0.06, 1.2]*AFM.volts2nm_z)
 
 title(ax1(1, 1), 'big lift', 'FontSize', 14)
-title(ax1(1, 2), "medium lift", 'FontSize', 14)
-title(ax1(1, 3), "small lift ", 'FontSize', 14)
+% title(ax1(1, 2), "medium lift", 'FontSize', 14)
+title(ax1(1, 2), "small lift ", 'FontSize', 14)
 
 % delt = 
 delt = 0.081;
@@ -130,18 +127,19 @@ tstart2 = 2.122;
 tstart3 = 2.122;
 
 xlim(ax1(:,1), [tstart1, tstart1+delt])
-xlim(ax1(:,2), [tstart2, tstart3+delt])
-xlim(ax1(:,3), [tstart3, tstart3+delt])
+% xlim(ax1(:,2), [tstart2, tstart3+delt])
+xlim(ax1(:,2), [tstart3, tstart3+delt])
 
 
 
 
 ylabel(ax1(1), '$u_z$ [nm]', 'FontSize', 14)
 ylabel(ax1(2), '$Z_{\textrm{dfl}}$ [v]', 'FontSize', 14)
-ylabel(ax2(1), '$u_z$  [nm]', 'FontSize', 14)
-ylabel(ax2(2), '$Z_{\textrm{dfl}}$ [v]', 'FontSize', 14)
+% ylabel(ax2(1), '$u_z$  [nm]', 'FontSize', 14)
+% ylabel(ax2(2), '$Z_{\textrm{dfl}}$ [v]', 'FontSize', 14)
 
 
+legend(h, 'location', 'southwest', 'FontSize', 12)
 
 
 % save_fig(F2, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/prescan_uz_example'), false)
@@ -161,11 +159,55 @@ if 1
     save_fig(F1, fullfile(PATHS.defense_fig(), 'justify_small_lift_zoom'), true)
 end
 %%
-function plot_uz_time_range(cse, ax, tstart, tend, zbounce, signal)
+exp_date = '3-20-2019'
+% ----------------------- Load and Process CS-data -----------------------------
+dat_root = PATHS.raster_image_data(size_dir, exp_date);
+
+% ----------------------- Load and Process raster-data -------------------------
+cs_files = {...
+'cs-traj-512pix-10perc-500nm-5mic-01Hz-250prescan-notconnect_out_3-20-2019-01.csv',...
+};
+
+
+data_root = PATHS.cs_image_data(size_dir, exp_date);
+cs_exps2 = {};
+for k=1:length(cs_files)
+  cs_paths = get_cs_paths(data_root, cs_files{k});
+  gg = @(u, idx_state_s) log_creep_detrend(u, idx_state_s);
+  cs_exps2{k} = CsExp(cs_paths, 'feature_height', hole_depth, 'gg', gg, 'load_full', true);
+  cs_exps2{k}.print_state_times();
+  cs_exps2{k}.sub_sample_frac()
+end
+%%
+Fig = mkfig(100, width, width); clf
+ha = tight_subplot(2, 1, [.05, .05], [0.075, .03], [.1, .01], false);
+CS_idx1 = cs_exps{1}.find_cycle_idx(16.31);
+CS_idx2 = CS_idx1 + 3;
+tstart4 = 16.45
+ze_sub = -0.637;
+delt2 = 0.38;
+plot_uz_time_range(cs_exps2{1}, ha(1), tstart4, tstart4+delt2, false, 'uz', 0, 0)
+hands = plot_uz_time_range(cs_exps2{1}, ha(2), tstart4, tstart4+delt2, false, 'ze', ze_sub, 0);
+
+legend(hands, 'location', 'southeast', 'FontSize', 12)
+
+ylabel(ha(1), '$U_Z$ [nm]', 'FontSize', 14)
+ylabel(ha(2), 'deflection [v]', 'FontSize', 14)
+xlabel(ha(2), 'time [s]', 'FontSize', 14)
+
+xlim(ha, [16.45, 16.35+delt2])
+grid(ha(1), 'on')
+grid(ha(2), 'on')
+
+%%
+save_fig(Fig, fullfile(PATHS.defense_fig(), 'small_lift_justify_ze_norm'), true)
+
+%%
+function hands =  plot_uz_time_range(cse, ax, tstart, tend, zbounce, signal, ze_sub, pre_ext)
 indc = {'k',        'r',   [0, .75, .75],       'b',        [.93 .69 .13], 'm';
         'xy-move', 'tip down', 'tip settle',  '$\mu$-path scan', 'tip up', 'connect'};
 
-
+    hands = gobjects(5, 1);
     hold(ax, 'on')
     state_s = {'move', 'tdown', 'tsettle', 'scan', 'tup'};
     if signal == 'uz'
@@ -189,14 +231,19 @@ indc = {'k',        'r',   [0, .75, .75],       'b',        [.93 .69 .13], 'm';
         
         for j=1:length(idxs)
             t = cse.t(idxs{j});
-            uzk = cse.(signal)(idxs{j});
-            if k ~=  4
-                plot(ax, t, uzk*scl, 'Color', clr);
+            uzk = cse.(signal)(idxs{j}) - ze_sub;
+            
+            if k ~=  4 && (pre_ext >= 1)
+                hands(k) =    plot(ax, t, uzk*scl, 'Color', clr);
+                hands(k).DisplayName = indc{2, k};
             else
-                plot(ax, t(151:end), uzk(151:end)*scl, 'Color', clr);
-                plot(ax, t(1:150), uzk(1:150)*scl, 'Color', indc{1, 3});
+               hands(k) = plot(ax, t(pre_ext+1:end), uzk(pre_ext+1:end)*scl, 'Color', clr);
+               hands(k).DisplayName = indc{2, k};
+                plot(ax, t(1:pre_ext), uzk(1:pre_ext)*scl, 'Color', indc{1, 3});
             end
         end
+        
+        
     end
 end
 
