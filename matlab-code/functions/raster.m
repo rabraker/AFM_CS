@@ -1,5 +1,5 @@
-% [rasterdata, truefreq] = raster(freq, Ts, tend)
-% [rasterdata, truefreq] = raster(freq, Ts, tend, 'coerce', 1)
+%[rasterdata, truefreq, points_per_line] = raster(freq, Ts, Nperiod, varargin)
+%    
 % 
 %   Constructs a triangle wave of freqency freq, using sample period Ts for
 %   duration [0, tend]. If 'coerce', 1 is passed, then the frequency is
