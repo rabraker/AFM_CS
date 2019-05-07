@@ -225,7 +225,7 @@ classdef CsExp < handle
     [sig_psd, freqs, k] = psd_from_intervals(self, signal, state, ...
                                              starts, ends)
     % Defined in process_cs_data.m
-    [pix_mask] = process_cs_data(self, verbose, figs)
+    [pix_mask] = process_cs_data(self, verbose, figs, use_ze)
       
     function [CS_idx, start_idx, end_idx] = find_cycle_idx(self, time)
     % find the CS-cycle index corresponding to time. A single cycle is defined
@@ -394,9 +394,6 @@ classdef CsExp < handle
           end
         end
       %end
-      % Register the control data to zero. We can do this because we are
-      % scanning long enough that we are always guaranteed to exit a hole.
-      U_k = U_k - max(U_k);
 
     end % bin_data_into_pix
 

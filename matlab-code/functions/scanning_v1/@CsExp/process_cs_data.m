@@ -1,8 +1,11 @@
-function [pix_mask] = process_cs_data(self, verbose, figs)
+function [pix_mask] = process_cs_data(self, verbose, figs, use_ze)
   if isempty(self.x) || isempty(self.y) || isempty(self.uz) || isempty(self.ze)
     warning(['You have empty raw data fields. Reload with ',...
       '"load_full=true".', 'Skipping']);
     return
+  end
+  if ~exist('use_ze')
+      use_ze = false;
   end
   % bin all the data into pixels.
   tend_last = 0;
@@ -33,7 +36,11 @@ function [pix_mask] = process_cs_data(self, verbose, figs)
   for k = 1:length(self.idx_state_s.scan)
     
     % Get the data for the current mu-path.
-    [X_raw, Y_raw, U_scan] = self.get_scan_k(k, true);
+    if use_ze
+        [X_raw, Y_raw, ~, U_scan] = self.get_scan_k(k, true);
+    else
+        [X_raw, Y_raw, U_scan] = self.get_scan_k(k, true);
+    end
     Y_raw = Y_raw*pix_per_volt;
     X_raw = X_raw*pix_per_volt;
     
@@ -41,8 +48,15 @@ function [pix_mask] = process_cs_data(self, verbose, figs)
       fprintf('skipping cycle %d\n', k)
       continue
     end
-    % [y_idx, x_idx, U_k] = self.mu_data2pix(X_raw, Y_raw, U_scan);
+
     [y_idx, x_idx, U_k] = self.mu_data2pix_xy(X_raw, Y_raw, U_scan);
+
+    if ~use_ze
+        % Register the control data to zero. We can do this because we are
+        % scanning long enough that we are always guaranteed to exit a hole.
+        U_k = U_k - max(U_k);
+    end
+    
     assert(length(y_idx) == length(x_idx))
     for k=1:length(x_idx)
         self.Img_raw(y_idx(k), x_idx(k)) = U_k(k);
