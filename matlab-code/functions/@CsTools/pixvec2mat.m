@@ -1,4 +1,6 @@
 function Mpix = pixvec2mat(vpix, nrows, ncol)
+  % Mpix = pixvec2mat(vpix, nrows, ncol)
+  %
   % Converts the (forced to be) column vector vpix into a matrix such that
   % The rows of Mpix are taken as contiguous chunks of vpix. I.e.,
   %
