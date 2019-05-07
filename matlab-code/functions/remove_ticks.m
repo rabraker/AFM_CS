@@ -1,6 +1,7 @@
 function remove_ticks(ax)
    % Remove the x and y axis ticks labels.
-   
-   set(ax, 'XTickLabel', [])
-   set(ax, 'yTickLabel', [])
+   for k=1:length(ax)
+       set(ax(k), 'XTickLabel', [])
+       set(ax(k), 'yTickLabel', [])
+   end
 end
