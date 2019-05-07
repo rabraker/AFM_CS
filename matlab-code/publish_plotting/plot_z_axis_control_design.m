@@ -1,39 +1,26 @@
 addpath functions
+clear
 % close all
 root = fullfile(PATHS.sysid, 'z_axis_evolution', 'batch-1');
 file = 'first_res_fit-3-17-2019-1.json';
 
-
-
-Fig = mkfig(1, 5, 4); clf
-[ha, pos] = tight_subplot(1, 1, [.02, .01 ], [.1, 0.03], [.1, .05]);
-k = 1
-name = ''
-if k==1
-  prefix='(A) ';
-else
-  prefix = '(B) ';
-end
 dat = loadjson(fullfile(root, file));
 
 gz_k = dat.SOS_frf_data.resp_real + dat.SOS_frf_data.resp_imag*1i;
-h(k) = frf_bode_mag(gz_k, dat.SOS_frf_data.omegas/2/pi, Fig, 'Hz');
-h(k).DisplayName = [prefix name];
-
 
 ss_fname = fullfile(root, 'ALL-axis_sines_info_intsamps_quickFourierCoef_3-17-2019-01.json');
 ss_data = SweptSinesOnline(ss_fname);
 
-G_frf = -frd(ss_data.FC_s(:,2)./ss_data.FC_s(:,1), ss_data.freq_s, AFM.Ts, 'FrequencyUnit', 'Hz');
+G_frf = frd(ss_data.FC_s(:,2)./ss_data.FC_s(:,1), ss_data.freq_s, AFM.Ts, 'FrequencyUnit', 'Hz');
 
 
-KI = 0.05;
+KI = -0.06;
+D_inv = dat.K*frd(tf(dat.Dinv_Num, dat.Dinv_den, AFM.Ts),  ss_data.freq_s,  'FrequencyUnit', 'Hz');
 
-D_inv = frd(tf(dat.Dinv_Num, dat.Dinv_den, AFM.Ts),  ss_data.freq_s,  'FrequencyUnit', 'Hz');
+KI_norm = KI;
 
-KI_norm = KI*dat.K;
-
-D_ki = zpk([], [1], KI_norm, AFM.Ts);
+D_ki = zpk([], [1], KI, AFM.Ts);
+D_ki_old = zpk([], [1], 0.005, AFM.Ts);
 
 DD = D_ki * D_inv;
 
@@ -51,32 +38,71 @@ Loop_noinv = D_ki * G_frf;
 
 
 Huz_d = feedback(D_ki, D_inv*G_frf);
+H2 = D_ki/(1+Loop);
+% figure, bode(Huz_d, H2)
+
 Hyr = feedback(D_ki*D_inv*G_frf, 1);
-Hyr_noinv = feedback(D_ki,  G_frf);
+Hyr_old = feedback(D_ki_old*G_frf, 1);
+Hyr_noinv = feedback(D_ki*dat.K*G_frf, 1);
 
 
 F2 = mkfig(2, 7, 4); clf
-[ha, pos] = tight_subplot(1, 1, [.02, .01 ], [.1, 0.03], [.1, .05]);
+[ha, pos] = tight_subplot(1, 1, [.02, .01 ], [.15, 0.03], [.1, .05]);
 
-h1 = frf_bode_mag(Loop, ss_data.freq_s, ha, 'Hz', '-g');
-h2 = frf_bode_mag(G_frf, ss_data.freq_s, ha, 'Hz');
-h3 = frf_bode_mag(Hyr_noinv, ss_data.freq_s, ha, 'Hz', '-r');
-h4 = frf_bode_mag(Huz_d, ss_data.freq_s, ha, 'Hz', '-k');
-ylim(ha(1), [-60, 20]);
+
+h1 = frf_bode_mag(Loop, ss_data.freq_s, ha, 'Hz', 'Color', [0.35, 0.75, 0.93], 'LineWidth', 1.5);
+
+h2 = frf_bode_mag(G_frf, ss_data.freq_s, ha, 'Hz', 'r', 'LineWidth', 1.5);
+h5 = frf_bode_mag(Hyr_old, ss_data.freq_s, ha, 'Hz', '-b', 'LineWidth', 1.5);
+h4 = frf_bode_mag(Hyr, ss_data.freq_s, ha, 'Hz', '-k', 'LineWidth', 1.5);
+h3 = frf_bode_mag(Hyr_noinv, ss_data.freq_s, ha, 'Hz', '--b', 'LineWidth', 1.5);
+
+
+% h4 = frf_bode_mag(Huz_d, ss_data.freq_s, ha, 'Hz', '-k');
+ylim(ha(1), [-40, 20]);
 
 h1.DisplayName = 'Loop gain (with inverse)';
-h2.DisplayName = '$G_{d_{fl},u_z}$';
-h3.DisplayName = '$H_{u_{Z},s}$ (no inverse)';
-h4.DisplayName = '$H_{u_{Z},s}$ (with inverse)';
+h2.DisplayName = '$G_{Z_d,u_Z}$';
+h3.DisplayName = '$H_{Z_d, r_{Z}}$ (no inverse)';
+h4.DisplayName = '$H_{Z_d, r_{Z}}$ (with inverse)';
 leg = legend([h1, h2, h3, h4]);
 
 set(leg, 'Location', 'southwest', 'FontSize', 12);
 
-save_fig(F2, fullfile(PATHS.thesis_fig_final, 'z_control_design'));
+h5.Visible = 'off'
+
+% save_fig(F2, fullfile(PATHS.thesis_fig_final, 'z_control_design'));
+
+h5.DisplayName = '$H_{Z_d, r_{Z}}$, (approximate old design)'
+h1.DisplayName = 'Loop gain (current design)';
+h4.DisplayName = '$H_{Z_d, r_{Z}}$ (current design)';
+% h1.Visible = 'off';
+h5.Visible = 'on';
+h3.Visible = 'off';
+leg = legend([h2, h1, h4, h5]);
+
+yt = sort([ha.YTick, -3])
+set(ha, 'YTick', yt)
+ha.XLabel.FontSize = 14;
+ha.YLabel.FontSize = 14;
+xt = sort([30, 500, ha.XTick])
+set(ha, 'XTick', xt)
 
 bandwidth(Huz_d)/2/pi
 bandwidth(Hyr)/2/pi
 
+h1.Visible = 'off';
+h4.Visible = 'off';
+leg = legend([h2, h5]);
+ha.FontSize = 16;
+save_fig(F2, fullfile(PATHS.defense_fig(), 'z_control_design_01'), true);
+%%
+h1.Visible = 'on';
+h4.Visible = 'on';
+leg = legend([h2, h1, h4, h5]);
+
+% [pm, gm] = margin(Loop)
+save_fig(F2, fullfile(PATHS.defense_fig(), 'z_control_design_02'), true);
 %%
 clc
 addpath('system_id')
@@ -97,8 +123,8 @@ LGopts = optimoptions(@lsqnonlin, 'Display', 'iter',...
     'StepTolerance', 1e-9, 'Jacobian','on', 'CheckGradients', false);
 
 sos_fos = SosFos(zpk(sys_z_cl), 'iodelay', sys_z_cl.InputDelay);
-LG = LogCostZPK(Huz_d.ResponseData(1:k_estmax)*Kc, freqs(1:k_estmax)*2*pi, sos_fos);
-LG.solve_lsq(2, LGopts)
+LG = LogCostZPK(Huz_d.ResponseData(5:k_estmax)*Kc, freqs(5:k_estmax)*2*pi, sos_fos);
+LG.solve_lsq(1, LGopts)
 [sys_z_log, p] = LG.sos_fos.realize();
 sys_z_log.InputDelay = 1; %max(round(p, 0), 0);
 fprintf('LG says delay = %.2f\n', p);
@@ -115,7 +141,7 @@ width = 5;
 
 A = 0.07;
 Ts = AFM.Ts;
-rast_freq = 6; %Hz
+rast_freq = 10; %Hz
 period = 1/rast_freq;
 holes_per_line = 10;
 holes_per_period = 2*holes_per_line

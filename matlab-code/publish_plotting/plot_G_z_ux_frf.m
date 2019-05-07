@@ -25,7 +25,28 @@ legend(h1, 'location', 'southwest', 'FontSize', 16);
 
 save_fig(F1, fullfile(PATHS.defense_fig(), 'frf_Guxz'), true);
 
-%%
+
+% 
+% sysx_fn = fullfile(PATHS.sysid(), 'ALL-axis_sines_info_intsamps_quickFourierCoef_1-17-2019x-drive-01.json');
+% sysy_fn = fullfile(PATHS.sysid(), 'ALL-axis_sines_info_intsamps_quickFourierCoef_1-17-2019y-drive-01.json');
+% sysz_fn = fullfile(PATHS.sysid(), 'ALL-axis_sines_info_intsamps_quickFourierCoef_1-17-2019z-drive-03.json');
+% sysx_ = SweptSinesOnline(sysx_fn);
+% sysy_ = SweptSinesOnline(sysy_fn);
+% sysz_ = SweptSinesOnline(sysz_fn);
+% 
+% 
+% fc_x = sysx_.FC_s(:, 2);
+% fc_z = sysx_.FC_s(:, 4);
+% % fc_ux = sysx_.FC_s(:, 1);
+% 
+% figure(4); clf
+% % gg = frd((fc_z./fc_ux), sysz_.freq_s, AFM.Ts);
+% gg2 = frd((fc_z./fc_x), sysz_.freq_s, AFM.Ts);
+% 
+% bode(gg, gg2)
+
+
+
 clc
 ell = 3;
 yb = 1.5;
@@ -169,6 +190,7 @@ for k=1:length(t)
 end
 
 %%
+
 function h = draw_cantilevar(ax, y_tip_base, x_tip, cant_base_ht);
   
   h = plot(ax, [0, x_tip], [cant_base_ht, y_tip_base], 'k',...

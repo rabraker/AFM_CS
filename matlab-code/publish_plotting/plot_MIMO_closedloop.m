@@ -15,7 +15,7 @@ addpath(fullfile(getCsRoot(), 'matlab-code', 'functions', 'state_space_x'));
 full_mod_path = fullfile(PATHS.sysid, 'xy-axis_sines_info_intsamps_quickFourierCoef_11-11-2018xydrive-01.mat');
 mf_full = load(full_mod_path);
 
-
+%%
 Gxyz = mf_full.modelFit.frf.all_axes; 
 
 % ------- Load Plants -----
@@ -46,7 +46,7 @@ K_lqr2 = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q2, R2+gam_rob2, S2);
 
 
 % [~, ~, Hyr] = ss_loops_delta_dist(plants.SYS, plants.sys_recyc, sys_obsDist, K_lqr1, L_dist);
-%%
+
 Gxyz_frd = get_H();
  
 Gzz = Gxyz_frd(3,3);
@@ -67,7 +67,7 @@ Gzz = Gxyz_frd(3,3);
 
 
 
-
+ 
 F11 = mkfig(10, 7, 9, true); clf
 [ha, pos] = tight_subplot(3, 3, .01, [.045, 0.03], [.065, .02]);
 ha = reshape(ha', 3, [])';
@@ -76,6 +76,8 @@ freq_s = logspace(log10(1), log10(12500), 350)';
 h1 = mimo_bode_mag(HH1, freq_s, ha, '-k');
 h2 = mimo_bode_mag(HH2, freq_s, ha, '--r');
 
+fprintf('Bandwidth CZ: %f\n', bandwidth(HH1(1,1))/2/pi)
+fprintf('Bandwidth CZ: %f\n', bandwidth(HH2(1,1))/2/pi)
 
 h1(1,1).DisplayName = 'choose-$\zeta$';
 h2(1,1).DisplayName = 'constant-$\rho$';
@@ -207,16 +209,31 @@ function [HH] = close_three_axis(sys, sys_recyc, sys_obs, KxKu, LxLd, Gxyz_frf, 
 %      --------------- * M * R
 %      I + D2*G*G1
 
-  M = [Mx, 0, 0;
-         0,  1, 0;
-         0, 0, 1];
-     
-  DD2 = [D2x, 0, 0;
-         0,   1, 0;
-         0,   0, 1];
-  DD1 = [1, 0, 0;
-         0, Dy, 0;
-         0, 0,  Dki*Dinv];
+
+  if 1
+      M = [Mx, 0, 0;
+          0,  1, 0;
+          0, 0, 1];
+      
+      DD2 = [D2x, 0, 0;
+          0,   1, 0;
+          0,   0, 1];
+      DD1 = [1, 0, 0;
+          0, Dy, 0;
+          0, 0,  Dki*Dinv];
+      
+  else
+      load('shaped_loop_x.mat');
+      Dx = D_x.Dx;
+      M = eye(3);
+      
+      DD2 = eye(3);
+      
+      DD1 = [Dx*0.5, 0, 0;
+          0, Dy, 0;
+          0, 0,  Dki*Dinv];
+      
+  end
   I = eye(3);
 
   
