@@ -65,7 +65,7 @@ classdef RasterExp <matlab.mixin.Copyable
     
     % Methods defined in other files
     self = load_raw_data(self, raster_paths, npix, width, opts)
-    [ self] = bin_raster_really_slow(self, line_detrender)
+    [ self] = bin_raster_really_slow(self, line_detrender, use_error)
     trace_inds = get_trace_indeces(self)
     
     function meta_data(self)

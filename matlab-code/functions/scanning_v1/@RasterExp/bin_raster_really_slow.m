@@ -15,7 +15,7 @@
 % do so. The prototype for such a function is 
 % [x] = line_detrender_local(x)
 
-function [ self] = bin_raster_really_slow(self, line_detrender)
+function [ self] = bin_raster_really_slow(self, line_detrender, use_error)
   if isempty(self.x) || isempty(self.y) || isempty(self.ze) || isempty(self.uz)
     warning(['Raw dat properties are empty. To process raw data, load',...
       'the raw data with the load_full flag. Skipping'])
@@ -31,6 +31,10 @@ function [ self] = bin_raster_really_slow(self, line_detrender)
   if ~exist('line_detrender', 'var') || isempty(line_detrender)
     line_detrender = @(x) line_detrender_local(x);
   end
+  
+  if ~exist('use_error', 'var')
+      use_error = false;
+  end
   xpix = self.npix; 
   ypix = self.npix; % TODO: make this work with rectangular image.
     
@@ -39,7 +43,12 @@ function [ self] = bin_raster_really_slow(self, line_detrender)
     
   xdat_trace = self.x(trace_inds);
   ydat_trace = self.y(trace_inds);
-  udat_trace = self.uz(trace_inds);
+
+  if use_error
+      udat_trace = self.ze(trace_inds);
+  else
+      udat_trace = self.uz(trace_inds);
+  end
   
   % Make the image be at (0,0, --) and convert to pixel coordinates.
   xdat_trace = (xdat_trace - min(xdat_trace))*self.volts2pix;
@@ -65,7 +74,7 @@ function [ self] = bin_raster_really_slow(self, line_detrender)
     U_dat_j_init = udat_trace(ind_y)';
     
     [U_dat_j] = line_detrender(U_dat_j_init);
-    
+
     for i_col = 0:xpix-1
       ind_x = find(x_dat_j >= i_col & x_dat_j < i_col+1);
       u_mean_ij = mean(U_dat_j(ind_x));
