@@ -68,6 +68,7 @@ for k=1:length(rast_exps)
   rast_exps{k}.pin_idx_s = [x1s(k), x2s(k)];
   stit = sprintf('(raster) %.2f Hz', rast_exps{k}.meta_in.raster_freq);
   plot_raster_data(rast_exps{k}.pix_mat_pinned, figbase*k, stit)
+  pixmats{k} = rast_exps{k}.pix_mat_pinned;
 end
 
 for k=1:length(rast_exps)
@@ -114,7 +115,7 @@ for j=1:2
       imk_slice = imk;
       im1_ontok_fit = im_master;
     end
-    [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice);
+    [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice, 2*thresh);
     dmg = rast_exps{k}.damage_metric();
     mx = max(imk_slice(:));
     mn = min(imk_slice(:));
@@ -133,9 +134,9 @@ for j=1:2
 
   set(ha(end), 'Visible', 'off');
 if mode
-  save_fig(F, 'notes/figures/baseline_errors_aligned_1Hz', false)
+  save_fig(F, fullfile(PATHS.cs_final_fig(), 'baseline_errors_aligned_1Hz'), false)
 else
-    save_fig(F, 'notes/figures/baseline_errors_noalign_1Hz', false)
+    save_fig(F, fullfile(PATHS.cs_final_fig(), 'baseline_errors_noalign_1Hz'), false)
 end
 
 end

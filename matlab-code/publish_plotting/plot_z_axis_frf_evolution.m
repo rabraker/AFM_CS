@@ -19,8 +19,9 @@ names = {'(A) SICON, L=450~$\mu$m',...
   '(B: Mar. 17) SICON, L=450~$\mu$m',...
   '(C) NCLR, L=225~$\mu$m'};
 
+
 Fig = mkfig(1, 5, 4); clf
-[ha, pos] = tight_subplot(1, 1, [.02, .01 ], [.1, 0.03], [.1, .05]);
+[ha, pos] = tight_subplot(1, 1, [.02, .01 ], [.14, 0.03], [.14, .05]);
 
 h = gobjects(length(files), 1);
 for k=1:length(files)
@@ -42,10 +43,25 @@ for k=1:length(files)
 end
 
 leg0 = legend(h);
-set(leg0, 'location', 'southwest');
+set(leg0, 'Position', [0.1493 0.1554 0.4665 0.1643]); 
 
 
 save_fig(Fig, fullfile(PATHS.thesis_fig_final, 'z_cant_evolution'))
+%%
+names = {'(A) L=450~$\mu$m',...
+  '(B: Mar. 9) L=450~$\mu$m',...
+  '(B: Mar. 17) L=450~$\mu$m',...
+  '(C) L=225~$\mu$m'};
+
+for k=1:length(names)
+    h(k).DisplayName = names{k};
+end
+ha.FontSize = 14;
+leg0.FontSize = 12;
+leg0.Position = [0.1394 0.1370 0.4607 0.2143];
+%%
+
+save_fig(Fig, fullfile(PATHS.defense_fig(), 'z_cant_evolution'), true)
 
 
 

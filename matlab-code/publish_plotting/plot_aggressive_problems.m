@@ -116,7 +116,7 @@ for j=1:length(traj_names)
   end
 end
 
-title(ha(1), 'constant-$\sigma$')
+title(ha(1), 'constant-$\rho$')
 title(ha(2), 'choose-$\zeta$')
 
 leg = legend(hands);

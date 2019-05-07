@@ -69,10 +69,11 @@ end
 
 clc
 
-
+%%
 x1s = [36,   37, 46,   51, 50,   52,  57, 55];
 x2s = [450, 455, 460, 463, 465, 467. 474, 474];
 figbase = 10;
+pixmats = {};
 for k=1:length(rast_exps)
   rast_exps{k}.bin_raster_really_slow(@detrend);
   
@@ -82,6 +83,7 @@ for k=1:length(rast_exps)
   
   rast_exps{k}.pix_mat_pinned = pixmat_ - mean(pixmat_(:));
   rast_exps{k}.pin_idx_s = [x1s(k), x2s(k)];
+  pixmats{k} = rast_exps{k}.pix_mat_pinned;
   stit = sprintf('(raster) %.2f Hz', rast_exps{k}.meta_in.raster_freq);
   plot_raster_data(rast_exps{k}.pix_mat_pinned, figbase*k, stit)
 end
@@ -130,11 +132,11 @@ for j=1:2
       imk_slice = imk;
       im1_ontok_fit = im_master;
     end
-    [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice);
+    [psn_1k, ssm_1k] = ssim_psnr_norm(im1_ontok_fit, imk_slice, 2*thresh);
     dmg = rast_exps{k}.damage_metric();
     mx = max(imk_slice(:));
     mn = min(imk_slice(:));
-    stit = sprintf('PSNR=%.2f, SSIM=%.2f, RDI=%.2g', psn_1k, ssm_1k, dmg);
+    stit = sprintf('PSNR=%.2f, SSIM=%.3f', psn_1k, ssm_1k);
     
     fprintf("%s\n", stit);
     ime=imk_slice - im1_ontok_fit; %, 'parent', h(k), 'Scaling', 'joint')
@@ -147,13 +149,16 @@ for j=1:2
     
   end
 
+  ha(end).Visible = 'off'
 if mode
-  save_fig(F, 'notes/figures/baseline_errors_aligned', false)
+  save_fig(F, fullfile(PATHS.cs_final_fig(), 'baseline_errors_aligned'), false)
 else
-    save_fig(F, 'notes/figures/baseline_errors_noalign', false)
+    save_fig(F, fullfile(PATHS.cs_final_fig(), 'baseline_errors_noalign'), false)
 end
 
 end
+%%
+
 
 % ---------------------------------------------------------------------------- %
 
