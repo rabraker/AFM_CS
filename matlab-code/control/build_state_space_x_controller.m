@@ -56,7 +56,7 @@ else
   error('unrecognized exp_id_str: %s', exp_id_str)
 end
 % ------- Load Plants -----
-[plants, frf_data] = CanonPlants.plants_ns14(9);
+[plants, frf_data] = CanonPlants.plants_ns14(9, '5micron');
 Ts  = plants.SYS.Ts;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -189,7 +189,7 @@ sims_fxpl.sys_obs_fp = sys_obsDist;
 sims_fxpl.sys_obs_fp.a = sys_obsDist.a - L_dist*sys_obsDist.c;
 
 sims_fxpl.write_control_data(controlDataPath, yref, traj_path)
-control_path = fullfile(PATHS.step_exp, sprintf('LinControls-%s.json', exp_id_str))
+control_path = fullfile(PATHS.step_exp, sprintf('LinControls-%s_5micron.json', exp_id_str))
 sims_fxpl.write_control_data_json(control_path)
 
 %%

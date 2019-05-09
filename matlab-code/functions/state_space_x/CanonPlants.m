@@ -23,6 +23,8 @@ classdef CanonPlants
       
       if version == 1
         modelFit_file = fullfile(PATHS.sysid,'xy-stage', 'x-axis_sines_infoFourierCoef_9-11-2018-01.mat');
+      elseif version == '5micron'
+        modelFit_file = 'Z:\mpc-journal\sysID\FRF_data\x-axis_sines_infoFourierCoef_9-11-2018-01_5michyst.mat';
       else
         error('version number $d not recocnized');
       end
