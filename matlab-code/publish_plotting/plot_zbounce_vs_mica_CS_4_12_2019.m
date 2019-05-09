@@ -40,7 +40,7 @@ for k=1:2 %length(cs_files)
   cs_paths = get_cs_paths(data_root_s{k}, cs_files{k});
   % cs_exps{k} = CsExp(cs_paths, 'feature_height', hole_depth, 'gg', gg);
   gg = @(u, idx_state_s) log_creep_detrend(u, idx_state_s);
-  gg = zpk([], [], 1, AFM.Ts);
+%   gg = zpk([], [], 1, AFM.Ts);
   cs_exps{k} = CsExp(cs_paths, 'feature_height', hole_depth, 'gg', gg, 'load_full', true);
   % cs_exps{k} = CsExp(cs_paths, 'feature_height', hole_depth);
   cs_exps{k}.print_state_times();
@@ -61,7 +61,10 @@ linkaxes([axs1{:}, axs2{:}], 'x')
 % 
 % set(axs2{1}, 'YLim', [-0.25, 0.25])
 % set(axs2{2}, 'YLim', [-0.4, 0])
-%
+
+for k=1:length(cs_exps)
+   cs_exps{k}.uz  = cs_exps{k}.uz*AFM.volts2nm_z;
+end
 ii_b=1;
 N_b = length(cs_exps{ii_b}.idx_state_s.scan);
 
@@ -217,19 +220,19 @@ h = plot_uz_time_range(cs_exps{2}, ax2, tstart, tend, zbounce, 'uz');
 
 grid(ax1, 'on')
 grid(ax2, 'on')
-ylim(ax1, [0.06, 0.12])
-ylim(ax2, [0.06, 0.12])
+ylim(ax1, [-5, 30])
+ylim(ax2, [-5, 30])
 title(ax1, 'z-bounce (no scan)', 'FontSize', 14)
 title(ax2, '$\mu$-path (pre-scan + scan)', 'FontSize', 14)
 
 % delt = 
 xlim(ax1, [tstart, tend+.04])
 xlim(ax2, [tstart-.04, tend])
-s1 = text(ax2, 4.6224, 0.0681, 'pre-scan', 'FontSize', 14)
-an1 = annotation('arrow', [0.4018 0.3601], [0.2916 0.3819])
+s1 = text(ax2, 4.6224, 7.0357, 'pre-scan', 'FontSize', 14)
+an1 = annotation('arrow', [0.4405 0.3810], [0.3750 0.2674])
 
-ylabel(ax1, '$u_z$', 'FontSize', 14)
-ylabel(ax2, '$u_z$', 'FontSize', 14)
+ylabel(ax1, '$u_Z$ [nm]', 'FontSize', 14)
+ylabel(ax2, '$u_Z$ [nm]', 'FontSize', 14)
 xlabel(ax1, 'time [s]', 'FontSize', 14)
 xlabel(ax2, 'time [s]', 'FontSize', 14)
 
@@ -240,12 +243,20 @@ save_fig(F2, fullfile(PATHS.thesis_root(), 'plots-afm-cs-final/figures/prescan_u
 
 save_fig(F2, fullfile(PATHS.defense_fig(), 'prescan_uz_example'), true)
 save_fig(F1, fullfile(PATHS.defense_fig(), 'zbounce_uz_example'), true)
+
+%%
+title(ax2, 'starting height = 105 nm')
+s1.Visible = 'off';
+an1.Visible = 'off';
+
+save_fig(F2, fullfile(PATHS.defense_fig(), 'Zdir_pzcancel_works'), true)
+
 %%
 
 F5 = mkfig(25, width, height); clf
 axs2 = tight_subplot(2, 1, gap, margh, margw, false);
 
-title(axs1(1), '$xy$ fixed', 'FontSize', 14)
+% title(axs1(1), '$xy$ fixed', 'FontSize', 14)
 
 zbounce = false;
 plot_uz_time_range(cs_exps{2}, axs2(1), tstart, tend, zbounce, 'uz');
@@ -256,7 +267,7 @@ h = plot_uz_time_range(cs_exps{2}, axs2(2), tstart, tend, zbounce, 'x');
 grid(axs2(1), 'on')
 grid(axs2(2), 'on')
 
-ylim(axs2(1), [0.06, 0.12])
+ylim(axs2(1), [-5, 20])
 
 
 xlim(axs2(1), [4.61, 4.78])
@@ -264,7 +275,7 @@ xlim(axs2(2), [4.61, 4.78])
 
 ylim(axs2(2), [-0.5, 5])
 
-ylabel(axs2(1), '$u_z$~[v]', 'FontSize', 14)
+ylabel(axs2(1), '$u_Z$~[nm]', 'FontSize', 14)
 ylabel(axs2(2), '$x$~[$\mu$m]', 'FontSize', 14)
 xlabel(axs2(2), 'time [s]', 'FontSize', 14)
 
