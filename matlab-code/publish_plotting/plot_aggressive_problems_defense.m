@@ -51,17 +51,11 @@ cs_exps1.plot_all_cycles(axs{1:4});
 %%
 % figure(101); ax_phony=gca()
 Fig = mkfig(100, 7, 7); clf
-ha = tight_subplot(3, 2, [.05, .05], [0.075, .03], [.08, .01], false);
+ha = tight_subplot(3, 2, [.015, .02], [0.08, .04], [.12, .035], false);
 
-% [~, legs] = cs_exps1{end}.plot_all_cycles(ax_phony, ha(1), ha(3), ha(2));
-
-
-%
 t_start = 8.715;
 t_end = 8.755;
 
-% figure(10); clf
-% ax = gca();
 indc = {   'k',        'r',   [0, .75, .75],       'b',        [.93 .69 .13], 'm';
           'xy-move', 'tip down', 'tip settle',  '$\mu$-path scan', 'tip up', 'connect'};
 
@@ -73,7 +67,7 @@ traj_names = {'ze', 'y'};
 state_names = {'move', 'tdown', 'tsettle', 'scan', 'tup'};
 
 % The Good Case
-traj_names = {'ze', 'y', 'x'};
+traj_names = {'uz', 'y', 'x'};
 names = {'deflection', 'Y', 'X',};
 xlm1 = [9.808, 9.847];
 for j=1:length(traj_names)
@@ -115,6 +109,13 @@ for j=1:length(traj_names)
     end
   end
 end
+for k=1:3
+   set(ha((k-1)*2+2), 'YTickLabel', '')
+end
+
+for k=1:6
+   set(ha(k), 'FontSize', 14) 
+end
 
 title(ha(1), 'constant-$\rho$')
 title(ha(2), 'choose-$\zeta$')
@@ -124,16 +125,9 @@ set(leg, 'location', 'northeast')
 
 %%
 
-save_fig(Fig, 'notes/figures/aggresiveD_y_perturbs_z')
-save_fig(Fig, '~/gradschool/thesis/plots_mpc_slf/figures/aggresiveD_y_perturbs_z')
+
+save_fig(Fig, fullfile(PATHS.defense_fig(), 'aggresiveD_y_perturbs_z'), true)
 
 %%
 
-for k=1:3
-   set(ha((k-1)*2+2), 'YTickLabel', '')
-end
-
-for k=1:6
-   set(ha(k), 'FontSize', 14) 
-end
 
