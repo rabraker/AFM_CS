@@ -99,9 +99,9 @@ for k=1:length(cs_files)
   cs_exps{k}.sub_sample_frac()
 end
 
-%
+%%
 bp = true;
-recalc = false;
+recalc = true;
 use_dct2 = true;
 thresh = (20/7)*(1/1000)*20;
 opts = l1qc_dct_opts('l1_tol', 0.00001, 'epsilon', 0.1);
@@ -109,27 +109,25 @@ opts = l1qc_dct_opts('l1_tol', 0.00001, 'epsilon', 0.1);
 
 % addpath ~/gradschool/publications/yufans/matlab-image-reconstruction-algorithms/'Mu path reconstruction with vertical penalty'/;
 
-%%
-for k=1:1%length(cs_exps)
+%
+for k=1:length(cs_exps)
   cs_exps{k}.process_cs_data(false, [], use_ze);
   fprintf('finished processing raw CS data...\n');
   fprintf('nperc=%.3f\n', sum(cs_exps{k}.pix_mask(:))/cs_exps{k}.npix^2);
   ht = cs_exps{k}.feature_height;
   if bp
    cs_exps{k}.solve_bp(recalc, use_dct2, opts);
+%    cs_exps{k}.solve_nesta(recalc, use_dct2);
 
-   mu = 100;
-   lamy = 0.1/10;
+   %mu = 100;
+   %lamy = 0.1/10;
+   %gamma = mu/10;
+   %weight = 1.5; %0.001;%mu*5;
+   %sigma = 0.001;
+   %pix_idx = find(CsTools.pixmat2vec(cs_exps{k}.pix_mask) > 0.5);
+   %im = cs_exps{k}.Img_raw;
+   %[Ir] = bpvv_bregman(im,pix_idx,weight,mu,lamy, gamma, 10, sigma);
 
-   gamma = mu/10;
-   weight = 1.5; %0.001;%mu*5;
-   sigma = 0.001;
-
-   pix_idx = find(CsTools.pixmat2vec(cs_exps{k}.pix_mask) > 0.5);
-   im = cs_exps{k}.Img_raw;
-
-   [Ir] = bpvv_bregman(im,pix_idx,weight,mu,lamy, gamma, 10, sigma);
-%%
     fprintf('Finished solving bp problem #%d\n', k);
     stit = sprintf('(CS) %.2f Hz equiv, \\%% %.2f sampling\nTotal time: %.2f',...
       cs_exps{k}.meta_in.tip_velocity/(cs_exps{k}.meta_in.width * 2),...
