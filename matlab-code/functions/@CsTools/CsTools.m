@@ -27,6 +27,23 @@ classdef CsTools
       b = idct(eta);
       b = b(pix_idx);
     end
+    function [ y ] = E_fun1(x, pix_idx)
+    % Given the CS equation
+    % y = E * x
+    % where E is the subsampling matrix and M is the idct.
+      y = x(pix_idx);
+    end
+    function [ x ] = Et_fun1(y, pix_idx, N, M)
+    % Computes the adjoint of the CS equation
+    % x = E^T y
+    % where E is the subsampling matrix and M is the idct. That is
+    %
+    % eta = M'*E'*b
+    %
+    % N2 is the length eta.
+      x = zeros(N*M, 1);
+      x(pix_idx) = y;
+    end
 
     function [ eta ] = Atfun_dct(b, pix_idx, N, M)
     % Computes the adjoint of the CS equation

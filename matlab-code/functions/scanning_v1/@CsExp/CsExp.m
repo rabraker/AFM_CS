@@ -509,7 +509,65 @@ classdef CsExp < handle
       fprintf('BP Time: %f\n', time_bp);
       
     end
+function solve_nesta(self, recalc, use_2d, opts)
+    % Solve the Basis Pursuit problem in either 1d or 2d, using NESTA (my version) 
+    % To set opts, use NESTA_opts.m
+    % Options
+    % -------
+    % recalc : (true|false), default false. Do not optimize if self.Img_bp is
+    %          non-empty and non-zero.
+    % use_2d : (true|false), default false. If true, compute using 2D-dct.
+      if nargin <2
+        recalc = false;
+      end
+      if nargin <3
+        use_2d = false;
+      end
+      if ~recalc && ~isempty(self.Img_bp) && sum(self.Img_bp(:)) ~= 0
+        warning(['BP solution already calculated, so skipping optimization.',...
+          ' Pass recalc flag to recompute.']);
+        return;
+      end
+      
+      [n, m] = size(self.Img_raw);
+      
+      pix_idx = find(CsTools.pixmat2vec(self.pix_mask) > 0.5);
+      
+      if use_2d
+          M_fun = @(x) CsTools.pixmat2vec(dct2(CsTools.pixvec2mat(x, n)));
+          Mt_fun = @(x) CsTools.pixmat2vec(idct2(CsTools.pixvec2mat(x, n)));
+      else
+          M_fun = @(x) dct(x);
+          Mt_fun = @(x) idct(x);
+      end
+      E_fun = @(x) CsTools.E_fun1(x, pix_idx);
+      Et_fun = @(x) CsTools.Et_fun1(x, pix_idx, n, m);
+      
+      % b, set of measurements. have to remove all the spots we didn't sample.
+      b = CsTools.pixmat2vec(self.Img_raw);
+      b = b(pix_idx);
+      min_b = min(b);
+      max_b = max(b);
+      max_diff_b = max_b - min_b;
+      b = b/max_diff_b;
 
+      if ~exist('opts', 'var')
+        opts = NESTA_opts('Verbose', 10, 'errFcn', @(x)norm(x),...
+            'U', M_fun, 'Ut', Mt_fun);
+      end
+      delta = 1e-2;
+      mu = 1e-2;
+      
+      tic
+      [x_est] = NESTA_mine(E_fun, Et_fun, b, mu, delta, opts);
+
+      self.Img_bp = CsTools.pixvec2mat(x_est*max_diff_b, n);
+
+      time_nesta = toc;
+      
+      fprintf('NESTA Time: %f\n', time_nesta);
+      
+    end
   end
   
   methods (Access = 'private')
