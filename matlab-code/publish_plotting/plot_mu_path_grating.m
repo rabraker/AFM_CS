@@ -75,3 +75,23 @@ colormap('gray')
 
 save_fig(Fig, fullfile(PATHS.thesis_root, 'figures/implementation_0/mu_path_mask_512'), false)
 
+save_fig(Fig, fullfile(PATHS.defense_fig(), 'mu_path_mask_512_0p15'), true)
+
+%%
+
+sub_sample_frac = 0.1
+[pix_mask] = mu_path_mask(mu_pix, npix, npix, sub_sample_frac, false);
+
+actual_sub_sample_frac = length(find(pix_mask == 1))/npix^2;
+
+fprintf('Desired sub sample fraction: %f\n', sub_sample_frac)
+fprintf('Actual  sub sample fraction: %f\n', actual_sub_sample_frac)
+
+Fig = mkfig(1, 4, 4);
+ha = tight_subplot(1,1, 0.01, [0.01, 0.01], [0.01, 0.01]);
+I = ones(npix,npix)-pix_mask;
+
+imagesc(ha, I)
+colormap('gray')
+
+save_fig(Fig, fullfile(PATHS.defense_fig(), 'mu_path_mask_512_0p10'), true)
