@@ -109,8 +109,14 @@ DLL_PUBLIC int fit_sos_st(int N_omegas, double *omegas, double *resp_real,
   mpres->xerror=0;
   mpres->covar=0;
 
+  if (N_omegas < 6){
+    return -1;
+  }
 
   for (i=0; i < N_omegas; i++){
+    if ((omegas[i] == 0) || isnan(resp_real[i]) || isnan(resp_imag[i])){
+      return -1;
+    }
     resp[i] = resp_real[i] + resp_imag[i]*I;
   }
 
