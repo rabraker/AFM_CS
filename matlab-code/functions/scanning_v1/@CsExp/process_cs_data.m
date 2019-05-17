@@ -1,12 +1,30 @@
-function [pix_mask] = process_cs_data(self, verbose, figs, use_ze)
+function process_cs_data(self, verbose, figs, use_ze, register_uzk)
+  %  process_cs_data(self, verbose, figs, use_ze, register_uzk)
+  %
+  %  Process the raw CS data. This will populate self.Img_raw and 
+  %  self.pix_mask.
+  %
+  %  Arguments
+  %  -----------
+  %     verbose: integer. Plot some stuff if greater than 0 (broken at the moment).
+  %     figs: only used with verbose
+  %     use_ze: [true|false] if true, process deflection data, rather than
+  %     control data.
+  %     register_uzk: [true|false] Only used if use_ze==false. If true, subtract
+  %     the max value of each mu-path off.
+  %
   if isempty(self.x) || isempty(self.y) || isempty(self.uz) || isempty(self.ze)
     warning(['You have empty raw data fields. Reload with ',...
       '"load_full=true".', 'Skipping']);
     return
   end
-  if ~exist('use_ze')
+  if ~exist('use_ze', 'var') || isempty(use_ze)
       use_ze = false;
   end
+  if ~exist('register_uzk', 'var') || isempty(register_uzk)
+      register_uzk = true;
+  end
+  
   % bin all the data into pixels.
   tend_last = 0;
   microns_per_volt = AFM.volts2mic_xy;
@@ -51,7 +69,7 @@ function [pix_mask] = process_cs_data(self, verbose, figs, use_ze)
 
     [y_idx, x_idx, U_k] = self.mu_data2pix_xy(X_raw, Y_raw, U_scan);
 
-    if ~use_ze
+    if ~use_ze && register_uzk
         % Register the control data to zero. We can do this because we are
         % scanning long enough that we are always guaranteed to exit a hole.
         U_k = U_k - max(U_k);
