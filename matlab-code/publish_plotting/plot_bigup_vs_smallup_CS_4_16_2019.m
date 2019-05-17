@@ -79,7 +79,7 @@ gap = 0.05;
 margh = 0.1;
 margw = 0.1;
 margh = [0.1, .05];
-margw = [0.08, .04];
+margw = [0.09, .02];
 
 F1 = mkfig(21, width, height); clf
 ax1 = tight_subplot(2, 2, gap, margh, margw, false);
@@ -130,11 +130,12 @@ xlim(ax1(:,1), [tstart1, tstart1+delt])
 % xlim(ax1(:,2), [tstart2, tstart3+delt])
 xlim(ax1(:,2), [tstart3, tstart3+delt])
 
-
+ylim(ax1(2,1), [-0.3, 0.2])
+ylim(ax1(2,2), [-0.3, 0.2])
 
 
 ylabel(ax1(1), '$u_z$ [nm]', 'FontSize', 14)
-ylabel(ax1(2), '$Z_{\textrm{dfl}}$ [v]', 'FontSize', 14)
+ylabel(ax1(2), '$Z_{\textrm{d}}$ [v]', 'FontSize', 14)
 % ylabel(ax2(1), '$u_z$  [nm]', 'FontSize', 14)
 % ylabel(ax2(2), '$Z_{\textrm{dfl}}$ [v]', 'FontSize', 14)
 
