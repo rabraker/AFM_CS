@@ -128,6 +128,7 @@ raster_files = {...
 
 
 %%
+ze_free = -0.55;
 rast_exps = {};
 for k=1:length(raster_files)
   raster_paths = get_raster_paths(dat_root, raster_files{k});
@@ -135,14 +136,15 @@ for k=1:length(raster_files)
   if rast_exps{k}.time_total == 0
       rast_exps{k}.time_total = rast_exps{k}.samps_per_period*rast_exps{k}.npix*AFM.Ts;
   end
+  rast_exps{k}.ze = rast_exps{k}.ze - ze_free;
 end
 
 
 %%
-
+zref = -0.3 - ze_free;
 
 Fig = mkfig(figbase+2, 7, 3); clf
-[ha, pos] = tight_subplot(1, 1, [.01], [.15, .08], [.12, .02], false);
+[ha, pos] = tight_subplot(2, 1, [.05], [.15, .08], [.12, .02], false);
 
 
 
@@ -157,26 +159,32 @@ for k=1:2
     idx = rast_exps{k}.samps_per_period*row_idx : (rast_exps{k}.samps_per_period*(row_idx+1) - rast_exps{k}.samps_per_line);
     t = (0:length(rast_exps{k}.ze)-1')*AFM.Ts;
         zz = rast_exps{k}.ze(idx);
-    idx_pos = find(zz > -0.3);
+    idx_pos = find(zz > zref);
     tt = t(idx)*rates(k) - t(idx(1))*rates(k);
     
-    hands(k) = plot(ha, tt, zz);
+    hands(k) = plot(ha(k), tt, zz);
     hands(k).DisplayName = names{k};
     
-
-    h_no = ciplot(tt(idx_pos)*0-0.3, zz(idx_pos), tt(idx_pos), 'r');
+%     leg = legend(hands(k), 'Position', [0.7906 0.7725 0.1905 0.1490], 'FontSize', 12);
+    
+    h_no = ciplot(tt(idx_pos)*0 + zref, zz(idx_pos), tt(idx_pos), 'r', ha(k));
     alpha(h_no, '0.25')
     
-    hold(ha, 'on')
-    ylim(ha, [-0.45, -0.15])
-    xlim(ha, [0, (+0.5)])
+    hold(ha(k), 'on')
+    ylim(ha(k), [-0.4-ze_free, -0.19-ze_free])
+    xlim(ha(k), [0, (+0.5)])
+    %     plot(ha(k), [0, 0.5], [zref, zref], 'Color', [0.82, 0.82, 0.78])
+    grid(ha(k), 'on')
+    ylabel(ha(k), 'deflection [v]', 'FontSize', 14)
 end
 
-leg = legend(hands, 'Position', [0.7906 0.7725 0.1905 0.1490], 'FontSize', 12);
+leg = legend(hands(1), 'FontSize', 12);
 
-ylabel('deflection [v]', 'FontSize', 14)
+leg = legend(hands(2), 'FontSize', 12);
+
+
 xlabel('normalized time', 'FontSize', 14)
-title('raster', 'FontSize', 14)
+title(ha(1), 'raster', 'FontSize', 14)
 save_fig(Fig, fullfile(PATHS.defense_fig(), 'damage_raster_illustration'), true)
 
 
