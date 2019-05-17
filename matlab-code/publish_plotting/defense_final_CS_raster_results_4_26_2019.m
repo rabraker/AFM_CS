@@ -60,19 +60,22 @@ end
 
 use_ze = false;
 x1s = [63, 60, 57, 54, 52];
-x2s = [488, 475, 473, 469, 417];
+x2s = [486, 475, 473, 469, 417];
 figbase = 10;
+%%
 for k=1:length(rast_exps)
     rast_exps{k}.bin_raster_really_slow(@detrend, use_ze);
   
   pixmats_raw{k} = rast_exps{k}.pix_mat(1:end, 1:end);
 %   rast_exps{k}.pix_mat_pinned = pixmats_raw{k};
   pixmat_ = pin_along_column(rast_exps{k}.pix_mat, x1s(k), x2s(k));
-  
   rast_exps{k}.pix_mat_pinned = pixmat_ - mean(pixmat_(:));
   rast_exps{k}.pin_idx_s = [x1s(k), x2s(k)];
+  
+      
   stit = sprintf('(raster) %.2f Hz', rast_exps{k}.meta_in.raster_freq);
   plot_raster_data(rast_exps{k}.pix_mat_pinned, figbase*k, stit)
+
   % stit = sprintf('(raw) scan %d', k);
   % plot_raster_data(pixmats_raw{k}, (figbase-5)*k, stit)
 end
@@ -227,7 +230,7 @@ for k=1:length(cs_exps)
 end
 
 slice = 30:512-30;
-master_idx = 2;
+master_idx = 1;
 im_master = rast_exps{master_idx}.pix_mat_pinned - mean(rast_exps{master_idx}.pix_mat_pinned(:));
 if ~isinf(mu)
   %im_master = SplitBregmanROF(im_master, mu, 0.001);
@@ -324,7 +327,7 @@ end
 xlim(ha_row(1), [1, npix])
 leg1 = legend(hands_row_acc);
 set(leg1, 'NumColumns', 3, 'FontSize', 11, 'Position', [0.3059 0.9168 0.4550 0.0409])
-%%
+%
 % ------------------------ Plot Current CS ------------------------------ %
 j = length(rast_exps);
 fprintf('---------------------------------------------------\n');
@@ -456,7 +459,7 @@ plot(ha_row, row_acc_s{2})
 % Plot both with and without TV-denoising.
 mu = 100; 
 
-imk = rast_exps{2}.pix_mat_pinned - mean(rast_exps{1}.pix_mat_pinned(:));
+imk = rast_exps{1}.pix_mat_pinned - mean(rast_exps{1}.pix_mat_pinned(:));
 imagesc(ha_now(1), imk, [-thresh, thresh])
 colormap(ha_now(1), 'gray')
 title(ha_now(1), 'raster (1.0 Hz, 512 sec)')

@@ -63,7 +63,7 @@ end
 
 use_ze = false;
 x1s = [63, 60, 57, 54, 52];
-x2s = [488, 475, 473, 469, 417];
+x2s = [486, 475, 473, 469, 417];
 figbase = 10;
 for k=1:length(rast_exps)
   rast_exps{k}.bin_raster_really_slow(@detrend, use_ze);
@@ -116,8 +116,8 @@ for k=1:length(cs_exps)
   fprintf('nperc=%.3f\n', sum(cs_exps{k}.pix_mask(:))/cs_exps{k}.npix^2);
   ht = cs_exps{k}.feature_height;
   if bp
-   cs_exps{k}.solve_bp(recalc, use_dct2, opts);
-%    cs_exps{k}.solve_nesta(recalc, use_dct2);
+%    cs_exps{k}.solve_bp(recalc, use_dct2, opts);
+   cs_exps{k}.solve_nesta(recalc, use_dct2);
 
    %mu = 100;
    %lamy = 0.1/10;
@@ -141,11 +141,14 @@ for k=1:length(cs_exps)
     ImshowDataView.setup(f10);
     cb_exp =  @(event_obj)cs_exps{k}.dataview_callback(event_obj, ax4, ax4_2);
     bar_bp = mean(cs_exps{k}.Img_bp(:));
+    
     cs_exps{k}.Img_bp = cs_exps{k}.Img_bp - bar_bp;
     cs_exps{k}.Img_raw = cs_exps{k}.Img_raw - bar_bp;
     
-    im_tmp = cs_exps{k}.Img_bp - mean(cs_exps{k}.Img_bp(:));
-    im_tmp = SplitBregmanROF(im_tmp, 100, 0.001);
+    im_tmp = cs_exps{k}.Img_bp;
+    im_tmp = detrend_plane(im_tmp);
+    im_tmp = im_tmp - mean(im_tmp(:));
+%     im_tmp = SplitBregmanROF(im_tmp, 100, 0.001);
     ImshowDataView.imshow(im_tmp,...
       [-thresh, thresh], ax4, ax4_2, cb_exp)
     title(ax4, stit)
@@ -237,8 +240,6 @@ for k=1:length(rast_exps)
       title(ha_err(err_idx), stit_err);
       err_idx = err_idx + 1;
   end
-  
-  
   
   if k~=2
       imagesc(ha1(plt_idx), imk, [-thresh, thresh]);
