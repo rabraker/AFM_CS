@@ -21,7 +21,7 @@ Gxyz_frd = get_H_frd();
 Gy = mf_full.modelFit.G_all_axes(2, 2);
 Gy_frd = Gxyz_frd(2,2);
 ssopts = frf2ss_opts('Ts', AFM.Ts, 'Nd', 9)
-gy_ = frf2ss(Gy_frd.Response(1:end-1), Gy_frd.Frequency(1:end-1)*2*pi, 9, ssopts)
+gy_ = frf2ss(squeeze(Gy_frd.Response(1:end-1)), Gy_frd.Frequency(1:end-1)*2*pi, 9, ssopts)
 gy = gy_.realize(11);
 
 figure(14); clf
@@ -42,7 +42,39 @@ DyKi = zpk(0, 1, 0.01, AFM.Ts);
 
 Dy = DyKi*Dy_notch;
 %%
+[plants, frf_data] = CanonPlants.plants_ns14(9);
+newest_xfrf_path = fullfile(PATHS.sysid, 'x-axis_sines_info_first_resFourierCoef_5-9-2019-01.json');
+sysx_new = SweptSinesOnline(newest_xfrf_path);
+%%
+[z, p, k] = zpkdata(plants.Gvib, 'v');
+p1 = p(end-1:end);
+z1 = z(end-3:end-2);
+p(end-1:end) = [];
+z(end-3:end-2) = [];
 
+g_tmp = zpk(z, p, k, plants.Gvib.Ts)*plants.gdrift;
+g_tmp = g_tmp*dcgain(plants.Gvib*plants.gdrift)/dcgain(g_tmp);
+
+Gx_bend_ = sysx_new.FRF_from_FC(1, [2]);
+Gx_bend = Gx_bend_/g_tmp;
+
+figure(100)
+opts = bodeoptions();
+opts.FreqUnits = 'Hz';
+bodeplot(Gx_bend, opts)
+grid
+
+gx_bend0 = zpk(z1, p1, 1, plants.Gvib.Ts);
+%%
+sos_fos_xbend = SosFos(gx_bend0, 'iodelay', 9)
+lg = LogCostZPK(squeeze(Gx_bend.Response), Gx_bend.Frequency*2*pi, sos_fos_xbend);
+lg.solve_lsq(1);
+gx_bend_lg = lg.sos_fos.realize();
+
+hold on
+bodeplot(gx_bend_lg, Gx_bend.Frequency*2*pi)
+
+%%
 Gxyz = mf_full.modelFit.G_all_axes(1:3,:);
 
 % ------- Load Plants -----
