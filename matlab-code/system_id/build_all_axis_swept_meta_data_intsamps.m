@@ -14,17 +14,9 @@
 %   MT_s: The number of sin periods in each average element.
 %   NumSamp: the TOTAL number of samples each sin wave should be run for. 
 %
-% The script will save all of this data into a .csv file (that will be read
+% The script will save all of this data into a .JSON file (that will be read
 % into labview), which will have the following format:
 %
-%
-% Ts:	 Nsettle:	Amp:	
-% 0.00004	10000    0.5		
-% Freqs (Hz):	 NumAve_s:	  MT_s:	 NumSamp:
-% 10	         100	       2	510101
-% 11.279842	     100	       2	453401
-% 12.723484	     100	       2	403101
-%   :             :            :      :  
 %
 
 clc
