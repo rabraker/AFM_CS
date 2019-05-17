@@ -64,9 +64,9 @@ function [xk,niter] = Core_Nesterov_mine(...
 
     %---- Init Variables
     
-    do_TV = false;
+    do_TV = true;
     if do_TV
-        alp_v = 1;
+        alp_v = 0;
         alp_h = 1;
         n = floor(sqrt(N));
         % Evidently, ||D||_2 ~= sqrt(8), and ||Dv||_2 ~= 2, ||Dh||_2 ~=2
@@ -221,30 +221,5 @@ function [df,fx,val,uk] = Perform_L1_Constraint(xk,mu,U,Ut)
   df = Ut(uk);
 end
 
-%%%%%%%%%%%% PERFORM THE TV CONSTRAINT %%%%%%%%%%%%%%%%%%
-
-function [df,fx] = Perform_TV_Constraint(xk,mu,Dv,Dh,D,U,Ut)
-    if isa(U,'function_handle')
-        x = U(xk);
-    else
-        x = U*xk;
-    end
-    df = zeros(size(x));
-    
-    Dhx = Dh*x;
-    Dvx = Dv*x;
-    
-    tvx = sum(sqrt(abs(Dhx).^2+abs(Dvx).^2));
-    w = max(mu,sqrt(abs(Dhx).^2 + abs(Dvx).^2));
-    uh = Dhx ./ w;
-    uv = Dvx ./ w;
-    u = [uh;uv];
-    fx = real(u'*D*x - mu/2 * 1/numel(u)*sum(u'*u));
-    if isa(Ut,'function_handle')
-        df = Ut(D'*u);
-    else
-        df = U'*(D'*u);
-    end
-end
 
     
