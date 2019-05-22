@@ -49,11 +49,8 @@ function [xk,niter] = Core_Nesterov_mine(...
 
     Atb = At(b);
 
-    % We assume it's a projection
-    AtAAtb = Atb;
-
     if isempty(opts.xplug)
-        opts.xplug = AtAAtb; 
+        error('Must provide initial guess in opts.xplug.')
     end
     
     %---- Initialization

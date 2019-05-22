@@ -18,7 +18,7 @@ function [xk,niter] =NESTA_mine(A,At,b,muf,delta,opts)
 %               case At is unused, or function handles).  m x n dimensions.
 %           b   - Observed data, a m x 1 array
 %           muf - The desired value of mu at the last continuation step.
-%               A smaller mu leads to higher accuracy.
+%                 A smaller mu leads to higher accuracy.
 %           delta - l2 error bound.  This enforces how close the variable
 %               must fit the observations b, i.e. || y - Ax ||_2 <= delta
 %               If delta = 0, enforces y = Ax
@@ -30,25 +30,19 @@ function [xk,niter] =NESTA_mine(A,At,b,muf,delta,opts)
 %               The fieldnames are case insensitive.  Below
 %               are the possible fieldnames:
 %               
-%               opts.xplug - the first guess for the primal prox-function, and
-%                 also the initial point for xk.  By default, xplug = At(b)
-%               opts.U and opts.Ut - Analysis/Synthesis operators
-%                 (either matrices of function handles).
+%               opts.U and opts.Ut - Analysis/Synthesis operators as function
+%               handles.
 %               opts.normU - if opts.U is provided, this should be norm(U)
-%                   otherwise it will have to be calculated (potentially
-%                   expensive)
+%                   otherwise it will have to be calculated via power iteration on 
+%                   on U'*U (to estimate the largest singular value, which is 
+%                            potentially expensive).
 %               opts.MaxIntIter - number of continuation steps.
 %                 default is 5
 %               opts.maxiter - max number of iterations in an inner loop.
 %                 default is 10,000
-%               opts.TolVar - tolerance for the stopping criteria
-%               opts.stopTest - which stopping criteria to apply
-%                   opts.stopTest == 1 : stop when the relative
-%                       change in the objective function is less than
-%                       TolVar
-%                   opts.stopTest == 2 : stop with the l_infinity norm
-%                       of difference in the xk variable is less
-%                       than TolVar
+%               opts.TolVar - tolerance for the stopping criteria, i.e.,
+%                             when the relative change in the objective 
+%                             function is less than TolVar.
 %               opts.TypeMin - if this is 'L1' (default), then
 %                   minimizes a smoothed version of the l_1 norm.
 %                   If this is 'tv', then minimizes a smoothed
@@ -59,10 +53,6 @@ function [xk,niter] =NESTA_mine(A,At,b,muf,delta,opts)
 %                   then output every iteration is displayed.
 %                   If this is a number p greater than 1, then
 %                   output is displayed every pth iteration.
-%               opts.fid - if this is 1 (default), the display is
-%                   the usual Matlab screen.  If this is the file-id
-%                   of a file opened with fopen, then the display
-%                   will be redirected to this file.
 %               opts.errFcn - if this is a function handle,
 %                   then the program will evaluate opts.errFcn(xk)
 %                   at every iteration and display the result.
@@ -72,22 +62,16 @@ function [xk,niter] =NESTA_mine(A,At,b,muf,delta,opts)
 %           xk  - estimate of the solution x
 %           niter - number of iterations
 %
-% Written by: Jerome Bobin, Caltech
-% Email: bobin@acm.caltech.edu
-% Created: February 2009
-% Modified (version 1.0): May 2009, Jerome Bobin and Stephen Becker, Caltech
-% Modified (version 1.1): Nov 2009, Stephen Becker, Caltech
-%
-% NESTA Version 1.1
-%   See also Core_Nesterov
+% This code is a heavily modified version of the published NESTA code
+% availible at https://statweb.stanford.edu/~candes/nesta/
+% 
+% The original code was written by Jerome Bobin and Stephen Becker.
+% 
 
 
   if nargin < 6 || (isempty(opts) && isnumeric(opts))
     opts = NESTA_opts();
   end
-
-  residuals = []; 
-  
   
   % -- We can handle non-projections IF a (fast) routine for computing
   %    the psuedo-inverse is available.
@@ -99,19 +83,14 @@ function [xk,niter] =NESTA_mine(A,At,b,muf,delta,opts)
     error('Measurement matrix A must be a partial isometry: AA''=I');
   end
 
-  % -- Find a initial guess if not already provided.
-  %   Use least-squares solution: x_ref = A'*inv(A*A')*b
-  % If A is a projection, the least squares solution is trivial
-  if isempty(opts.xplug) || norm(opts.xplug) < 1e-12
-      x_ref=At(b);
-    if isempty(opts.xplug)
-      opts.xplug = x_ref;
-    end
-    % x_ref itself is used to calculate mu_0
-    %   in the case that xplug has very small norm
-  else
-    x_ref = opts.xplug;
-  end
+  % -- Find a initial guess.
+  % Use min-energy solution: x_ref = A'*inv(A*A')*b. Since we assume that
+  % that AA'=I, then x_ref = A'*b.
+  x_ref=At(b);
+  opts.xplug = x_ref;
+
+  % x_ref itself is used to calculate mu_0
+  %   in the case that xplug has very small norm
 
   % use x_ref, not xplug, to find mu_0
   Ux_ref = opts.U(x_ref);
@@ -136,7 +115,7 @@ function [xk,niter] =NESTA_mine(A,At,b,muf,delta,opts)
     opts.TolVar=opts.TolVar*Gammat;    
     
     if opts.Verbose
-      fprintf(opts.fid, '   \nBeginning %s Minimization: mu = %g\n\n',opts.TypeMin,mu);
+      fprintf('   \nBeginning %s Minimization: mu = %g\n\n',opts.TypeMin,mu);
     end
     [xk, niter_int] = Core_Nesterov_mine(A, At, b, mu, delta, opts);
     
@@ -192,7 +171,7 @@ function opts = set_normU(opts)
       % have to actually calculate the norm
       [opts.normU,cnt] = my_normest(opts.U, opts.Ut, length(opts.xplug), 1e-3,30);
       if cnt == 30
-        fprintf(opts.fid, 'Warning: norm(U) may be inaccurate\n'); 
+        fprintf('Warning: norm(U) may be inaccurate\n'); 
       end
     end
     % opts.normU = normU;
@@ -202,7 +181,8 @@ end
   
   
 %%%%%%%%%%%% POWER METHOD TO ESTIMATE NORM %%%%%%%%%%%%%%%
-% Copied from MATLAB's "normest" function, but allows function handles, not just sparse matrices
+% Copied from MATLAB's "normest" function, but allows function handles,
+% not just sparse matrices.
 function [e,cnt] = my_normest(S,St,n,tol, maxiter)
 %MY_NORMEST Estimate the matrix 2-norm via power method.
   if nargin < 4, tol = 1.e-6; end
