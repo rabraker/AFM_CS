@@ -29,7 +29,7 @@ classdef PATHS
     function [ PATH ] = step_exp()
       % PATH constant to where all experimental data for step experiments 
       % (for the x-y plane) is stored for the.
-        PATH = fullfile(PATHS.exp(), 'step-exps')
+        PATH = fullfile(PATHS.exp(), 'step-exps');
     end
     
     function PATH = cs_image_data(size, date_dir)
