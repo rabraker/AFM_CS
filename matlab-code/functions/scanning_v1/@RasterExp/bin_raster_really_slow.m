@@ -15,7 +15,7 @@
 % do so. The prototype for such a function is 
 % [x] = line_detrender_local(x)
 
-function [ self] = bin_raster_really_slow(self, line_detrender, use_error)
+function [ self] = bin_raster_really_slow(self, line_detrender, use_error, npix_x)
   if isempty(self.x) || isempty(self.y) || isempty(self.ze) || isempty(self.uz)
     warning(['Raw dat properties are empty. To process raw data, load',...
       'the raw data with the load_full flag. Skipping'])
@@ -32,46 +32,58 @@ function [ self] = bin_raster_really_slow(self, line_detrender, use_error)
     line_detrender = @(x) line_detrender_local(x);
   end
   
-  if ~exist('use_error', 'var')
+  if ~exist('use_error', 'var') || isempty(use_error)
       use_error = false;
   end
-  xpix = self.npix; 
-  ypix = self.npix; % TODO: make this work with rectangular image.
-    
-  % Get the indeces corresponding to trace data only.
-  trace_inds = self.get_trace_indeces();
-    
-  xdat_trace = self.x(trace_inds);
-  ydat_trace = self.y(trace_inds);
-
-  if use_error
-      udat_trace = self.ze(trace_inds);
+  if ~exist('npix_x', 'var') || isempty(npix_x)
+      npix_x = self.npix_x;
   else
-      udat_trace = self.uz(trace_inds);
+      micron2pix_x = npix_x/self.width;
+      volts2pix_x = AFM.volts2mic_xy  * micron2pix_x;
+      
+      % Update the instance properties
+      self.npix_x = npix_x;
+      self.volts2pix_x = volts2pix_x;
+      self.micron2pix_x = micron2pix_x;
+  end
+  
+  xpix = self.npix_x; 
+  ypix = self.npix_y; 
+    
+  if use_error
+      udat = self.ze; 
+  else
+      udat = self.uz; 
   end
   
   % Make the image be at (0,0, --) and convert to pixel coordinates.
-  xdat_trace = (xdat_trace - min(xdat_trace))*self.volts2pix;
-  ydat_trace = (ydat_trace - min(ydat_trace))*self.volts2pix;
-  % make
+  %xdat_trace = (xdat_trace - min(xdat_trace))*self.volts2pix_x;
+  %ydat_trace = (ydat_trace - min(ydat_trace))*self.volts2pix_y;
+
+  x_dat_pix = self.x * self.volts2pix_x;
   
-  self.pix_mask = zeros(xpix, ypix);
-  self.pix_mat = zeros(xpix,ypix);
+  self.pix_mask = zeros(ypix, xpix);
+  self.pix_mat = zeros(ypix, xpix);
   
   samps_per_line = self.samps_per_line;
+  
+  % The raster scans are offset from the reference by approximately 
+  % ess = abs(freqresp(Her*Int_z, 1) samples, where Int_z is an integrator.
+  offset = self.find_lag();
+  
   for j_row = 0:ypix-1
     % Guard against the possibility that samps_per_line is not an integer.
     % Need to fix this in the raster trajectory generator.
     indy_start = ceil(j_row*(samps_per_line)+1);
     indy_end = floor((j_row+1)*(samps_per_line));
-    ind_y = indy_start:indy_end;
+    ind_y = (indy_start:indy_end) + offset;
     try
-    x_dat_j = xdat_trace(ind_y)';
+      x_dat_j = x_dat_pix(ind_y);
     catch
-      warning('Exited early from processing raster data (j_row=%d)', jrow);
+      warning('Exited early from processing raster data (j_row=%d)', j_row);
       break
     end
-    U_dat_j_init = udat_trace(ind_y)';
+    U_dat_j_init = udat(ind_y)';
     
     [U_dat_j] = line_detrender(U_dat_j_init);
 
@@ -90,6 +102,7 @@ function [ self] = bin_raster_really_slow(self, line_detrender, use_error)
   end
 
 end
+
 
 function [x] = line_detrender_local(x)
     return
