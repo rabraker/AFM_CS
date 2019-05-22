@@ -45,8 +45,8 @@ saveon = true;
 md = 1;
 
 
-% exp_id_str = 'const-sig';
-exp_id_str = 'choose-zeta';
+exp_id_str = 'const-sig';
+% exp_id_str = 'choose-zeta';
 
 if strcmp(exp_id_str, 'const-sig')
   gam_rob = 46.4;
@@ -56,7 +56,9 @@ else
   error('unrecognized exp_id_str: %s', exp_id_str)
 end
 % ------- Load Plants -----
+% [plants, frf_data1] = CanonPlants.plants_ns14(9, 1);
 [plants, frf_data] = CanonPlants.plants_ns14(9, '5micron');
+
 Ts  = plants.SYS.Ts;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -109,8 +111,20 @@ if strcmp(exp_id_str, 'const-sig')
   [Q1, R0, S1, P_x] = build_control_constsigma(plants.sys_recyc, cmplx_rad);
 elseif strcmp(exp_id_str, 'choose-zeta')
   can_cntrl = CanonCntrlParamsChoozeZeta();
+%   [Q2, R2, S2, P_x2] = build_control_choosezeta(plants1.sys_recyc, can_cntrl);
   [Q1, R0, S1, P_x] = build_control_choosezeta(plants.sys_recyc, can_cntrl);
 end
+
+% K2 = dlqr(plants1.sys_recyc.a, plants1.sys_recyc.b, Q2, R2+gam_rob, S2);
+% K_lqr = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_rob, S1);
+% pls1 = eig(plants.sys_recyc.a - plants.sys_recyc.b*K_lqr);
+% pls2 = eig(plants1.sys_recyc.a - plants1.sys_recyc.b*K2);
+% figure(12); clf
+% plot(real(pls2), imag(pls2), 'o')
+% hold on
+% plot(real(pls1), imag(pls1), 'x')
+% zgrid
+
 
 % ------------------------- Observer Gain ---------------------------------
 can_obs_params = CanonObsParams_01();
@@ -179,7 +193,7 @@ figure(F_y)
 h22 = sim_exp_fxpl.ploty(F_y);
 legend([h22]);
 
-%%
+%
 fprintf('===========================================================\n');
 fprintf('Writing control data...\n');
 fprintf('===========================================================\n');
@@ -308,7 +322,8 @@ function analyze_margins(plants, sys_obsDist, K_lqr, L_dist, verbose)
   [Gm_lin, Pm_lin] = margin(Loop);
   
   fprintf('-------- MARGINS ------------------\n')
-  fprintf('Linear: GM = %.2f [], PM = %.2f [deg]\n', Gm_lin, Pm_lin)
+  fprintf('Linear: GM = %.2f [dB], PM = %.2f [deg]\n', 20*log10(Gm_lin), Pm_lin)
+  fprintf('Bandwidth: %f [Hz]\n', bandwidth(minreal(Hyr))/2/pi);
   
   if verbose >=2  
     figure(101)

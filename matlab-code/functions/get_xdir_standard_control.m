@@ -1,4 +1,4 @@
-function xdirControl = get_xdir_standard_control()
+function xdirControl = get_xdir_standard_control(type)
 addpath(fullfile(getCsRoot(), 'matlab-code', 'functions'));
 addpath(fullfile(getCsRoot(), 'matlab-code', 'functions', 'state_space_x'));
 
@@ -18,13 +18,17 @@ md = 1;
 
 % 3). LQR generation gain.
 % -------------------------------------------------------------------------
-
-cmplx_rad = 0.9;
-% [Q1, R0, S1, P_x] = build_control_constsigma(plants.sys_recyc, cmplx_rad);
-gam_rob = 46.4;
-can_cntrl = CanonCntrlParamsChoozeZeta();
-[Q1, R0, S1, P_x] = build_control_choosezeta(plants.sys_recyc, can_cntrl);
-
+if strcmp(type, 'const-sig')
+  cmplx_rad = 0.9;
+  [Q1, R0, S1] = build_control_constsigma(plants.sys_recyc, cmplx_rad);
+    gam_rob = 46.4;
+elseif strcmp(type, 'choose-zeta')
+  can_cntrl = CanonCntrlParamsChoozeZeta();
+  [Q1, R0, S1] = build_control_choosezeta(plants.sys_recyc, can_cntrl);
+  gam_rob = 25;
+else
+    error('unrecognized control type.');
+end
 % ------------------------- Observer Gain ---------------------------------
 can_obs_params = CanonObsParams_01();
 can_obs_params.beta = 50;
