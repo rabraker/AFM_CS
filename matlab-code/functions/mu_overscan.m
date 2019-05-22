@@ -13,14 +13,12 @@ function [N_extra] = mu_overscan(Hyr, x_rate, mu_Nsamples, verbose, N_prescan)
   % TF from reference to error.
   Her = minreal(1 - Hyr); %%feedback(1, D*G);
   Int_z = zpk([], [1], 1, Ts);
+
   % Compute the steady state error to a ramp 
-  ess = dcgain(minreal(Her*Int_z))*x_rate;
-  
-  % sometimes, the integrator gets perturbed to a really slow pole, so dc-gain 
-  % is infinitate. So evaluate low-freq gain instead.
-  if isinf(ess)
-    ess = abs(freqresp(Her*Int_z, 1))*x_rate;
-  end
+  % The integrator (often) gets perturbed to a really slow pole, so dc-gain 
+  % is infinite (or huge). So evaluate low-freq gain instead.
+  ess = abs(freqresp(Her*Int_z, 1))*x_rate;
+
   
   N = mu_Nsamples+N_prescan;
   N_extra = floor(ess/x_rate);
