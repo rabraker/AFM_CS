@@ -41,14 +41,17 @@ can_obs_params.beta = 50;
 gam_rob1 = 25;
 K_lqr1 = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q1, R0+gam_rob1, S1);
 
-gam_rob2 = 50;
+gam_rob2 = 46.4;
 K_lqr2 = dlqr(plants.sys_recyc.a, plants.sys_recyc.b, Q2, R2+gam_rob2, S2);
 
 
 % [~, ~, Hyr] = ss_loops_delta_dist(plants.SYS, plants.sys_recyc, sys_obsDist, K_lqr1, L_dist);
 
 Gxyz_frd = get_H();
- 
+%%
+% Gxyz_frd = [plants.gdrift_inv, 0, 0; 0, 1, 0; 0 0 1]* Gxyz_frd;
+
+
 Gzz = Gxyz_frd(3,3);
 [DDz, Dki, Dinv] = get_gz_dz(Gzz);
 
@@ -76,8 +79,14 @@ freq_s = logspace(log10(1), log10(12500), 350)';
 h1 = mimo_bode_mag(HH1, freq_s, ha, '-k');
 h2 = mimo_bode_mag(HH2, freq_s, ha, '--r');
 
-fprintf('Bandwidth CZ: %f\n', bandwidth(HH1(1,1))/2/pi)
-fprintf('Bandwidth CZ: %f\n', bandwidth(HH2(1,1))/2/pi)
+% fprintf('Bandwidth CZ: %f\n', bandwidth(HH1(1,1))/2/pi)
+% fprintf('Bandwidth CR: %f\n', bandwidth(HH2(1,1))/2/pi)
+%%
+analyze_margins(plants, sys_obsDist, K_lqr1, L_dist, ha(1,1), '-m');
+analyze_margins(plants, sys_obsDist, K_lqr2, L_dist, ha(1,1), '-b');
+
+% frf_bode_mag(HH(ny,nu), freq_s, ha(ny,nu), 'Hz', varargin{:});
+% frf_bode_mag(HH(ny,nu), freq_s, ha(ny,nu), 'Hz', varargin{:});
 
 h1(1,1).DisplayName = 'choose-$\zeta$';
 h2(1,1).DisplayName = 'constant-$\rho$';
@@ -257,4 +266,26 @@ function [HH] = close_three_axis(sys, sys_recyc, sys_obs, KxKu, LxLd, Gxyz_frf, 
 
 end
 
+function analyze_margins(plants, sys_obsDist, K_lqr, L_dist, ax, varargin)
+  [Sens, Hyd, Hyr, Hyeta, Loop] = ss_loops_delta_dist(plants.SYS, plants.sys_recyc,...
+    sys_obsDist, K_lqr, L_dist);
+  
+  F_clbode = figure(25);clf; hold on, grid on
+  Hbode_sens = bodeplot(Sens);
+  setoptions(Hbode_sens, 'FreqUnits', 'Hz')
+  legend('S: linear')
+  grid on, hold on;
+  
+  [Gm_lin, Pm_lin] = margin(Loop);
+  
+  fprintf('-------- MARGINS ------------------\n')
+  fprintf('Linear: GM = %.2f [dB], PM = %.2f [deg]\n', 20*log10(Gm_lin), Pm_lin)
+  fprintf('Bandwidth: %f [Hz]\n', bandwidth(minreal(Hyr))/2/pi);
+  
+  if nargin > 4
+      ws = logspace(log10(1), log10(12500), 300);
+      frf_bode_mag(Hyr, ws, ax, 'Hz', varargin{:});
+  end
 
+  
+end
