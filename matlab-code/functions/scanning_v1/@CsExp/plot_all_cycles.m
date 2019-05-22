@@ -53,13 +53,13 @@ function [hands, legs] = plot_all_cycles(self, ax1, ax2, ax3, ax4, bounds, xy_sc
   plotx = false;
   ploty = false;
   
-  if nargin  > 2
+  if exist('ax2', 'var') && ~isempty(ax2)
     plotze = true;
   end
-  if nargin > 3
-    plotx = true;
+  if exist('ax3', 'var') && ~isempty(ax3)
+      plotx = true;
   end
-  if nargin > 4
+  if exist('ax4', 'var') && ~isempty(ax4)
     ploty=true;
   end
     
