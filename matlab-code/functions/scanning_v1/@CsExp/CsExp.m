@@ -6,6 +6,7 @@ classdef CsExp < handle
     y_positive;
     uz;
     ze;
+    z_friction;
     t;
     Ts;
     met_ind;
@@ -34,7 +35,7 @@ classdef CsExp < handle
     % channel_map, Ts, feature_height_nm, gg)
     % Obtain cs_paths (which is a struct) from, e.g.,
     % cs_exp_paths(data_root, data_name)
-      default_chan_map = ChannelMap([1:5]);
+      default_chan_map = ChannelMap([1:6]);
       optP = inputParser();
       optP.addParameter('reload_raw', false, @(s)islogical(s));
       optP.addParameter('channel_map', default_chan_map);
