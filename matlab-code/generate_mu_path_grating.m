@@ -34,7 +34,7 @@ if 1
     sub_sample_frac = 0.10;  % Percent of pixels to subsample. 
     raster_freq = 1;  % hz
 end
-N_prescan = 250;
+N_prescan = 150;
 % Unit conversions.
 pix_per_micron = npix/width;
 mu_pix = ceil(mu_length*pix_per_micron);
@@ -75,12 +75,12 @@ imshow(I)
 N = mu_Nsamples;
 
 % N-1 because x0 is sample 1.
-xdirControl = get_xdir_standard_control();
+xdirControl = get_xdir_standard_control('const-sig');
 x_N =  (N-1)*volts_per_sample;
 N_extra = mu_overscan(xdirControl.Hyr, volts_per_sample, mu_Nsamples, 1, N_prescan)+10
 
-mu_Nsamples_extra = N+N_extra;
-
+mu_Nsamples_extra = N+N_extra
+%%
 % ----- Use this to generate the mica CS pattern -------------------
 % nr = 20
 % mu = [ones(1, 63), 0];
