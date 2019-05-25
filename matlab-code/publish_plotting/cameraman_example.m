@@ -22,11 +22,11 @@ mu_pix_52 = 52
 
 [pix_mask_1, pix_idx_1] = mu_path_mask(mu_pix_1, npix, npix, sub_sample_frac, false);
 [pix_mask_52, pix_idx_52] = mu_path_mask(mu_pix_52, npix, npix, sub_sample_frac, false);
-
-%%
 cs20ng = make_CS20NG(10, 10, npix, 10);
 
 im = double(imread('standard_test_images/cameraman.tif'))/255;
+
+%%
 % im = cs20ng;
 I_1 = ones(npix,npix)-pix_mask_1;
 I_52 = ones(npix,npix)-pix_mask_52;
@@ -36,6 +36,14 @@ F1 = mkfig(1, 9, 6); clf
 
 
 
+cs_sim_1 = CsSim(im, pix_mask_1); 
+cs_sim_52 = CsSim(im, pix_mask_52); 
+
+cs_sim_1.solve_bp(true, true)
+cs_sim_52.solve_bp(true, true)
+
+%%
+figure(3); clf
 ax = tight_subplot(2, 3, .01, .01, .01, true);
 ax = reshape(ax', 3, 2)'
 
@@ -51,15 +59,6 @@ imagesc(ax(1,3), I_52)
 
 colormap('gray')
 
-
-
-cs_sim_1 = CsSim(im, pix_mask_1); 
-cs_sim_52 = CsSim(im, pix_mask_52); 
-
-cs_sim_1.solve_bp(true, true)
-cs_sim_52.solve_bp(true, true)
-
-%%
 mu = 20
 cla(ax(2,2))
 img_1 = breg_anistropic_TV(cs_sim_1.Img_bp, mu, 0.001, 1000);
@@ -79,32 +78,33 @@ ssim(img_1, im)
 ssim(img_52, im)
 %%
 N = size(im, 1);
-pix_idx = find(CsTools.pixmat2vec(pix_mask_52) > 0.5);
+% pix_idx = find(CsTools.pixmat2vec(pix_mask_52) > 0.5);
+pix_idx = find(pix_mask_52(:) > 0.5);
 A = @(x) CsTools.Afun_dct(x, pix_idx);
 At = @(x) CsTools.Atfun_dct(x, pix_idx, N, N);
 
 % zr = zeros(N^2, 1);
 
-M_fun = @(x) idct(x);
-Mt_fun = @(x) dct(x);
+U_fun = @(x) idct(x);
+Ut_fun = @(x) dct(x);
 
 E_fun = @(x) CsTools.E_fun1(x, pix_idx);
 Et_fun = @(x) CsTools.Et_fun1(x, pix_idx, N, N);
 
-b = CsTools.pixmat2vec(im);
+b = im(:)*256; %CsTools.pixmat2vec(im);
 b = b(pix_idx);
 
 
-delta = 1e-2;
-mu = 1e-2;
+delta = 1e-1;
+mu = 1e-3;
 
-opts = NESTA_opts('Verbose', 10, 'errFcn', @(x)norm(x),...
-    'U', M_fun, 'Ut', Mt_fun)
+opts = NESTA_opts('Verbose', 5, 'errFcn', @(x)norm(x),...
+    'U', U_fun, 'Ut', Ut_fun)
 tic
 [x,niter] = NESTA_mine(E_fun, Et_fun, b, mu, delta, opts);
 toc
 
-Im_est = CsTools.pixvec2mat(x, N);
+Im_est = reshape(x, N, []); %CsTools.pixvec2mat(x, N);
 
 ssim(Im_est, im)
 

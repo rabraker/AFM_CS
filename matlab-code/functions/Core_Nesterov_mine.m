@@ -63,8 +63,8 @@ function [xk,niter] = Core_Nesterov_mine(...
     
     do_TV = true;
     if do_TV
-        alp_v = 0;
-        alp_h = 1;
+        alp_v = 0; %.5;
+        alp_h = 0;%.125;
         n = floor(sqrt(N));
         % Evidently, ||D||_2 ~= sqrt(8), and ||Dv||_2 ~= 2, ||Dh||_2 ~=2
         % In general, we take L=||W||_2^2, so when we multiply alp*D,
@@ -90,7 +90,7 @@ function [xk,niter] = Core_Nesterov_mine(...
 
        %---- Dual problem
        if do_TV
-           [df, fx] = Perform_L1TV_Constraint(xk, mu, opts.U, opts.Ut, Dv, Dh, D);
+           [df, fx] = Perform_L1TVanis_Constraint(xk, mu, opts.U, opts.Ut, Dv, Dh);
        else
            [df, fx] = Perform_L1_Constraint(xk, mu, opts.U, opts.Ut);
        end
@@ -172,7 +172,29 @@ function [vk] = nesta_project(xx, g, b, Lmu, A, At, Atb, delta)
   
 end
 
+%%%%%%%%%%%% PERFORM THE L1+TV CONSTRAINT %%%%%%%%%%%%%%%%%%
+function [df,fx] = Perform_L1TVanis_Constraint(xk,mu,U,Ut, Dv, Dh)
+    Dhx = Dh*xk;
+    Dvx = Dv*xk;
+    Ux = U(xk);
 
+    w_h = max(mu, abs(Dhx));
+    w_v = max(mu, abs(Dvx));
+    w_U = max(mu, abs(Ux));
+    
+    uh = Dhx ./ w_h;
+    uv = Dvx ./ w_v;
+    uU = Ux./ w_U;
+    
+    u = [uh;uv; uU];
+ 
+%   fx_l1 = uk_U'*Uxk - mu/2*norm(uk_U)^2;
+  
+  fx = u' * [Dhx; Dvx; Ux] - (mu/2) * norm(u)^2;
+  
+  df = Dh'*uh + Dv'*uv + Ut(uU);
+
+end
   
 %%%%%%%%%%%% PERFORM THE L1+TV CONSTRAINT %%%%%%%%%%%%%%%%%%
 function [df,fx] = Perform_L1TV_Constraint(xk,mu,U,Ut, Dv, Dh, D)
@@ -190,8 +212,9 @@ function [df,fx] = Perform_L1TV_Constraint(xk,mu,U,Ut, Dv, Dh, D)
     else
         len_u = numel(uv) + numel(uh);
     end
+%     len_u = 1;
     u = [uh;uv];
-    fx_tv = real(u'*D*xk - (mu/2) * (1/len_u)*sum(u'*u));
+    fx_tv = u'*D*xk - (mu/2) * (1/len_u)*(u'*u);
     df_tv = D'*u;
 
   uk = U(xk);
