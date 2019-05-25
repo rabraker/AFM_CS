@@ -54,4 +54,8 @@ format longg
 [num, den] = tfdata(g, 'v')
 
 figure
-bode(g)
+opts = bodeoptions;
+opts.FreqUnits = 'Hz'
+h = bodeplot(g, opts)
+
+grid on
