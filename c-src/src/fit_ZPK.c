@@ -156,7 +156,7 @@ DLL_PUBLIC int fit_sos_st(int N_omegas, double *omegas, double *resp_real,
   fit_sos_result->npegged = mpres->npegged;
   fit_sos_result->nfunc = mpres->nfunc;
 
-  // free(mpres);
+  free(mpres);
   free(resp_fit);
   free(resp);
 
