@@ -25,7 +25,8 @@ classdef SimAFM
     wsp;
     gdrift_inv;
     gdrift;
-   
+    Dx_ff;
+    Dy_ff;
     isfxp;
     nw;
     nf;
@@ -56,6 +57,8 @@ classdef SimAFM
       p.addParameter('wsp', fi_zero);
       p.addParameter('gdrift',  kd_sys);
       p.addParameter('gdrift_inv', kd_sys);
+      p.addParameter('Dx_ff',  kd_sys);
+      p.addParameter('Dy_ff',  kd_sys);
       p.addParameter('nw', 0);
       p.addParameter('nf', 0);
       p.addParameter('useNbar', false)
@@ -86,9 +89,11 @@ classdef SimAFM
       self.x0_obs = sys_obs.b*0;
       self.x0 = PLANT.b*0;
       
-      
       self.gdrift = p.Results.gdrift;
       self.gdrift_inv = p.Results.gdrift_inv;
+      self.Dx_ff = p.Results.Dx_ff;
+      self.Dy_ff = p.Results.Dy_ff;
+      
       self.nw = p.Results.nw;
       self.nf = p.Results.nf;
     end
@@ -221,6 +226,9 @@ classdef SimAFM
       Nhyst = length(self.rp);
       Nsat  = length(self.dp);
       Ndrift = length(pole(self.gdrift_inv));
+      Ns_xff = length(pole(self.Dx_ff));
+      Ns_yff = length(pole(self.Dy_ff));
+      
       if Nhyst > 1
         hyst_vec = [self.wp(:); self.rp(:)];
       else
@@ -232,6 +240,7 @@ classdef SimAFM
       else
         Nsat = 0;
       end
+      
       if Ndrift >0
         Ndrift_p1 = Ndrift + 1;
         [a,b,c, d] = ssdata(balreal(self.gdrift_inv));
@@ -241,6 +250,7 @@ classdef SimAFM
       else
         Ndrift_p1 = 0;
       end
+      
       K = self.controller;
 
       AllMatrix = packMatrixDistEst(self.sys_obs_fp,...
@@ -288,7 +298,7 @@ classdef SimAFM
       umax = 0;
       Nhyst = length(self.rp);
       Nsat  = length(self.dp);
-      Ndrift = length(pole(self.gdrift_inv));
+      
       if Nhyst > 1
         hyst_vec = double([self.wp(:)', self.rp(:)']);
       else
@@ -302,17 +312,21 @@ classdef SimAFM
         Nsat = 0;
         sat_vec = [];
       end
-      if Ndrift >0
-        Ndrift_p1 = Ndrift + 1;
-        [a,b,c, d] = ssdata(balreal(self.gdrift_inv));
-        ABCD = [a, b; c, d];
-        % reshape into a row vector along rows.
-        % We need rows, otherwise JSON parsing in labview will fail.
-        ABCD_vec = reshape(ABCD', [], 1)';
-      else
-        Ndrift_p1 = 0;
-        ABCD_vec = [];
-      end
+      [ABCD_vec_xdrift, Ns_xdrift_p1] = lti2ABCD_vec(self.gdrift_inv);
+      [ABCD_vec_xff, Ns_xff_p1] = lti2ABCD_vec(self.Dx_ff);
+      [ABCD_vec_yff, Ns_yff_p1] = lti2ABCD_vec(self.Dy_ff);
+%       if Ndrift >0
+%         Ndrift_p1 = Ndrift + 1;
+%         [a,b,c, d] = ssdata(balreal(self.gdrift_inv));
+%         ABCD = [a, b; c, d];
+%         % reshape into a row vector along rows.
+%         % We need rows, otherwise JSON parsing in labview will fail.
+%         ABCD_vec = reshape(ABCD', [], 1)';
+%       else
+%         Ndrift_p1 = 0;
+%         ABCD_vec = [];
+%       end
+      
       K = self.controller;
 
       AllMatrix = packMatrixDistEst(self.sys_obs_fp,...
@@ -320,8 +334,10 @@ classdef SimAFM
       
       % ----------- Open File and write data -----------------------------
       control_data = struct('Ns', Ns, 'umax', umax, 'du_max', double(self.du_max),...
-        'Nbar', double(self.Nbar), 'Nhyst', Nhyst, 'Nsat', Nsat, 'Ndrift_p1', Ndrift_p1,...
-        'hyst_vec', hyst_vec, 'sat_vec', sat_vec, 'ABCD_vec', ABCD_vec,...
+        'Nbar', double(self.Nbar), 'Nhyst', Nhyst, 'Nsat', Nsat,...
+        'Ns_xdrift_p1', Ns_xdrift_p1, 'Ns_xff_p1', Ns_xff_p1, 'Ns_yff_p1', Ns_yff_p1,...
+        'hyst_vec', hyst_vec, 'sat_vec', sat_vec, 'ABCD_vec_xdrift', ABCD_vec_xdrift,...
+        'ABCD_vec_xff', ABCD_vec_xff, 'ABCD_vec_yff', ABCD_vec_yff,...
         'AllMatrix_vec', AllMatrix(:)');
       opt.FloatFormat = '%.12f';
       opt.FileName = data_path;

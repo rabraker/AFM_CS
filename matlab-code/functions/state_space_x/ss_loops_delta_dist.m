@@ -1,7 +1,10 @@
 
-function [Sens, Hyd, Hyr, Hyeta, Loop] =ss_loops_delta_dist(sys, sys_recyc, sys_obs, KxKu, LxLd)
-% [Sens, Hyd, Hyr] =ss_loops_delta_dist(sys, sys_recyc, sys_obs, KxKu, LxLd)
+function [Sens, Hyd, Hyr, Hyeta, Loop, D1, D2] =ss_loops_delta_dist(sys, sys_recyc, sys_obs, KxKu, LxLd)
+% [Sens, Hyd, Hyr, Hyeta, Loop, D1, D2] =ss_loops_delta_dist(sys, sys_recyc, sys_obs, KxKu, LxLd)
 % 
+% D1 is in the loop,
+% D2 is feedforward.
+%
 % For the closed loop s.s. system with deltaU augmentation and disturbance
 % estimation (input disturbance only), constructs the closed loop transfer
 % functions:
