@@ -7,6 +7,7 @@ clear all
 % Options
 figbase  = 50;
 verbose = 0;
+addpath('models')
 controlParamName = 'LinControls01.csv';
 % Build data paths
 
@@ -239,9 +240,10 @@ function bode_local(HH1, HH2, Gxyz_frd, Dx_ff, Dy_ff)
     end
     h5.DisplayName = '$D_{y,ff}$';
     
-    leg = legend([h1(1,1), h2(1,1), h3(1,1), h4], 'FontSize', 10);
-    legy = legend(h5, 'FontSize', 12);
-    set(leg, 'location', 'southwest')
+    leg = legend([h1(1,1), h2(1,1), h3(1,1), h4])
+    leg.FontSize =  10;
+    legy = legend(h5);
+    set(leg, 'location', 'southwest', 'FontSize', 12)
     set(legy, 'location', 'southwest')
     
     
