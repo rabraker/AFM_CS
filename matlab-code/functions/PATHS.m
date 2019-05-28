@@ -14,6 +14,9 @@ classdef PATHS
         PATH = '/media/labserver/afm-cs';
       end
     end
+    function path = tmech_fig()
+       path = '/home/arnold/gradschool/publications/afm-cs-tmech/latex/figures/'; 
+    end
     function path = cs_final_fig()
       path = '/home/arnold/gradschool/thesis/plots-afm-cs-final/figures';
     end
