@@ -4,7 +4,7 @@ w = 100;
 
 g = tf([1, 2*w*0.3, (w+0.5)^2], [1, 2*w*0.2, w^2]);
 gz = c2d(g,.001)
-sys_z = ss(gz)
+sys_z = ss(gz)*ss(gz);
 figure, step(sys_z)
 
 
