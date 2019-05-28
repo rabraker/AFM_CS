@@ -233,18 +233,7 @@ classdef SimAFM
       [ABCD_vec_xdrift, Ns_xdrift_p1] = lti2ABCD_vec(self.gdrift_inv);
       [ABCD_vec_xff, Ns_xff_p1] = lti2ABCD_vec(self.Dx_ff);
       [ABCD_vec_yff, Ns_yff_p1] = lti2ABCD_vec(self.Dy_ff);
-%       if Ndrift >0
-%         Ndrift_p1 = Ndrift + 1;
-%         [a,b,c, d] = ssdata(balreal(self.gdrift_inv));
-%         ABCD = [a, b; c, d];
-%         % reshape into a row vector along rows.
-%         % We need rows, otherwise JSON parsing in labview will fail.
-%         ABCD_vec = reshape(ABCD', [], 1)';
-%       else
-%         Ndrift_p1 = 0;
-%         ABCD_vec = [];
-%       end
-      
+
       K = self.controller;
 
       AllMatrix = packMatrixDistEst(self.sys_obs_fp,...
@@ -254,8 +243,8 @@ classdef SimAFM
       control_data = struct('Ns', Ns, 'umax', umax, 'du_max', double(self.du_max),...
         'Nbar', double(self.Nbar), 'Nhyst', Nhyst, 'Nsat', Nsat,...
         'Ns_xdrift_p1', Ns_xdrift_p1, 'Ns_xff_p1', Ns_xff_p1, 'Ns_yff_p1', Ns_yff_p1,...
-        'hyst_vec', hyst_vec, 'sat_vec', sat_vec, 'ABCD_vec_xdrift', ABCD_vec_xdrift,...
-        'ABCD_vec_xff', ABCD_vec_xff, 'ABCD_vec_yff', ABCD_vec_yff,...
+        'hyst_vec', hyst_vec(:)', 'sat_vec', sat_vec(:)', 'ABCD_vec_xdrift', ABCD_vec_xdrift(:)',...
+        'ABCD_vec_xff', ABCD_vec_xff(:)', 'ABCD_vec_yff', ABCD_vec_yff(:)',...
         'AllMatrix_vec', AllMatrix(:)');
       opt.FloatFormat = '%.12f';
       opt.FileName = data_path;

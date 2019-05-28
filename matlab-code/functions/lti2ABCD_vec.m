@@ -18,10 +18,10 @@ function [ABCD_vec, Ns_p1] = lti2ABCD_vec(sys)
         [a, b, c, d] = ssdata(balreal(sys));
         ABCD = [a, b; c, d];
         % reshape into a column vector along rows.
-        ABCD_vec = reshape(ABCD', [], 1);
+        ABCD_vec = reshape(ABCD', [], 1)';
     else
         Ns_p1 = 0;
         ABCD_vec = [];
     end
-    
+
 end

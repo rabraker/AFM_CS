@@ -203,7 +203,7 @@ fprintf('===========================================================\n');
 sims_fxpl.sys_obs_fp = sys_obsDist;
 sims_fxpl.sys_obs_fp.a = sys_obsDist.a - L_dist*sys_obsDist.c;
 %%
-sims_fxpl.write_control_data(controlDataPath, yref, traj_path)
+% sims_fxpl.write_control_data(controlDataPath, yref, traj_path)
 control_path = fullfile(PATHS.step_exp, sprintf('LinControls-%s_5micron_xyff.json', cntrl_type))
 sims_fxpl.write_control_data_json(control_path)
 
