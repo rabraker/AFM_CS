@@ -66,6 +66,7 @@ function [ self] = bin_raster_really_slow(self, line_detrender, use_error, npix_
   self.pix_mat = zeros(ypix, xpix);
   
   samps_per_line = self.samps_per_line;
+  samps_per_period = self.samps_per_period;
   
   % The raster scans are offset from the reference by approximately 
   % ess = abs(freqresp(Her*Int_z, 1) samples, where Int_z is an integrator.
@@ -74,9 +75,12 @@ function [ self] = bin_raster_really_slow(self, line_detrender, use_error, npix_
   for j_row = 0:ypix-1
     % Guard against the possibility that samps_per_line is not an integer.
     % Need to fix this in the raster trajectory generator.
-    indy_start = ceil(j_row*(samps_per_line)+1);
-    indy_end = floor((j_row+1)*(samps_per_line));
+    
+    indy_start = ceil(j_row*(samps_per_period)+1);
+%     indy_end = floor((j_row+1)*(samps_per_period));
+    indy_end = indy_start + samps_per_line - 1;
     ind_y = (indy_start:indy_end) + offset;
+    assert(length(ind_y) == samps_per_line);
     try
       x_dat_j = x_dat_pix(ind_y);
     catch
