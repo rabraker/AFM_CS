@@ -226,7 +226,7 @@ classdef CsExp < handle
     [sig_psd, freqs, k] = psd_from_intervals(self, signal, state, ...
                                              starts, ends)
     % Defined in process_cs_data.m
-    [pix_mask] = process_cs_data(self, verbose, figs, use_ze)
+    [pix_mask] = process_cs_data(self, verbose, figs, use_ze, register_uzk)
       
     function [CS_idx, start_idx, end_idx] = find_cycle_idx(self, time)
     % find the CS-cycle index corresponding to time. A single cycle is defined
@@ -557,7 +557,7 @@ function solve_nesta(self, recalc, use_2d, opts)
             'U', M_fun, 'Ut', Mt_fun);
       end
       delta = 1e-2;
-      mu = 1e-2;
+      mu = 1e-5;
       
       tic
       [x_est] = NESTA_mine(E_fun, Et_fun, b, mu, delta, opts);
