@@ -139,9 +139,9 @@ Gxyz_frd = Gxyz_frd*gdi;
 [HH1] = close_three_axis(Gxyz_frd, xdir_cntrl, Dy, Dzki, Dz_inv, 1, 1);
 [HH2] = close_three_axis(Gxyz_frd, xdir_cntrl, Dy, Dzki, Dz_inv, Dx_ff, Dy_ff);
 
-
+%%
 bode_local(HH1, HH2, Gxyz_frd, Dx_ff, Dy_ff);
-
+if 1
 % -------------------------------------------------------------------
 % -------------------- Setup Fixed Point stuff ---------------------------
 A_obs_cl = sys_obsDist.a - L_dist*sys_obsDist.c;
@@ -202,15 +202,15 @@ fprintf('===========================================================\n');
 
 sims_fxpl.sys_obs_fp = sys_obsDist;
 sims_fxpl.sys_obs_fp.a = sys_obsDist.a - L_dist*sys_obsDist.c;
-%%
+
 % sims_fxpl.write_control_data(controlDataPath, yref, traj_path)
 control_path = fullfile(PATHS.step_exp, sprintf('LinControls-%s_5micron_xyff.json', cntrl_type))
-sims_fxpl.write_control_data_json(control_path)
-
+sims_fxpl.write_control_data_json(control_path);
+end
 function Dy_ff = make_dy_ff()
     wz1 = 214 * 2 * pi;
     wz2 = 505 * 2 * pi;
-    zz1 = 0.01;
+    zz1 = 0.03;
     zz2 = 0.04;
     
     g = zpk(tf([1, 2*zz1*wz1, wz1^2], conv([1, 300*2*pi],  [1, 300*2*pi])));
@@ -223,19 +223,20 @@ end
 function Dx_ff = make_dx_ff()
     wz1 = 214 * 2 * pi;
     wz2 = 505 * 2 * pi;
-    zz = 0.001;
+    zz = 0.01;
     
     
     g = zpk(tf([1, 2*zz*wz1, wz1^2], conv([1, 350*2*pi],  [1, 350*2*pi])));
     g2 = zpk(tf([1, 2*zz*wz2, wz2^2], conv([1, 450*2*pi],  [1, 450*2*pi])));
-    g3 = zpk([], [-2*pi*500], 2*pi*500);
+    w_lpf = 2 * pi * 500;
+    g3 = zpk([], [-w_lpf], w_lpf);
     
     g = c2d(g, AFM.Ts, 'matched') * c2d(g2, AFM.Ts, 'matched') * c2d(g3, AFM.Ts, 'matched');
     Dx_ff = g * (1/dcgain(g));
 end
 
 function bode_local(HH1, HH2, Gxyz_frd, Dx_ff, Dy_ff)
-    F11 = mkfig(10, 7, 5, true); clf
+    F11 = mkfig(11, 7, 5, true); clf
     % [ha, pos] = tight_subplot(3, 3, .01, [.061, 0.03], [.065, .02]);
     [ha] = tight_subplot(3, 2, .01, [.061, 0.03], [.065, .02]);
     ha = reshape(ha', [], 3)';
@@ -304,7 +305,7 @@ function [DD, D_ki, D_inv] = get_gz_dz(Gzz)
     
     D_inv = 1/D;
     
-    KI = -0.05;
+    KI = -0.07;
     
     D_ki = zpk([], [1], KI, AFM.Ts);
     
