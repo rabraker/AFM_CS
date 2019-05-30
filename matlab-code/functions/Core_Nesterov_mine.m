@@ -60,23 +60,31 @@ function [xk,niter] = Core_Nesterov_mine(...
 
 
     %---- Init Variables
+
+    % Evidently, ||D||_2 ~= sqrt(8), and ||Dv||_2 ~= 2, ||Dh||_2 ~=2
+    % In general, we take L=||W||_2^2, so when we multiply alp*D,
+    % we need alp^2.
+    % Lmu = (opts.normU + alp_v^2*4 + alp_h^2*4)/mu; %Lmu;
+    Lmu = opts.normU/mu;
+    n = floor(sqrt(N));
     
-    do_TV = true;
-    if do_TV
-        alp_v = 0; %.5;
-        alp_h = 0;%.125;
-        n = floor(sqrt(N));
-        % Evidently, ||D||_2 ~= sqrt(8), and ||Dv||_2 ~= 2, ||Dh||_2 ~=2
-        % In general, we take L=||W||_2^2, so when we multiply alp*D,
-        % we need alp^2.
-        Lmu = (opts.normU + alp_v^2*4 + alp_h^2*4)/mu; %Lmu;
+    if opts.alpha_v > 0
+        alp_v = opts.alpha_v;
+        Lmu = Lmu + (alp_v^2 * 4)/mu;
+
         Dv = alp_v*spdiags([reshape([-ones(n-1,n); zeros(1,n)],N,1) ...
             reshape([zeros(1,n); ones(n-1,n)],N,1)], [0 1], N, N);
+    else
+        Dv = sparse([]);
+    end
+    
+    if opts.alpha_h > 0
+        alp_h = opts.alpha_h;%.125;
+        Lmu = Lmu + (alp_h^2 * 4)/mu;
         Dh = alp_h*spdiags([reshape([-ones(n,n-1) zeros(n,1)],N,1) ...
             reshape([zeros(n,1) ones(n,n-1)],N,1)], [0 n], N, N);
-        D = sparse([Dh;Dv]);
     else
-        Lmu = opts.normU/mu;
+        Dh = sparse([]);
     end
     
     residuals = zeros(maxiter, 2);
@@ -89,11 +97,8 @@ function [xk,niter] = Core_Nesterov_mine(...
     for k = 0:maxiter-1
 
        %---- Dual problem
-       if do_TV
-           [df, fx] = Perform_L1TVanis_Constraint(xk, mu, opts.U, opts.Ut, Dv, Dh);
-       else
-           [df, fx] = Perform_L1_Constraint(xk, mu, opts.U, opts.Ut);
-       end
+       [df, fx] = Perform_L1TVanis_Constraint(xk, mu, opts.U, opts.Ut, Dv, Dh);
+
        %---- Primal Problem
 
        %--------------- Update yk --------------------------------
@@ -174,25 +179,38 @@ end
 
 %%%%%%%%%%%% PERFORM THE L1+TV CONSTRAINT %%%%%%%%%%%%%%%%%%
 function [df,fx] = Perform_L1TVanis_Constraint(xk,mu,U,Ut, Dv, Dh)
-    Dhx = Dh*xk;
-    Dvx = Dv*xk;
-    Ux = U(xk);
-
-    w_h = max(mu, abs(Dhx));
-    w_v = max(mu, abs(Dvx));
-    w_U = max(mu, abs(Ux));
+    df = 0;
+    if ~isempty(Dh)
+        Dhx = Dh*xk;
+        w_h = max(mu, abs(Dhx));
+        uh = Dhx ./ w_h;
+        df = df + Dh'*uh;
+    else
+       Dhx = [];
+       uh = [];
+    end
     
-    uh = Dhx ./ w_h;
-    uv = Dvx ./ w_v;
+    if ~isempty(Dv)
+        Dvx = Dv*xk;
+        w_v = max(mu, abs(Dvx));
+        uv = Dvx ./ w_v;
+        df = df + Dv'*uv;
+    else
+       Dvx = [];
+       uv = [];
+    end
+    
+    Ux = U(xk);
+    w_U = max(mu, abs(Ux));
     uU = Ux./ w_U;
     
+    df = df + Ut(uU);
     u = [uh;uv; uU];
- 
-%   fx_l1 = uk_U'*Uxk - mu/2*norm(uk_U)^2;
   
-  fx = u' * [Dhx; Dvx; Ux] - (mu/2) * norm(u)^2;
+    fx = u' * [Dhx; Dvx; Ux] - (mu/2) * norm(u)^2;
   
-  df = Dh'*uh + Dv'*uv + Ut(uU);
+%   fx_l1 = uk_U'*Uxk - mu/2*norm(uk_U)^2;  
+%   df = Dh'*uh + Dv'*uv + Ut(uU);
 
 end
   

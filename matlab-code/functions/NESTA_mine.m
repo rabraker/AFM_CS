@@ -4,7 +4,11 @@ function [xk,niter] =NESTA_mine(A,At,b,muf,delta,opts)
 % Solves a L1 minimization problem under a quadratic constraint using the
 % Nesterov algorithm, with continuation:
 %
-%     min_x || U x ||_1 s.t. ||y - Ax||_2 <= delta
+%     min_x || W x ||_1 s.t. ||y - Ax||_2 <= delta
+% 
+%    where W = [ U^T        ]
+%              [ alp_v * Dv ]
+%              [ alp_h * Dh ]
 % 
 % Continuation is performed by sequentially applying Nesterov's algorithm
 % with a decreasing sequence of values of  mu0 >= mu >= muf
@@ -24,39 +28,8 @@ function [xk,niter] =NESTA_mine(A,At,b,muf,delta,opts)
 %               If delta = 0, enforces y = Ax
 %               Common heuristic: delta = sqrt(m + 2*sqrt(2*m))*sigma;
 %               where sigma=std(noise).
-%           opts -
-%               This is a structure that contains additional options,
-%               some of which are optional.
-%               The fieldnames are case insensitive.  Below
-%               are the possible fieldnames:
-%               
-%               opts.U and opts.Ut - Analysis/Synthesis operators as function
-%               handles.
-%               opts.normU - if opts.U is provided, this should be norm(U)
-%                   otherwise it will have to be calculated via power iteration on 
-%                   on U'*U (to estimate the largest singular value, which is 
-%                            potentially expensive).
-%               opts.MaxIntIter - number of continuation steps.
-%                 default is 5
-%               opts.maxiter - max number of iterations in an inner loop.
-%                 default is 10,000
-%               opts.TolVar - tolerance for the stopping criteria, i.e.,
-%                             when the relative change in the objective 
-%                             function is less than TolVar.
-%               opts.TypeMin - if this is 'L1' (default), then
-%                   minimizes a smoothed version of the l_1 norm.
-%                   If this is 'tv', then minimizes a smoothed
-%                   version of the total-variation norm.
-%                   The string is case insensitive.
-%               opts.Verbose - if this is 0 or false, then very
-%                   little output is displayed.  If this is 1 or true,
-%                   then output every iteration is displayed.
-%                   If this is a number p greater than 1, then
-%                   output is displayed every pth iteration.
-%               opts.errFcn - if this is a function handle,
-%                   then the program will evaluate opts.errFcn(xk)
-%                   at every iteration and display the result.
-%                   ex.  opts.errFcn = @(x) norm( x - x_true )
+%           opts - A struct of options. See NESTA_opts().
+% 
 %
 %  Outputs:
 %           xk  - estimate of the solution x
@@ -94,12 +67,9 @@ function [xk,niter] =NESTA_mine(A,At,b,muf,delta,opts)
 
   % use x_ref, not xplug, to find mu_0
   Ux_ref = opts.U(x_ref);
-  switch lower(opts.TypeMin)
-    case 'l1'
-      mu0 = 0.9*max(abs(Ux_ref));
-    case 'tv'
-      mu0 = ValMUTv(Ux_ref);
-  end
+  
+  % should revisit this, since we are using W=[U', Dh, Dv]'
+  mu0 = 0.9*max(abs(Ux_ref));
 
   opts = set_normU(opts);
 
