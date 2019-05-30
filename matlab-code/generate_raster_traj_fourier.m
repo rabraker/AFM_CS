@@ -10,15 +10,12 @@ addpath(fullfile(getMatPath(), 'dependencies', 'jsonlab'))
 
 addpath('functions/state_space_x')
 
-plants = CanonPlants.plants_ns14(9, '5micron');
-PLANT_init_x = plants.PLANT;
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Trace is one line at sec_line. The whole period is trace and re-trace.
 raster_freq = coerce_raster_freq(15) % Hz.
 image_side = 5; % micro-meters.
-npix = 512;
+npix = 128;
 xy_start_mic = [-image_side/2, -image_side/2]*0;
 
 

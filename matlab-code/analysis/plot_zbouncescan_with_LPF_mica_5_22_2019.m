@@ -26,14 +26,14 @@ chan_map = ChannelMap([1:5]);
 % exp_date = '3-20-2019'
 % ----------------------- Load and Process CS-data -----------------------------
 
-data_root = '/media/labserver/afm-cs/z-bounce/5-22-2019/';
+data_root = '/media/labserver/afm-cs/z-bounce/5-28-2019/';
 
 % ----------------------- Load and Process raster-data -------------------------
 cs_files = {...
-'cs-traj-512pix-3perc-500nm-5mic-01Hz-150prescan-notconnect_out_5-22-2019-01.csv',...
-'cs-traj-512pix-3perc-500nm-5mic-01Hz-150prescan-notconnect_out_5-22-2019-02.csv',...
-'cs-traj-512pix-3perc-500nm-5mic-01Hz-150prescan-notconnect_out_5-22-2019-03.csv',...
-'cs-traj-512pix-3perc-500nm-5mic-01Hz-150prescan-notconnect_out_5-22-2019-05.csv',...
+'cs-traj-512pix-3perc-500nm-5mic-01Hz-150prescan-notconnect_out_5-28-2019-01.csv',...
+'cs-traj-512pix-3perc-500nm-5mic-01Hz-150prescan-notconnect_out_5-28-2019-02.csv',...
+'cs-traj-512pix-3perc-500nm-5mic-01Hz-150prescan-notconnect_out_5-28-2019-03.csv',...
+'cs-traj-512pix-3perc-500nm-5mic-01Hz-150prescan-notconnect_out_5-28-2019-04.csv',...
 };
 
 cs_exps = {};
@@ -48,7 +48,7 @@ for k=1:length(cs_files)
   cs_exps{k}.sub_sample_frac()
 end
 
-name_s = {'CZ w/ lpf', 'CZ-w/o lpf', 'CR w/ lpf', 'CR w/o lpf'};
+name_s = {'CR w/o notch', 'CR-w/notch', 'CZ w/o notch', 'CZ w/ notch'};
 for k=1:length(cs_exps)
    cs_exps{k}.uz  = cs_exps{k}.uz*AFM.volts2nm_z;
 end
@@ -59,7 +59,7 @@ cs_exps{1}.plot_all_cycles(axs1{1:3}, [], [], 512);
 
 [~, axs2] = make_cs_traj_figs(figbase+200, 3);
 cs_exps{2}.plot_all_cycles(axs2{1:3}, [], [], 512);
-%%
+
 [~, axs3] = make_cs_traj_figs(figbase+300, 3);
 cs_exps{3}.plot_all_cycles(axs3{1:3}, [], [], 512);
 
