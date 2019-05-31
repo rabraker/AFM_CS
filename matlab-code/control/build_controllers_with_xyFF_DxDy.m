@@ -3,6 +3,7 @@
 
 
 clear all
+%%
 % clc
 % Options
 figbase  = 50;
@@ -37,11 +38,9 @@ md = 1;
 
 
 cntrl_type = 'const-sig';
-% cntrl_type = 'choose-zeta';
 use_ff = true;
 
 % ------- Load Plants -----
-% [plants, frf_data1] = CanonPlants.plants_ns14(9, 1);
 [plants, frf_dataX] = CanonPlants.plants_ns14(9, '5micron');
 
 Ts  = plants.SYS.Ts;
@@ -92,18 +91,20 @@ du_max_orig = StageParams.du_max;
 du_max = du_max_orig/norm(plants.gdrift_inv, Inf);
 
 xdir_cntrl = get_xdir_standard_control(cntrl_type);
+xdir_tf_cntrl = get_xdir_loop_shaped_control()
 sys_obsDist = xdir_cntrl.sys_obsDist;
 K_lqr = xdir_cntrl.K_lqr;
 Nx = xdir_cntrl.Nx;
 L_dist = xdir_cntrl.L_dist;
-%%
+
 ydir_cntrl = get_ydir_standard_control();
 figure(1), step(ydir_cntrl.Hyr, ydir_cntrl.Hy_rprime)
 
-%%
-Dy = ydir_cntrl.Dy;
+
+Dy = ydir_cntrl.D;
+Dx = xdir_tf_cntrl.D;
+Dx_ki = xdir_tf_cntrl.D_ki;
 Dy_ki = ydir_cntrl.D_ki;
-Dy_ff = ydir_cntrl.Dy_ff;
 
 if 1
   verbose = 0;
@@ -113,32 +114,41 @@ end
 
 
 if use_ff
-    Dx_ff = xdir_cntrl.Dx_ff;
-    Dy_ff = ydir_cntrl.Dy_ff;
+    Dx_ff = xdir_cntrl.D_ff;
+    Dy_ff = ydir_cntrl.D_ff;
 else
     Dx_ff = zpk([], [], 1, AFM.Ts);
     Dy_ff = zpk([], [], 1, AFM.Ts);
 end
 Gxyz_frd = get_H();
 
+% Debug: (why is bw different between frd and model??) try replacing the xdir frf.
 Gvibx_ = frd(frf_dataX.G_uz2stage, frf_dataX.freqs_Hz, AFM.Ts, 'FrequencyUnit', 'Hz');
 Gvibx_ = frd(freqresp(Gvibx_, Gxyz_frd.Frequency*2*pi), Gxyz_frd.Frequency, AFM.Ts, 'FrequencyUnit', 'Hz');
-
-
 Gxyz_frd(1,1) = Gvibx_(1,1);
 gdi = blkdiag(plants.gdrift_inv, 1, 1);
 Gxyz_frd = Gxyz_frd*gdi;
 [DD, Dzki, Dz_inv] = get_gz_dz(Gxyz_frd(3,3));
-[HH1] = close_three_axis(Gxyz_frd, xdir_cntrl, Dy*Dy_ki, Dzki, Dz_inv, 1, 1);
-[HH2] = close_three_axis(Gxyz_frd, xdir_cntrl, Dy*Dy_ki, Dzki, Dz_inv, Dx_ff, Dy_ff);
+%%
+xdir_cntrl.D_ff = 1;
+xdir_tf_cntrl.D_ff = 1;
+ydir_cntrl.D_ff = 1;
+[HH1] = close_three_axis(Gxyz_frd, xdir_tf_cntrl, ydir_cntrl, Dzki, Dz_inv);
+
+xdir_tf_cntrl.D_ff = Dx_ff;
+ydir_cntrl.D_ff = Dy_ff;
+[HH2] = close_three_axis(Gxyz_frd, xdir_tf_cntrl, ydir_cntrl, Dzki, Dz_inv);
 
 
 bode_local(HH1, HH2, Gxyz_frd, Dx_ff, Dy_ff);
 
+%
 
 if 1
     % -------------------------------------------------------------------
-    % -------------------- Setup Fixed Point stuff ---------------------------
+    % -------------------- Setup Fixed Point stuff ----------------------
+    % For now, keep populating the state space stuff, until we are make it work
+    % reliably without.
     A_obs_cl = sys_obsDist.a - L_dist*sys_obsDist.c;
     
     nw = 32;
@@ -156,11 +166,7 @@ if 1
     sims_fxpl = SimAFM(plants.PLANT, K_fxp, Nx_fxp, sys_obs_fxp, L_fxp, du_max_fxp,...
         true, 'nw', nw, 'nf', nf, 'thenoise', thenoise);
     
-    sims_fxpl.Dy = ydir_cntrl.Dy;
-    sims_fxpl.Ki_y = ydir_cntrl.Ki;
-    sims_fxpl.Dx = [];
-    sims_fxpl.Ki_x = 0;
-    
+   
     if 1
         sims_fxpl.r = plants.hyst_sat.r;
         sims_fxpl.w = plants.hyst_sat.w;
@@ -178,24 +184,12 @@ if 1
         sims_fxpl.Dy_ff = Dy_ff;
         
     end
+    % ---------- Transfer function compensators. ---------------
+    sims_fxpl.Dy = ydir_cntrl.D;
+    sims_fxpl.Dx = xdir_tf_cntrl.D;
+    sims_fxpl.Ki_y = ydir_cntrl.Ki;
+    sims_fxpl.Ki_x = xdir_tf_cntrl.Ki;    
     
-    [y_fxpl, U_full_fxpl, U_nom_fxpl, dU_fxpl, Xhat_fxpl] = sims_fxpl.sim(yref, dist_traj);
-    name = sprintf('FXP lin Sim. (%s)', cntrl_type);
-    
-    fxpl_Opts = stepExpDuOpts('pstyle', '-r', 'TOL', TOL, 'step_ref', step_ref,...
-        'controller', K_lqr, 'name',  name);
-    sim_exp_fxpl = stepExpDu(y_fxpl, U_full_fxpl, dU_fxpl, fxpl_Opts);
-    Ts_vec_fxpl = sim_exp_fxpl.settle_time(TOL, tol_mode, 0);
-    fprintf('Settle-time = %f\n', Ts_vec_fxpl)
-    figure(60); clf
-    figure(61); clf
-    h2 = plot(sim_exp_fxpl, F_yudu, 'umode', 'both');
-    legend([h2(1)])
-    figure(F_y)
-    h22 = sim_exp_fxpl.ploty(F_y);
-    legend([h22]);
-    
-    %
     fprintf('===========================================================\n');
     fprintf('Writing control data...\n');
     fprintf('===========================================================\n');
@@ -203,9 +197,9 @@ if 1
     
     sims_fxpl.sys_obs_fp = sys_obsDist;
     sims_fxpl.sys_obs_fp.a = sys_obsDist.a - L_dist*sys_obsDist.c;
-    %%
+  
     % sims_fxpl.write_control_data(controlDataPath, yref, traj_path)
-    control_path = fullfile(PATHS.step_exp, sprintf('LinControls-%s_5micron_xyff_Dy.json', cntrl_type))
+    control_path = fullfile(PATHS.step_exp, sprintf('LinControls-%s_5micron_xyff_DyDx.json', cntrl_type))
     sims_fxpl.write_control_data_json(control_path);
 end
 

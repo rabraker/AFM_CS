@@ -13,34 +13,17 @@ addpath(fullfile(getCsRoot(), 'matlab-code', 'functions', 'state_space_x'));
 
 full_mod_path = fullfile(PATHS.sysid, 'xy-axis_sines_info_intsamps_quickFourierCoef_11-11-2018xydrive-01.mat');
 mf_full = load(full_mod_path);
+%%
 Gxyz_frd = get_H_frd();
-
+size(Gxyz_frd)
+% Gxyz_frd = Gxyz_frd(:,:, 1:end-1)
 
 
 %%
-Gy = mf_full.modelFit.G_all_axes(2, 2);
-Gy_frd = Gxyz_frd(2,2);
-ssopts = frf2ss_opts('Ts', AFM.Ts, 'Nd', 9)
-gy_ = frf2ss(squeeze(Gy_frd.Response(1:end-1)), Gy_frd.Frequency(1:end-1)*2*pi, 9, ssopts)
-gy = gy_.realize(11);
 
-figure(14); clf
-bode(Gy_frd, gy)
+ydir_cntrl = get_ydir_standard_control();
 
-sos_fos_y = SosFos(gy, 'iodelay', 9)
-lg = LogCostZPK(Gy_frd.Response(1:end-1), Gy_frd.Frequency(1:end-1)*2*pi, sos_fos_y);
-lg.solve_lsq(1);
-gy_lg = lg.sos_fos.realize();
 
-hold on
-bode(gy_lg, '--')
-%%
-Dy_notch = zpk([0.978+1i*0.164, 0.978-1i*0.164], [0.7, 0.7], 1, AFM.Ts);
-Dy_notch = Dy_notch/dcgain(Dy_notch);
-
-DyKi = zpk(0, 1, 0.01, AFM.Ts);
-
-Dy = DyKi*Dy_notch;
 %%
 [plants, frf_data] = CanonPlants.plants_ns14(9);
 newest_xfrf_path = fullfile(PATHS.sysid, 'x-axis_sines_info_first_resFourierCoef_5-9-2019-01.json');
@@ -136,12 +119,12 @@ figure(5);clf
 plot(u.Time, u.Data)
 hold on
 plot(u.Time, y, '--')
-
-figure(6); %clf;
+%%
+figure(60); clf;
 [ha, pos] = tight_subplot(3, 3, .01, [.045, 0.03], [.065, .02]);
 
 ha = reshape(ha', 3, [])';
-%%
+
 [Dz, Dz_ki, Dz_inv] = get_gz_dz(Gxyz_frd(3,3));
 % Dz = Dz
 Dx = Dinv*Dki*D_notch;
@@ -149,6 +132,8 @@ H3 = close_three_axis(Gxyz_frd, Dx, Dy, Dz);
 
 hands = mimo_bode_mag(H3, H3.Frequency, ha, '-r')
 %%
+
+    
 
 
 function [HH] = close_three_axis(Gxyz_frf, Dx, Dy, Dz)
@@ -166,7 +151,7 @@ M = eye(3);
 
 DD2 = eye(3);
 
-DD1 = [Dx*0.5, 0, 0;
+DD1 = [Dx*1, 0, 0;
     0, Dy, 0;
     0, 0,  Dz];
   

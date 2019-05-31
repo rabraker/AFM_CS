@@ -26,32 +26,45 @@
 %      I + D2*G*G1
 
 
-function [HH] = close_three_axis(Gxyz_frf, xdir_cntrl, Dy, Dzki, Dinv, Dx_ff, Dy_ff)
+function [HH] = close_three_axis(Gxyz_frf, xdir_cntrl, ydir_cntrl, Dzki, Dinv)
   
-  D1x = xdir_cntrl.D1_loop; % The feedback
+  Dssx = xdir_cntrl.D1_loop; % The feedback
   Mx = xdir_cntrl.D2_ss_ff; % The feedforward
+  Dx_ff = xdir_cntrl.D_ff;
+  Dx = xdir_cntrl.D;       % The transfer-function feedback (if any)
+  Dki_x = xdir_cntrl.D_ki;
   
-  %    R-->[ M ]--->O---->[ D2 ]-->[ G ]--+---> y
+  Dssy = ydir_cntrl.D1_loop; % The state-space feedback (if any)
+  My = ydir_cntrl.D2_ss_ff; % The state-space feedforward (if any)
+  Dy_ff = ydir_cntrl.D_ff; % the real feedforward. (if any)
+  Dy = ydir_cntrl.D;       % The transfer-function feedback (if any)
+  Dki_y = ydir_cntrl.D_ki;
+  %    R-->[ M ]--->O---->[ DD ]-->[ G ]--+---> y
   %                 |                     |
-  %                 +-----[ D1 ]<---------+
+  %                 +-----[ Dss ]<---------+
   %
   % y =        G*D1
   %      --------------- * M * R
   %      I + D2*G*G1
+  % 
+  % For state-space, DD = 1, Dss and M are some transfer function.
+  % FOr typical TF based feedback, Dss=1, and M=1, unless we designed a
+  % feedforward control, like Dx_ff.
+  
   
   M = [Mx*Dx_ff, 0, 0;
-      0,  Dy_ff, 0;
+      0,  My*Dy_ff, 0;
       0, 0, 1];
   
-  DD1 = [D1x, 0, 0;
-      0,   1, 0;
+  Dss = [Dssx, 0, 0;
+      0,   Dssy, 0;
       0,   0, 1];
-  DD2 = [1, 0, 0;
-      0, Dy, 0;
+  DD = [Dx*Dki_x, 0, 0;
+      0, Dy*Dki_y, 0;
       0, 0,  Dzki*Dinv];
 
   I = eye(3);
   
-  HH = (Gxyz_frf*DD2 / (I + DD1*Gxyz_frf*DD2)) * M;
+  HH = (Gxyz_frf*DD / (I + Dss*Gxyz_frf*DD)) * M;
   
 end

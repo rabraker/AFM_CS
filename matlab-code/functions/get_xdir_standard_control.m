@@ -51,6 +51,7 @@ end
 
 [Sens, Hyd, Hyr, Hyeta, Loop, D1, D2] = ss_loops_delta_dist(plants.SYS, plants.sys_recyc,...
   sys_obsDist, K_lqr, L_dist);
+g_static = zpk([], [], 1, AFM.Ts);
 xdirControl = struct('Sens', Sens,...
   'Hyd', Hyd,...
   'Hyr', Hyr,...
@@ -63,8 +64,27 @@ xdirControl = struct('Sens', Sens,...
   'K_lqr', K_lqr,...
   'L_dist', L_dist,...
   'D1_loop', D1,...
-  'D2_ss_ff', D2);
+  'D2_ss_ff', D2,...
+  'D_ff', make_dx_ff(),...
+  'D', g_static,...
+  'D_ki', g_static);
   
 
 
+end
+
+
+function Dx_ff = make_dx_ff()
+    wz1 = 214 * 2 * pi;
+    wz2 = 505 * 2 * pi;
+    zz = 0.01;
+    
+    
+    g = zpk(tf([1, 2*zz*wz1, wz1^2], conv([1, 350*2*pi],  [1, 350*2*pi])));
+    g2 = zpk(tf([1, 2*zz*wz2, wz2^2], conv([1, 450*2*pi],  [1, 450*2*pi])));
+    w_lpf = 2 * pi * 500;
+    g3 = zpk([], [-w_lpf], w_lpf);
+    
+    g = c2d(g, AFM.Ts, 'matched') * c2d(g2, AFM.Ts, 'matched') * c2d(g3, AFM.Ts, 'matched');
+    Dx_ff = g * (1/dcgain(g));
 end

@@ -5,6 +5,12 @@
 % 
 % 
 function [ABCD_vec, Ns_p1] = lti2ABCD_vec(sys)
+    
+    if isempty(sys) || (isnumeric(sys) && sys==0)
+        ABCD_vec = [];
+        Ns_p1 = 0;
+    end
+    
     sys = ss(sys);
     Ns = length(pole(sys));
     nu = size(sys.b, 2);

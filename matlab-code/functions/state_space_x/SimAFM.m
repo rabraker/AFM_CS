@@ -27,6 +27,11 @@ classdef SimAFM
     gdrift;
     Dx_ff;
     Dy_ff;
+    Dy;
+    Dx;
+    Ki_y;
+    Ki_x;
+    
     isfxp;
     nw;
     nf;
@@ -233,6 +238,9 @@ classdef SimAFM
       [ABCD_vec_xdrift, Ns_xdrift_p1] = lti2ABCD_vec(self.gdrift_inv);
       [ABCD_vec_xff, Ns_xff_p1] = lti2ABCD_vec(self.Dx_ff);
       [ABCD_vec_yff, Ns_yff_p1] = lti2ABCD_vec(self.Dy_ff);
+      
+      [ABCD_vec_Dy, Ns_Dy_p1] = lti2ABCD_vec(self.Dy);
+      [ABCD_vec_Dx, Ns_Dx_p1] = lti2ABCD_vec(self.Dx);
 
       K = self.controller;
 
@@ -243,15 +251,40 @@ classdef SimAFM
       control_data = struct('Ns', Ns, 'umax', umax, 'du_max', double(self.du_max),...
         'Nbar', double(self.Nbar), 'Nhyst', Nhyst, 'Nsat', Nsat,...
         'Ns_xdrift_p1', Ns_xdrift_p1, 'Ns_xff_p1', Ns_xff_p1, 'Ns_yff_p1', Ns_yff_p1,...
-        'hyst_vec', hyst_vec(:)', 'sat_vec', sat_vec(:)', 'ABCD_vec_xdrift', ABCD_vec_xdrift(:)',...
-        'ABCD_vec_xff', ABCD_vec_xff(:)', 'ABCD_vec_yff', ABCD_vec_yff(:)',...
+        'hyst_vec', hyst_vec, 'sat_vec', sat_vec, 'ABCD_vec_xdrift', ABCD_vec_xdrift,...
+        'ABCD_vec_xff', ABCD_vec_xff, 'ABCD_vec_yff', ABCD_vec_yff,...
+        'ABCD_vec_Dx', ABCD_vec_Dx, 'ABCD_vec_Dy', ABCD_vec_Dy,...
+        'Ns_Dx_p1', Ns_Dx_p1, 'Ns_Dy_p1', Ns_Dy_p1,...
+        'Ki_x', self.Ki_x, 'Ki_y', self.Ki_y,...
         'AllMatrix_vec', AllMatrix(:)');
       opt.FloatFormat = '%.12f';
       opt.FileName = data_path;
+      
+      control_data = jsonify_struct(control_data);
       savejson('', control_data, opt)
       
     end % write control data
    end %methods
+end
+
+
+function data = jsonify_struct(data)
+    
+    flds = fieldnames(data);
+    
+    for k=1:length(flds)
+       fld = flds{k};
+       elem = data.(fld);
+       assert(isnumeric(elem));
+       
+       [n, m] = size(elem);
+       if n*m > 0
+           data.(fld) = elem(:)';
+       else
+          data.(fld) = [];
+       end
+    end
+    
 end
 
 function fprint_row(fid, fmt, row)
