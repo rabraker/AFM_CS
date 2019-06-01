@@ -89,14 +89,15 @@ du_max_orig = StageParams.du_max;
 du_max = du_max_orig/norm(plants.gdrift_inv, Inf);
 %%
 xdir_cntrl = get_xdir_standard_control(cntrl_type);
+%%
 xdir_tf_cntrl = get_xdir_loop_shaped_control();
+%%
 sys_obsDist = xdir_cntrl.sys_obsDist;
 K_lqr = xdir_cntrl.K_lqr;
 Nx = xdir_cntrl.Nx;
 L_dist = xdir_cntrl.L_dist;
 
 ydir_cntrl = get_ydir_standard_control();
-figure(1), step(ydir_cntrl.Hyr, ydir_cntrl.Hy_rprime)
 
 
 % Debug: (why is bw different between frd and model??) try replacing the xdir frf.
@@ -112,10 +113,10 @@ Dx_ff = xdir_tf_cntrl.M;
 Dx_ffss = xdir_cntrl.M;
 Dy_ff = ydir_cntrl.M;
 
-xdir_cntrl.M = g_static;
-xdir_tf_cntrl.M = g_static;
-ydir_cntrl.M = g_static;
-[HH1] = close_three_axis(Gxyz_frd, xdir_tf_cntrl, ydir_cntrl, Dzki, Dz_inv);
+% xdir_cntrl.M = g_static;
+% xdir_tf_cntrl.M = g_static;
+% ydir_cntrl.M = g_static;
+% [HH1] = close_three_axis(Gxyz_frd, xdir_tf_cntrl, ydir_cntrl, Dzki, Dz_inv);
 
 xdir_cntrl.M = Dx_ffss;
 xdir_tf_cntrl.M = Dx_ff;
@@ -183,7 +184,7 @@ if 1
   
     % sims_fxpl.write_control_data(controlDataPath, yref, traj_path)
     control_path = fullfile(PATHS.step_exp, sprintf('LinControls-%s_5micron_xyff_DyDx.json', cntrl_type))
-%     sims_fxpl.write_control_data_json(control_path);
+    sims_fxpl.write_control_data_json(control_path);
 end
 
 
@@ -194,12 +195,13 @@ function bode_local(HH1, HH2, Gxyz_frd, Dx_ff, Dy_ff)
     ha = reshape(ha', [], 3)';
     freq_s = logspace(log10(1), log10(12500), 350)';
     
-    h1 = mimo_bode_mag(HH1(:,1:2), freq_s, ha, '--r');
-    h2 = mimo_bode_mag(HH2(:, 1:2), freq_s, ha, '-b');
-    h3 = mimo_bode_mag(Gxyz_frd(:, 1:2), freq_s, ha, ':k');
+    h1 = mimo_bode_mag(HH1(:,1:2), freq_s, ha, '-r');
     
-    h4 = frf_bode_mag(Dx_ff, freq_s, ha(1,1), 'Hz', 'm');
-    h5 = frf_bode_mag(Dy_ff, freq_s, ha(2,2), 'Hz', 'm');
+    h2 = mimo_bode_mag(HH2(:, 1:2), freq_s, ha, '-b');
+    h3 = mimo_bode_mag(Gxyz_frd(:, 1:2), freq_s, ha, '-k');
+    
+    h4 = frf_bode_mag(Dx_ff, freq_s, ha(1,1), 'Hz', '--m');
+    h5 = frf_bode_mag(Dy_ff, freq_s, ha(2,2), 'Hz', '--m');
     ylabel(ha(2,2), '')
     
     
@@ -221,7 +223,9 @@ function bode_local(HH1, HH2, Gxyz_frd, Dx_ff, Dy_ff)
     set(leg, 'location', 'southwest')
     set(legy, 'location', 'southwest')
     
-    
+    xlim(ha, [1, 4000])
+    ylim(ha(1:2, :), [-75, 15])
+    ylim(ha(3, :), [-75, 35])
 end
 
 function H_frd = get_H()
