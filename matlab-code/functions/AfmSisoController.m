@@ -51,12 +51,15 @@ classdef AfmSisoController
           self.M = p.Results.M;
           self.Dss = p.Results.Dss;
           self.Mss = p.Results.Mss;
+
+          self.G = absorbDelay(ss(G));
           
-          self.G = balreal(absorbDelay(ss(G)));
+          self.Loop = self.Dki * self.D * self.G *self.Dss;
+%           self.Sens = balreal(minreal(1/(1+self.Loop)));
+          self.Sens = feedback(1, self.Loop);
+%           self.Hy_rprime = minreal(self.Mss * (self.Dki * self.D * self.G) * self.Sens);
+          self.Hy_rprime = minreal(self.Mss * feedback(self.Dki*self.D*self.G, self.Dss));
           
-          self.Loop = balreal(self.Dki * self.D * self.G *self.Dss);
-          self.Sens = balreal(minreal(1/(1+self.Loop)));
-          self.Hy_rprime = minreal(self.Mss * (self.Dki * self.D * self.G) * self.Sens);
           self.Hyr = minreal(self.M * self.Hy_rprime);
           
        end
