@@ -34,14 +34,12 @@ plotdriftpoles = false;
 plotdriftbode = false;
 saveon = true;
 
-md = 1;
-
-
 cntrl_type = 'const-sig';
-use_ff = true;
+
 
 % ------- Load Plants -----
 [plants, frf_dataX] = CanonPlants.plants_ns14(9, '5micron');
+Gxyz_frd = get_H();
 
 Ts  = plants.SYS.Ts;
 
@@ -89,9 +87,9 @@ end
 % Adjust the du_max to account for the gain of gdrift_inv.
 du_max_orig = StageParams.du_max;
 du_max = du_max_orig/norm(plants.gdrift_inv, Inf);
-
+%%
 xdir_cntrl = get_xdir_standard_control(cntrl_type);
-xdir_tf_cntrl = get_xdir_loop_shaped_control()
+xdir_tf_cntrl = get_xdir_loop_shaped_control();
 sys_obsDist = xdir_cntrl.sys_obsDist;
 K_lqr = xdir_cntrl.K_lqr;
 Nx = xdir_cntrl.Nx;
@@ -101,27 +99,6 @@ ydir_cntrl = get_ydir_standard_control();
 figure(1), step(ydir_cntrl.Hyr, ydir_cntrl.Hy_rprime)
 
 
-Dy = ydir_cntrl.D;
-Dx = xdir_tf_cntrl.D;
-Dx_ki = xdir_tf_cntrl.D_ki;
-Dy_ki = ydir_cntrl.D_ki;
-
-if 1
-  verbose = 0;
-  analyze_margins(plants, sys_obsDist, K_lqr, L_dist, verbose);
-end
-
-
-
-if use_ff
-    Dx_ff = xdir_cntrl.D_ff;
-    Dy_ff = ydir_cntrl.D_ff;
-else
-    Dx_ff = zpk([], [], 1, AFM.Ts);
-    Dy_ff = zpk([], [], 1, AFM.Ts);
-end
-Gxyz_frd = get_H();
-
 % Debug: (why is bw different between frd and model??) try replacing the xdir frf.
 Gvibx_ = frd(frf_dataX.G_uz2stage, frf_dataX.freqs_Hz, AFM.Ts, 'FrequencyUnit', 'Hz');
 Gvibx_ = frd(freqresp(Gvibx_, Gxyz_frd.Frequency*2*pi), Gxyz_frd.Frequency, AFM.Ts, 'FrequencyUnit', 'Hz');
@@ -130,13 +107,19 @@ gdi = blkdiag(plants.gdrift_inv, 1, 1);
 Gxyz_frd = Gxyz_frd*gdi;
 [DD, Dzki, Dz_inv] = get_gz_dz(Gxyz_frd(3,3));
 %%
-xdir_cntrl.D_ff = 1;
-xdir_tf_cntrl.D_ff = 1;
-ydir_cntrl.D_ff = 1;
+g_static = zpk([], [], 1, AFM.Ts);
+Dx_ff = xdir_tf_cntrl.M;
+Dx_ffss = xdir_cntrl.M;
+Dy_ff = ydir_cntrl.M;
+
+xdir_cntrl.M = g_static;
+xdir_tf_cntrl.M = g_static;
+ydir_cntrl.M = g_static;
 [HH1] = close_three_axis(Gxyz_frd, xdir_tf_cntrl, ydir_cntrl, Dzki, Dz_inv);
 
-xdir_tf_cntrl.D_ff = Dx_ff;
-ydir_cntrl.D_ff = Dy_ff;
+xdir_cntrl.M = Dx_ffss;
+xdir_tf_cntrl.M = Dx_ff;
+ydir_cntrl.M = Dy_ff;
 [HH2] = close_three_axis(Gxyz_frd, xdir_tf_cntrl, ydir_cntrl, Dzki, Dz_inv);
 
 
@@ -200,7 +183,7 @@ if 1
   
     % sims_fxpl.write_control_data(controlDataPath, yref, traj_path)
     control_path = fullfile(PATHS.step_exp, sprintf('LinControls-%s_5micron_xyff_DyDx.json', cntrl_type))
-    sims_fxpl.write_control_data_json(control_path);
+%     sims_fxpl.write_control_data_json(control_path);
 end
 
 

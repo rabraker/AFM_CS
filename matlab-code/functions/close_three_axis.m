@@ -1,4 +1,4 @@
-% [HH] = close_three_axis(Gxyz_frf, xdir_cntrl, Dy, Dzki, Dinv, Dx_ff, Dy_ff)  
+% [HH] = close_three_axis(Gxyz_frf, xdir_cntrl, Dy, Dzki, Dinv)  
 %
 % Construct the entire closed transfer function for all three afm axes.
 % 
@@ -11,8 +11,6 @@
 %               fine with a more general TF, but labview doesnt implement that yet.
 %   Dzki:      Z-direction PI controller
 %   Dinv:      Z-direction bending mode inversion
-%   Dx_ff:     X-direction feedforward
-%   Dy_ff:     Y-direction feedforward
 %
 %  The resulting compensator will have the form (all blocks are transfer
 %  matrices):
@@ -24,21 +22,30 @@
 % y =        G*D1
 %      --------------- * M * R
 %      I + D2*G*G1
-
+%
+%            R-prime
+%              ^  (Mss is sort of fictitious with state-space, and this is what
+%              |   we usually want from r-prime)
+%              |
+%    R-->[ M ]--> [M_ss ]--->O---->[Dki*D ]-->[ G ]----+---> y
+%                            |                      |
+%                            +-----[ Dss ]<---------+
 
 function [HH] = close_three_axis(Gxyz_frf, xdir_cntrl, ydir_cntrl, Dzki, Dinv)
   
-  Dssx = xdir_cntrl.D1_loop; % The feedback
-  Mx = xdir_cntrl.D2_ss_ff; % The feedforward
-  Dx_ff = xdir_cntrl.D_ff;
+  % State-space parts
+  Dssx = xdir_cntrl.Dss; % The feedback
+  Mssx = xdir_cntrl.Mss; % The feedforward
+  % TF parts
+  Dx_ff = xdir_cntrl.M;
   Dx = xdir_cntrl.D;       % The transfer-function feedback (if any)
-  Dki_x = xdir_cntrl.D_ki;
+  Dki_x = xdir_cntrl.Dki;
   
-  Dssy = ydir_cntrl.D1_loop; % The state-space feedback (if any)
-  My = ydir_cntrl.D2_ss_ff; % The state-space feedforward (if any)
-  Dy_ff = ydir_cntrl.D_ff; % the real feedforward. (if any)
+  Dssy = ydir_cntrl.Dss; % The state-space feedback (if any)
+  Mssy = ydir_cntrl.Mss; % The state-space feedforward (if any)
+  Dy_ff = ydir_cntrl.M; % the real feedforward. (if any)
   Dy = ydir_cntrl.D;       % The transfer-function feedback (if any)
-  Dki_y = ydir_cntrl.D_ki;
+  Dki_y = ydir_cntrl.Dki;
   %    R-->[ M ]--->O---->[ DD ]-->[ G ]--+---> y
   %                 |                     |
   %                 +-----[ Dss ]<---------+
@@ -52,8 +59,8 @@ function [HH] = close_three_axis(Gxyz_frf, xdir_cntrl, ydir_cntrl, Dzki, Dinv)
   % feedforward control, like Dx_ff.
   
   
-  M = [Mx*Dx_ff, 0, 0;
-      0,  My*Dy_ff, 0;
+  M = [Mssx*Dx_ff, 0, 0;
+      0,  Mssy*Dy_ff, 0;
       0, 0, 1];
   
   Dss = [Dssx, 0, 0;
