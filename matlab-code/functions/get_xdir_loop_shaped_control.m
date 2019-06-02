@@ -3,14 +3,14 @@ function xdirControl = get_xdir_loop_shaped_control(verbose)
     if nargin < 1
         verbose = true;
     end
-    %%
-    verbose = true;
+
     addpath(fullfile(getCsRoot(), 'matlab-code', 'functions'));
     
     % ------- Load Plants -----
     [plants, frf_data] = CanonPlants.plants_ns14(9, '5micron');
     
-    newest_xfrf_path = fullfile(PATHS.sysid, 'x-axis_sines_info_first_resFourierCoef_5-31-2019-03.json');
+    % It is important to id the mode with a very small (0.1 volt) amplitude.
+    newest_xfrf_path = fullfile(PATHS.sysid, 'x-axis_sines_info_first_resFourierCoef_6-1-2019-01.json');
     sysx_new = SweptSinesOnline(newest_xfrf_path);
     
     
