@@ -35,11 +35,14 @@ classdef MuPathTraj < handle
     sub_sample_perc;
     met_idx_pad = 10;
     is_connected=false;
+    Hyr;
+    xpre_offset;
+    ypre_offset;
   end
   
 
   methods
-    function self = MuPathTraj(pix_mask, width_mic, mu_len, x_rate, Ts, varargin)
+    function self = MuPathTraj(pix_mask, width_mic, mu_len, x_rate, Hyr, varargin)
     % self = MuPathTraj(pix_mask, width_mic, mu_len, x_rate, Ts, varargin)
     %
     % varargin:
@@ -71,14 +74,22 @@ classdef MuPathTraj < handle
       self.mu_pix_nom = ceil(mu_len * (self.npix/self.width_mic));
       self.mu_length_volts = self.mu_pix_nom * self.pix2volts;
       
-      self.Ts = Ts;
+      self.Hyr = Hyr;
+      self.Ts = Hyr.Ts;
       self.volts_per_sample = self.x_rate_mic_per_sec * AFM.mic2volt_xy * self.Ts;
       % self.build_xr_yr_volt_starts();
       self.build_mu_path_traj_s(ax)
       N_paths = length(self.XR_pix_starts);
       
       self.sub_sample_perc = 100 * sum(self.pix_mask(:)) / self.npix^2;
+      
+      if self.pre_pad_samples > 0
+         [xoffset, yoffset] = self.compute_prescan_offset();
+         self.xpre_offset = xoffset;
+         self.ypre_offset = yoffset
+      end
     end
+    
     function fname = get_fname(self)
       perc = floor(self.sub_sample_perc);
       prescan_str = sprintf('%dprescan', self.pre_pad_samples);
@@ -167,17 +178,15 @@ classdef MuPathTraj < handle
         xt = mptc_k.xt;
         yt = mptc_k.yt;
         met_idx = mptc_k.met_idx;
-        try
-          if self.is_connected
+
+        if self.is_connected
             met_idx_pad = self.met_idx_pad;
-          else
+        else
             met_idx_pad = 1;
-          end
-        assert(all(abs(met_idx) == k + met_idx_pad - 1)); % should only have k and -k.
-        catch
-          keyboard
         end
-        [xrp, yrp] = self.adjust_pre_pad(xt(1), yt(1), length(xt));
+        assert(all(abs(met_idx) == k + met_idx_pad - 1)); % should only have k and -k.
+
+        [xrp, yrp] = self.adjust_pre_pad(xt(1), yt(1));
         
         xr_pre = linspace(xrp, xt(1), self.pre_pad_samples);
         yr_pre = xr_pre*0 + yrp;
@@ -191,17 +200,7 @@ classdef MuPathTraj < handle
         
         met_idx(end) = -1;
         vec_k = [vec_k, [xt(:)'; yt(:)'; met_idx(:)']];  %#ok<AGROW>
-% debug the bizzar trajectories we are getting.
-%         figure(200)
-%         plot(vec_k(1, :))
-%         title('x')
-%         figure(201)
-%         plot(vec_k(2, :))
-%         title('y')
-%         keyboard        
-%                 
-%         keyboard        
-        
+
         vec = [vec; reshape(vec_k, [], 1)];              %#ok<AGROW>
       end
       
@@ -237,18 +236,21 @@ classdef MuPathTraj < handle
       self.N_paths = length(self.mu_path_traj_s);
     end
     
-    function [xr, yr, N] = adjust_pre_pad(self, xr_volts, yr_volts, N_)
+    
+    function [xpre, ypre] = compute_prescan_offset(self)
+        N = self.pre_pad_samples;
+
+        xref = (0:1:N-1)' * self.volts_per_sample;
+        t = (0:1:N-1)' * self.Ts;
+        y_x = lsim(self.Hyr, xref, t);
+        xpre = y_x(end);
+        ypre = 0;
+    end
+        
+    function [xr, yr] = adjust_pre_pad(self, xr_volts, yr_volts)
     % [xr, yr, N] = adjust_pre_pad(self, xr_volts, yr_volts, N_)
-    % 
-      N = self.pre_pad_samples; %+N_
-      
-      volts_per_sec = self.x_rate_mic_per_sec * AFM.mic2volt_xy();
-      
-      x_diff_ticks = N * volts_per_sec * self.Ts; % Ts is seconds per tick
-      
-      xr = xr_volts - x_diff_ticks;
-      yr = yr_volts;
-      
+      xr = xr_volts - self.xpre_offset;
+      yr = yr_volts - self.ypre_offset;
     end
 
     function build_mu_path_traj_s(self,ax)
