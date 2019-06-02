@@ -88,7 +88,7 @@ end
 du_max_orig = StageParams.du_max;
 du_max = du_max_orig/norm(plants.gdrift_inv, Inf);
 %%
-xdir_cntrl = get_xdir_standard_control(cntrl_type);
+% xdir_cntrl = get_xdir_standard_control(cntrl_type);
 %%
 xdir_tf_cntrl = get_xdir_loop_shaped_control();
 %%
@@ -127,7 +127,7 @@ ydir_cntrl.M = Dy_ff;
 bode_local(HH1, HH2, Gxyz_frd, Dx_ff, Dy_ff);
 
 %
-
+%%
 if 1
     % -------------------------------------------------------------------
     % -------------------- Setup Fixed Point stuff ----------------------
@@ -185,6 +185,14 @@ if 1
     % sims_fxpl.write_control_data(controlDataPath, yref, traj_path)
     control_path = fullfile(PATHS.step_exp, sprintf('LinControls-%s_5micron_xyff_DyDx.json', cntrl_type))
     sims_fxpl.write_control_data_json(control_path);
+    
+    %%
+    
+    control_path_mat = fullfile(PATHS.step_exp, sprintf('LinControls-%s_5micron_xyff_DyDx.mat', cntrl_type))
+
+    save(control_path_mat, 'xdir_tf_cntrl', 'xdir_cntrl', 'ydir_cntrl')
+    
+    
 end
 
 
