@@ -19,14 +19,10 @@ addpath('functions/state_space_x')
 
 %-------------- Location of System Model -------------------------
 
-plants = CanonPlants.plants_ns14(9);
-PLANT_init_x = plants.PLANT;
-
+% xdirControl = get_xdir_standard_control('const-sig');
+xdirControl = get_xdir_loop_shaped_control();
 %-------------- Define scan Params -------------------------
-
-TsTicks = 1600;
-Ki_x = 0.01;
-
+%%
 if 1
     width =5;  % microns
     npix = 512;  % image resolution.
@@ -75,12 +71,11 @@ imshow(I)
 N = mu_Nsamples;
 
 % N-1 because x0 is sample 1.
-xdirControl = get_xdir_standard_control('const-sig');
-x_N =  (N-1)*volts_per_sample;
-N_extra = mu_overscan(xdirControl.Hyr, volts_per_sample, mu_Nsamples, 1, N_prescan)+10
-
-mu_Nsamples_extra = N+N_extra
 %%
+
+N_extra = mu_overscan(xdirControl.Hyr, volts_per_sample, mu_Nsamples, N_prescan)+10
+
+
 % ----- Use this to generate the mica CS pattern -------------------
 % nr = 20
 % mu = [ones(1, 63), 0];
@@ -90,8 +85,9 @@ mu_Nsamples_extra = N+N_extra
 % pix_mask(1:nr, :) = pix_mask_;
 % figure(1);clf;imshow(pix_mask)  
 
-mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, AFM.Ts,...
+mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, xdirControl.Hyr,...
   'overscan_samples', N_extra, 'pre_pad_samples', N_prescan);
+
 if 0
   % Magic numbers for connection threshold radius.
   tcon_min = 0.04;
