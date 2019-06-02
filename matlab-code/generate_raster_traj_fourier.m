@@ -11,97 +11,75 @@ addpath(fullfile(getMatPath(), 'dependencies', 'jsonlab'))
 addpath('functions/state_space_x')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+xdirControl = get_xdir_loop_shaped_control(false);
+%%
 % Trace is one line at sec_line. The whole period is trace and re-trace.
-raster_freq = coerce_raster_freq(15) % Hz.
-image_side = 5; % micro-meters.
-npix = 128;
-xy_start_mic = [-image_side/2, -image_side/2]*0;
+lines = [512, 128, 64];
+freqs = [1, 2.5, 5, 8, 10, 15];
+for pp = 1:length(lines)
+%     npix = 128;
+    npix = lines(pp);
+    for k=1:length(freqs)
+        % raster_freq =
+        raster_freq = coerce_raster_freq(freqs(k)); % Hz.
+        image_side = 5; % micro-meters.
 
-
-
-Ts = AFM.Ts;
-% TsTicks = 1600;
-Ki_x = 0.01;
-
-raster_period = 1/raster_freq;
-raster_amplitude = image_side/2; 
-
-square_num_lines = npix;
-y_height = (1/square_num_lines)*image_side;
-
-
-[x_rasterdata, truefreq, points_per_line] = raster(raster_freq, Ts, 1, 'coerce', 1,...
-                            'shift', -raster_period/4);
-
-% we want to start at 0, not -1.
-x_rasterdata.Data = (x_rasterdata.Data+1)*raster_amplitude;
-% x_rasterdata.Data = (x_rasterdata.Data)*raster_amplitude;
-
-x_rasterdata.Data = x_rasterdata.Data + xy_start_mic(1);
-
-y_rasterdata = timeseries(linspace(0, y_height, length(x_rasterdata.Time))',...
-                x_rasterdata.Time);
-y_rasterdata.Data = y_rasterdata.Data + xy_start_mic(2);
-
-xdirControl = get_xdir_standard_control('const-sig');
-
-n_harmonics = 100;
-w_max = 170 * 2 * pi;
-[r_ff, r_des] = fourier_tri(x_rasterdata.Data, raster_freq*2*pi, n_harmonics, xdirControl.Hyr, w_max);
-
-[y, t] = lsim(xdirControl.Hyr, r_ff, x_rasterdata.Time);
-
-figure(1); clf; hold on
-h1 = plot(x_rasterdata.Time, x_rasterdata.Data);
-h2 = plot(t, y, '--b');
-
-h4 = plot(t, r_ff, '-g');
-h3 = plot(t, r_des, '--m');
-
-h1.DisplayName = 'triangle';
-h2.DisplayName = 'stage-output';
-h3.DisplayName = 'smoothed triangle';
-h4.DisplayName = 'smoothed tri + Ginv';
-
-legend([h1, h2, h3, h4])
-
-
-% We have to interleave the x & y data like
-% [x(1), y(1), x(2), y(2), ....]
-xy_data = zeros(2*length(x_rasterdata.Time), 1);
-
-j = 1;
-for k=1:2:length(xy_data)
-%     xy_data(k) = x_rasterdata.Data(j)*AFM.mic2volt_xy;
-    xy_data(k) = r_ff(j) * AFM.mic2volt_xy ;
-    xy_data(k+1) = y_rasterdata.Data(j) * AFM.mic2volt_xy;
-    j = j+1;
-end
-
-
-% scan_type: 0=raster, 1=CS
-% write it to a .json file
-
-data_name = sprintf('raster_scan_%dpix_%dmic_%.2dHz_fourier.csv',npix,image_side, raster_freq)
-% data_name = sprintf('raster_scan_%dpix_%dmic_%.2dHz_y0.csv',npix,image_side, raster_freq)
-%
-max(xy_data)
-%
-target_dir = sprintf('%dmicrons', image_side);
-data_root = PATHS.raster_image_data('5microns', 'parents');
-
-data_in_path = fullfile(data_root, data_name)
-meta_path = strrep(data_in_path, '.csv', '.json');
-% csvwrite(data_in_path, xy_data);
-opts.FileName = meta_path;
-
-dat= struct('raster_freq', raster_freq,...
+        rast = RasterTraj(image_side, raster_freq, npix);
+        
+        x_traj = rast.x_traj_volts;
+        y_traj = rast.y_traj_volts;
+        
+        n_harmonics = 100;
+        w_max = 170 * 2 * pi;
+        [r_ff, r_des] = fourier_tri(x_traj.Data, raster_freq*2*pi, n_harmonics, xdirControl.Hy_rprime, w_max);
+        
+        [y, t] = lsim(xdirControl.Hyr, r_ff, x_traj.Time);
+        
+        figure(1); clf; hold on
+        h1 = plot(x_traj.Time, x_traj.Data);
+        h2 = plot(t, y, '--b');
+        
+        h4 = plot(t, r_ff, '-g');
+        h3 = plot(t, r_des, '--m');
+        
+        h1.DisplayName = 'triangle';
+        h2.DisplayName = 'stage-output';
+        h3.DisplayName = 'smoothed triangle';
+        h4.DisplayName = 'smoothed tri + Ginv';
+        
+        legend([h1, h2, h3, h4])
+        
+        
+        % We have to interleave the x & y data like
+        % [x(1), y(1), x(2), y(2), ....]
+        xy_data = zeros(2*length(x_traj.Time), 1);
+        
+        j = 1;
+        for k=1:2:length(xy_data)
+            xy_data(k) = r_ff(j);
+            xy_data(k+1) = y_traj.Data(j);
+            j = j+1;
+        end
+        
+        % scan_type: 0=raster, 1=CS
+        % write it to a .json file
+        
+        data_name = sprintf('raster_scan_%dpix_%dmic_%.1fHz_fourier.json',...
+            npix, image_side, raster_freq)
+        
+        target_dir = sprintf('%dmicrons', image_side);
+        data_root = PATHS.raster_image_data('5microns', 'parents-loop');
+        
+        meta_path = fullfile(data_root, data_name)
+        
+        opts.FileName = meta_path;
+        
+        dat= struct('raster_freq', raster_freq,...
             'npix', npix,...
             'width', image_side,...
-            'points_per_line', int64(length(x_rasterdata.Time)/2),...
-            'points_per_period', int64(length(x_rasterdata.Time)),...
-            'total_num_points', int64(npix*length(x_rasterdata.Time)),...
+            'points_per_line', int64(rast.points_per_line),...
+            'points_per_period', int64(rast.points_per_line*2),...
+            'total_num_points', int64(npix*rast.points_per_line*2),...
             'number_of_scans', 1,...
             'scan_type', 0,...
             'mu_length', image_side*2*npix,...
@@ -111,10 +89,11 @@ dat= struct('raster_freq', raster_freq,...
             'actual_sub_samble_perc', 100,...
             'fpga_input', xy_data(:)',...
             'pix_idx', int64([0,0])...
-          );
-
-savejson('', dat,  opts);
-
+            );
+        
+        savejson('', dat,  opts);
+    end
+end
 function [freq_even, To_even] = coerce_raster_freq(freq_hz)
     
     To = 1/freq_hz;
