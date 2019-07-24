@@ -84,12 +84,12 @@ function self = load_raw_data(self, cs_paths, opts)
   self.met_ind(self.met_ind > 0) = -4;      
   self.idx_state_s = CsExp.divide_by_state(self.met_ind);
   
-  self.t = (0:length(self.x)-1)'*AFM.Ts;
   self.x = dat_meas(:, channel_map.x);
   self.x = self.x; %- min(self.x); % move to positive orthant.
   self.y = dat_meas(:, channel_map.y);
   self.y = self.y; %- min(self.y); % move to positive orthant.
   
+  self.t = (0:length(self.x)-1)'*AFM.Ts;
   self.ze = dat_meas(:, channel_map.ze);
   
   if have_friction
