@@ -1,4 +1,4 @@
-% Generate x-y input waveforms.
+%% Generate x-y input waveforms.
 %
 % Use 0.2 hz x-dir triangle wave.
 clear
@@ -14,17 +14,39 @@ addpath('functions/state_space_x')
 xdirControl = get_xdir_loop_shaped_control(false);
 %%
 % Trace is one line at sec_line. The whole period is trace and re-trace.
+image_side = 5; % micro-meters.
+target_dir = sprintf('%dmicrons', image_side);
+data_root = PATHS.raster_image_data('5microns', 'parents-loop');
+
+rast_mode = 1;
+if rast_mode == 1
+    rast_mode_name = '';
+    % data_root = PATHS.raster_image_data('5microns', 'parents-loop');
+        data_root = PATHS.raster_image_data('5microns', 'parents-loop-subL');
+elseif rast_mode == 2
+    rast_mode_name = '-subL';
+    data_root = PATHS.raster_image_data('5microns', 'parents-loop-subL');
+end
+
+
+
 lines = [512, 128, 64];
-freqs = [1, 2.5, 5, 8, 10, 15];
+freqs = [1, 2.5, 5, 8, 10];
+% lines = 128;
+% freqs = 1;
 for pp = 1:length(lines)
 %     npix = 128;
     npix = lines(pp);
     for k=1:length(freqs)
         % raster_freq =
         raster_freq = coerce_raster_freq(freqs(k)); % Hz.
-        image_side = 5; % micro-meters.
+        
 
-        rast = RasterTraj(image_side, raster_freq, npix);
+        if rast_mode == 1
+            rast = RasterTraj(image_side, raster_freq, npix);
+        elseif rast_mode == 2
+            rast = RasterTraj(image_side, raster_freq, npix, 'y_traj_gen', @subl_y_TG);
+        end
         
         x_traj = rast.x_traj_volts;
         y_traj = rast.y_traj_volts;
@@ -46,34 +68,25 @@ for pp = 1:length(lines)
         h2.DisplayName = 'stage-output';
         h3.DisplayName = 'smoothed triangle';
         h4.DisplayName = 'smoothed tri + Ginv';
-        
         legend([h1, h2, h3, h4])
-        
         
         % We have to interleave the x & y data like
         % [x(1), y(1), x(2), y(2), ....]
-        xy_data = zeros(2*length(x_traj.Time), 1);
-        
-        j = 1;
-        for k=1:2:length(xy_data)
-            xy_data(k) = r_ff(j);
-            xy_data(k+1) = y_traj.Data(j);
-            j = j+1;
-        end
-        
+        % So, reshape
+        % x = [1, 2, 3, 4, 5;
+        %      6, 7, 8, 9, 10];
+        xy_data = [x_traj.Data(:)';
+                   y_traj.Data(:)'];
+        xy_data = reshape(xy_data, [], 1);
+
         % scan_type: 0=raster, 1=CS
         % write it to a .json file
         
-        data_name = sprintf('raster_scan_%dpix_%dmic_%.1fHz_fourier.json',...
-            npix, image_side, raster_freq)
-        
-        target_dir = sprintf('%dmicrons', image_side);
-        data_root = PATHS.raster_image_data('5microns', 'parents-loop');
-        
+        data_name = sprintf('raster_scan_%dpix_%dmic_%.1fHz_fourier%s.json',...
+            npix, image_side, raster_freq, rast_mode_name)
         meta_path = fullfile(data_root, data_name)
         
-        opts.FileName = meta_path;
-        
+                
         dat= struct('raster_freq', raster_freq,...
             'npix', npix,...
             'width', image_side,...
@@ -91,9 +104,33 @@ for pp = 1:length(lines)
             'pix_idx', int64([0,0])...
             );
         
-        savejson('', dat,  opts);
+        save_local(dat, meta_path);
     end
 end
+
+function save_local(data, fpath)
+    dest_dir = fileparts(fpath);
+    if ~exist(dest_dir, 'file')
+        mkdir(dest_dir)
+    end
+    opts.FileName = fpath;
+    savejson('', data,  opts);
+end
+
+function y_traj = subl_y_TG(y_height, N)
+   if mod(N, 2) ~= 0
+       error('Number of samples must be divisible by 2')
+   end
+   t = (0:N-1)'*AFM.Ts;
+   n_by_2 = N/2;
+   y_flat = zeros(n_by_2, 1);
+   y_up = linspace(0, y_height, n_by_2)';
+   y = [y_flat; y_up];
+   y_traj = timeseries(y, t);
+end
+
+
+
 function [freq_even, To_even] = coerce_raster_freq(freq_hz)
     
     To = 1/freq_hz;

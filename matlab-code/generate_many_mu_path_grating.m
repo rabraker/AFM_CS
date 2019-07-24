@@ -26,14 +26,15 @@ xdirControl = get_xdir_loop_shaped_control();
 
 npix = 512;  % image resolution.
 N_prescan = 150;
-width =5;  % microns
+width = 5;  % microns
 mu_length = 0.5;  % 1000 nm. length of the horizontal mu-path.
 % Unit conversions.
 pix_per_micron = npix/width;
 mu_pix = ceil(mu_length*pix_per_micron);
 
-perc_s = [0.125, 0.15, 0.25];
-freqs = [1, 2, 4, 5, 8];
+%perc_s = [0.125, 0.15, 0.25];
+% freqs = [1, 2, 4, 5, 8];
+freqs = [2.5];
 for pp = 1:length(perc_s)
     % ************************************************
     rng(1)
@@ -55,7 +56,6 @@ for pp = 1:length(perc_s)
         raster_period = 1/raster_freq;
 
         % ************************************************
-
         microns_per_second = width/(raster_period/2);
         volts_per_second = microns_per_second*AFM.mic2volt_xy();
         volts_per_sample = volts_per_second * AFM.Ts;  % Ts = seconds per sample
@@ -67,7 +67,7 @@ for pp = 1:length(perc_s)
 
         % '------------------correct by overscan for ramp ramp set ---------------
         
-        N_extra = mu_overscan(xdirControl.Hyr, volts_per_sample, mu_Nsamples, N_prescan)+10
+        N_extra = mu_overscan(xdirControl.Hyr, volts_per_sample, mu_Nsamples, N_prescan)+10;
         
         
         mpt = MuPathTraj(pix_mask, width, mu_length, microns_per_second, xdirControl.Hyr,...
@@ -84,6 +84,8 @@ for pp = 1:length(perc_s)
         fprintf('File name:\n%s\n', fname)
         
         mpt.write_data_json(fpath_json)
-        
+        refs = reshape(mpt.as_vector(), 3, []);
+        figure(3)
+        plot(refs(1, 1:1200)*512)
     end
 end
