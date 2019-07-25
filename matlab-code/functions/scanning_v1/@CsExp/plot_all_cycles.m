@@ -93,9 +93,7 @@ function [hands, legs] = plot_all_cycles(self, ax1, ax2, ax3, ax4, bounds, xy_sc
   % figs = {Fig_uz, Fig_ze, Fig_x, Fig_y};
   % axs = {ax1, ax2, ax3, ax4};        
 
-  indc = {   'k',        'r',   [0, .75, .75],       'b',        [.93 .69 .13], 'm';
-          'xy-move', 'tip down', 'tip settle',  '$\mu$-path scan', 'tip up', 'connect'};
-
+  indc = CsCycleColors();
 
   state_seq = {'move', 'tdown', 'tsettle', 'scan', 'tup', 'connect'};
 
