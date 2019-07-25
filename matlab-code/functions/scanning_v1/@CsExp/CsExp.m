@@ -189,13 +189,45 @@ classdef CsExp < handle
 
       data = load(data_path_mat, to_load_list{:});
 
-      for prop = to_load_list'
-        prop = prop{1};
-        self.(prop) = data.(prop);
+      for prop_ = to_load_list'
+        prop = prop_{1};
+        try
+            self.(prop) = data.(prop);
+        catch ME
+            if strcmp(ME.identifier, 'MATLAB:nonExistentField')
+               warning('Field %s  not found\n', prop)
+            else
+                rethrow(ME)
+            end
+        end
+            
       end
 
     end
 
+    function hands = plot_traj_in_time_interval(self, t0, t1,...
+            traj_name, ax, t_offset)
+        indc = CsCycleColors();
+%         cycle_idx_s = self.get_idx_by_state_in_time_range(state_name, t0, t1);
+        
+        state_seq = {'move', 'tdown', 'tsettle', 'scan', 'tup'};
+        idx0 = self.find_cycle_idx(t0);
+        idx1 = self.find_cycle_idx(t1);
+        hands = gobjects(length(state_seq), 1);
+        for k=1:length(state_seq)
+            idx_cell = self.idx_state_s.(state_seq{k});
+            idx_cell = idx_cell(idx0:idx1);
+            
+              
+            for j=1:length(idx_cell)
+                t_ = idx_cell{j}*AFM.Ts - t_offset;
+                y_ = self.(traj_name)(idx_cell{j});
+                hands(k) = plot(ax, t_, y_, 'color', indc{1, k});
+            end
+            hands(k).DisplayName = indc{2, k};
+        end
+    end
+    
     function h = plot_traj_in_time_interval_by_state(self, t0, t1, state_name,...
         traj_name, ax, t_offset, varargin)
       
