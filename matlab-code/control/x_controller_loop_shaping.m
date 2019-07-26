@@ -139,8 +139,7 @@ plot(u.Time, y, '--')
 
 figure(6); %clf;
 [ha, pos] = tight_subplot(3, 3, .01, [.045, 0.03], [.065, .02]);
-
-ha = reshape(ha', 3, [])';
+% ha = reshape(ha', 3, [])';
 %%
 [Dz, Dz_ki, Dz_inv] = get_gz_dz(Gxyz_frd(3,3));
 % Dz = Dz
