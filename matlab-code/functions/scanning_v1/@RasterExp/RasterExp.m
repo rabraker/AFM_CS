@@ -11,13 +11,10 @@ classdef RasterExp <matlab.mixin.Copyable
 %     meta_data;
     Ts;
     met_ind;
-    npix_x;
-    npix_y;
+    npix;
     width;
-    volts2pix_y;
-    volts2pix_x;
-    micron2pix_y;
-    micron2pix_x;
+    volts2pix;
+    micron2pix;
 
     samps_per_period;
     samps_per_line;
@@ -27,7 +24,6 @@ classdef RasterExp <matlab.mixin.Copyable
     time_total;
     uz;
     ze;
-    z_friction;
     x;
     y;
     pix_mat;
@@ -43,7 +39,7 @@ classdef RasterExp <matlab.mixin.Copyable
     
     % [datmat, samps_period, samps_line] 
       self.raster_paths = raster_paths;
-      default_chan_map = ChannelMap([1:6]);
+      default_chan_map = ChannelMap([1:5]);
       optP = inputParser();
       optP.addParameter('reload_raw', false, @(s)islogical(s));
       optP.addParameter('channel_map', default_chan_map);
@@ -69,7 +65,7 @@ classdef RasterExp <matlab.mixin.Copyable
     
     % Methods defined in other files
     self = load_raw_data(self, raster_paths, npix, width, opts)
-    [ self] = bin_raster_really_slow(self, line_detrender, use_error, npix_x)
+    [ self] = bin_raster_really_slow(self, line_detrender, use_error)
     trace_inds = get_trace_indeces(self)
     
     function meta_data(self)
@@ -102,21 +98,7 @@ classdef RasterExp <matlab.mixin.Copyable
       quality = sum(abs(err).^2)/length(err)/self.Ts;
     end
     
-    function offset = find_lag(self)
-    % Use cross correlation between the reference and the second period to find
-    % the number of samples of offset between the two waveforms.
-        xr = self.xref/AFM.volts2mic_xy;
-        
-        % take the second period, after we have steady state.
-        idx_start = self.samps_per_period;
-        idx_end = idx_start+self.samps_per_period;
-        x_test = self.x(idx_start+1:idx_end);
-        
-        [xc, lags] = xcorr(xr, x_test);
-        [~, idx] = max(abs(xc));
-        
-        offset = -lags(idx);
-    end
+    
     function save(self, force_save)
     % Serialize to a .mat file to the location contained
     % in raster_paths.data_path_mat.

@@ -65,19 +65,10 @@ function self = load_raw_data(self, raster_paths, opts)
   
   fprintf('Loading Data file...\n%s\n', raster_paths.data_path)
   datmat = csvread(raster_paths.data_path);
-  if size(datmat, 2) > 5
-      have_friction = true;
-  else
-      have_friction = false;
-  end
-  
   
   npix = meta_data.scan_meta.npix;
   width = meta_data.scan_meta.width;
-  % The experiment doesnt care about npix_x. Until we are told otherwise, assume
-  % we have as many x and y pixels.
-  self.npix_y = npix;
-  self.npix_x = npix;
+  self.npix = npix;
   self.width = width;
   
   
@@ -93,14 +84,10 @@ function self = load_raw_data(self, raster_paths, opts)
   end
   
   % Compute unit conversions
-  micron2pix_x = self.npix_x/width;
-  micron2pix_y = self.npix_y/width;
-  volts2pix_x = AFM.volts2mic_xy  * micron2pix_x;
-  volts2pix_y = AFM.volts2mic_xy  * micron2pix_y;
-  self.volts2pix_x = volts2pix_x;
-  self.volts2pix_y = volts2pix_y;
-  self.micron2pix_x = micron2pix_x;
-  self.micron2pix_x = micron2pix_y;
+  micron2pix = npix/width;
+  volts2pix = AFM.volts2mic_xy  * micron2pix;
+  self.volts2pix = volts2pix;
+  self.micron2pix = micron2pix;
   
   self.samps_per_period = self.meta_in.points_per_period;
   self.samps_per_line = self.samps_per_period/2;
@@ -138,8 +125,5 @@ function self = load_raw_data(self, raster_paths, opts)
   self.ze = datmat(slice, channel_map.ze);
   self.uz = datmat(slice, channel_map.uz);
   self.met_ind = datmat(slice, channel_map.met);
-  if have_friction
-      self.z_friction = datmat(slice, channel_map.friction);
-  end
   
 end
