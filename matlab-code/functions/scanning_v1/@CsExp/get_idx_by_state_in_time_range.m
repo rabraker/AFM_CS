@@ -26,23 +26,42 @@
 % N_min    :  Integer. The length of the smallest index set.
 %
 % See Also : psd_from_intervals
-function [idx_cell, N_min]= get_idx_by_state_in_time_range(self, state_name, t_start, t_end)
+function [idx_cell, N_min]= get_idx_by_state_in_time_range(self, state_name, tstart, tend)
 
-  CS_idx1 = self.find_cycle_idx(t_start);
-  CS_idx2 = self.find_cycle_idx(t_end);
-  
-  N_min = Inf;
-  idx_cell = {};
-  j = 1;
-  for k = CS_idx1:CS_idx2
-    state_idx = self.idx_state_s.(state_name){k};
-    % uz_scan = self.uz(state_idx);
-    % uz_scan = self.ze(state_idx);
-    % uz_scan = uz_scan - mean(uz_scan);
-    N_min = min(N_min, length(state_idx));
+    N_min = Inf;
+    idx_cell = {};
+
+    state_idx_cell = self.idx_state_s.(state_name);
+%     idx_scans = {};
+    for k=1:length(state_idx_cell)
+        t_kk = self.t(state_idx_cell{k});
+        state_idx = self.idx_state_s.(state_name){k};
+        if tstart < t_kk(1) && tend > t_kk(end)
+            idx_cell{end+1} = state_idx;
+            N_min = min(N_min, length(state_idx));
+        end
+        if all(self.t(state_idx_cell{k}) > tend)
+            break;
+        end
+    end
     
-    idx_cell{j} = state_idx;
-    j = j+1;
-  end
+
+% This code is broken for the case when we mu-path connections.    
+%   CS_idx1 = self.find_cycle_idx(t_start);
+%   CS_idx2 = self.find_cycle_idx(t_end);
+%   
+%   N_min = Inf;
+%   idx_cell = {};
+%   j = 1;
+%   for k = CS_idx1:CS_idx2
+%     state_idx = self.idx_state_s.(state_name){k};
+%     % uz_scan = self.uz(state_idx);
+%     % uz_scan = self.ze(state_idx);
+%     % uz_scan = uz_scan - mean(uz_scan);
+%     N_min = min(N_min, length(state_idx));
+%     
+%     idx_cell{j} = state_idx;
+%     j = j+1;
+%   end
 
 end

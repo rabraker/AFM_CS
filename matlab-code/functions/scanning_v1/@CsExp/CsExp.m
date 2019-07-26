@@ -211,14 +211,15 @@ classdef CsExp < handle
 %         cycle_idx_s = self.get_idx_by_state_in_time_range(state_name, t0, t1);
         
         state_seq = {'move', 'tdown', 'tsettle', 'scan', 'tup'};
-        idx0 = self.find_cycle_idx(t0);
-        idx1 = self.find_cycle_idx(t1);
+        %idx0 = self.find_cycle_idx(t0);
+        %idx1 = self.find_cycle_idx(t1);
         hands = gobjects(length(state_seq), 1);
         for k=1:length(state_seq)
-            idx_cell = self.idx_state_s.(state_seq{k});
-            idx_cell = idx_cell(idx0:idx1);
-            
-              
+            %idx_cell = self.idx_state_s.(state_seq{k});
+            %idx_cell = idx_cell(idx0:idx1);
+            state = state_seq{k};
+            idx_cell = self.get_idx_by_state_in_time_range(state, t0, t1);
+
             for j=1:length(idx_cell)
                 t_ = idx_cell{j}*AFM.Ts - t_offset;
                 y_ = self.(traj_name)(idx_cell{j});
