@@ -23,7 +23,7 @@ function hands = mimo_bode_mag(HH, freq_s, ha, varargin)
             if nu >1
                 set(ha(ny,nu), 'YLabel', [], 'YTickLabel', []);
             else
-                ylabel(ha(ny,nu), sprintf('Output %s (Mag [dB] )', coords{ny}));
+                ylabel(ha(ny,nu), sprintf('Output %s (Mag [dB])', coords{ny}));
             end
             if ny ==1
                 title(ha(ny,nu), sprintf('Input %s', coords{nu}));

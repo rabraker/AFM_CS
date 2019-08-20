@@ -84,7 +84,7 @@ function self = load_raw_data(self, cs_paths, opts)
   self.met_ind(self.met_ind > 0) = -4;      
   self.idx_state_s = CsExp.divide_by_state(self.met_ind);
   
-  
+
   self.x = dat_meas(:, channel_map.x);
   self.x = self.x; %- min(self.x); % move to positive orthant.
   self.y = dat_meas(:, channel_map.y);
@@ -107,10 +107,14 @@ function self = load_raw_data(self, cs_paths, opts)
     self.uz = dat_meas(:, channel_map.uz);
   end
   
-  self.Img_raw = zeros(self.npix, self.npix);
-  self.Img_smp1d = zeros(self.npix, self.npix);
-  self.Img_bp = zeros(self.npix, self.npix);
-  self.pix_mask = zeros(self.npix, self.npix);
+  self.pix_mat_raw_uz = zeros(self.npix, self.npix);
+  self.pix_mat_uz = zeros(self.npix, self.npix);
+  self.pix_mask_uz = zeros(self.npix, self.npix);
+
+  self.pix_mat_raw_ze = zeros(self.npix, self.npix);
+  self.pix_mat_ze = zeros(self.npix, self.npix);
+  self.pix_mask_ze = zeros(self.npix, self.npix);
+
   self.Gz = zpk([], [], 1, self.Ts);
   
   state_ticks = self.meta_exp.state_counts;

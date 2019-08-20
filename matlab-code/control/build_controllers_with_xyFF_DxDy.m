@@ -8,11 +8,9 @@ clear all
 % Options
 figbase  = 50;
 verbose = 0;
-controlParamName = 'LinControls01.csv';
-% Build data paths
-
-addpath(fullfile(getCsRoot(), 'matlab-code', 'functions'));
-addpath(fullfile(getCsRoot(), 'matlab-code', 'functions', 'state_space_x'));
+rmpath('/home/arnold/matlab/afm-cs/matlab-code/functions/')
+addpath('functions');
+addpath(fullfile('functions', 'state_space_x'));
 
 
 % ---- Paths for shuffling data to labview and back. ------
@@ -87,15 +85,11 @@ end
 % Adjust the du_max to account for the gain of gdrift_inv.
 du_max_orig = StageParams.du_max;
 du_max = du_max_orig/norm(plants.gdrift_inv, Inf);
-%%
-% xdir_cntrl = get_xdir_standard_control(cntrl_type);
-%%
+
+
+
 xdir_tf_cntrl = get_xdir_loop_shaped_control();
-%%
-sys_obsDist = xdir_cntrl.sys_obsDist;
-K_lqr = xdir_cntrl.K_lqr;
-Nx = xdir_cntrl.Nx;
-L_dist = xdir_cntrl.L_dist;
+%
 
 ydir_cntrl = get_ydir_standard_control();
 
@@ -107,28 +101,33 @@ Gxyz_frd(1,1) = Gvibx_(1,1);
 gdi = blkdiag(plants.gdrift_inv, 1, 1);
 Gxyz_frd = Gxyz_frd*gdi;
 [DD, Dzki, Dz_inv] = get_gz_dz(Gxyz_frd(3,3));
-%%
+%
 g_static = zpk([], [], 1, AFM.Ts);
 Dx_ff = xdir_tf_cntrl.M;
-Dx_ffss = xdir_cntrl.M;
 Dy_ff = ydir_cntrl.M;
 
-% xdir_cntrl.M = g_static;
-% xdir_tf_cntrl.M = g_static;
-% ydir_cntrl.M = g_static;
-% [HH1] = close_three_axis(Gxyz_frd, xdir_tf_cntrl, ydir_cntrl, Dzki, Dz_inv);
+xdir_tf_cntrl.M = g_static;
+ydir_cntrl.M = g_static;
+[HH1] = close_three_axis(Gxyz_frd, xdir_tf_cntrl, ydir_cntrl, Dzki, Dz_inv);
 
-xdir_cntrl.M = Dx_ffss;
 xdir_tf_cntrl.M = Dx_ff;
 ydir_cntrl.M = Dy_ff;
 [HH2] = close_three_axis(Gxyz_frd, xdir_tf_cntrl, ydir_cntrl, Dzki, Dz_inv);
 
-
-bode_local(HH1, HH2, Gxyz_frd, Dx_ff, Dy_ff);
-
-%
 %%
-if 1
+F = bode_local(HH1, HH2, Gxyz_frd, Dx_ff, Dy_ff);
+
+save_fig(F, 'latex/figures/MIMO_CL_uxuy', false)
+%
+return
+%%
+if 0
+    % xdir_cntrl = get_xdir_standard_control(cntrl_type);
+    sys_obsDist = xdir_cntrl.sys_obsDist;
+    K_lqr = xdir_cntrl.K_lqr;
+    Nx = xdir_cntrl.Nx;
+    L_dist = xdir_cntrl.L_dist;
+
     % -------------------------------------------------------------------
     % -------------------- Setup Fixed Point stuff ----------------------
     % For now, keep populating the state space stuff, until we are make it work
@@ -196,21 +195,21 @@ if 1
 end
 
 
-function bode_local(HH1, HH2, Gxyz_frd, Dx_ff, Dy_ff)
-    F11 = mkfig(11, 7, 5, true); clf
+function F11 = bode_local(HH1, HH2, Gxyz_frd, Dx_ff, Dy_ff)
+    F11 = mkfig(11, 7, 5.45, true); clf
     % [ha, pos] = tight_subplot(3, 3, .01, [.061, 0.03], [.065, .02]);
     [ha] = tight_subplot(3, 2, .01, [.061, 0.03], [.065, .02]);
     ha = reshape(ha', [], 3)';
     freq_s = logspace(log10(1), log10(12500), 350)';
+
+    h4 = frf_bode_mag(Dx_ff, freq_s, ha(1,1), 'Hz', '--m');
+    h5 = frf_bode_mag(Dy_ff, freq_s, ha(2,2), 'Hz', '--m');
     
     h1 = mimo_bode_mag(HH1(:,1:2), freq_s, ha, '-r');
-    
     h2 = mimo_bode_mag(HH2(:, 1:2), freq_s, ha, '-b');
     h3 = mimo_bode_mag(Gxyz_frd(:, 1:2), freq_s, ha, '-k');
     
-    h4 = frf_bode_mag(Dx_ff, freq_s, ha(1,1), 'Hz', '--m');
-    h5 = frf_bode_mag(Dy_ff, freq_s, ha(2,2), 'Hz', '--m');
-    ylabel(ha(2,2), '')
+%     ylabel(ha(2,2), '')
     
     
     fprintf('Bandwidth HH1: %f\n', bandwidth(HH1(1,1))/2/pi)
@@ -219,12 +218,10 @@ function bode_local(HH1, HH2, Gxyz_frd, Dx_ff, Dy_ff)
     h1(1,1).DisplayName = 'C.L w/o F.F';
     h2(1,1).DisplayName = 'C.L w/ F.F';
     h3(1,1).DisplayName = 'O.L. Plant';
-    try
-    h4.DisplayName = '$D_{x,ff}$';
-    catch
-        keyboard
-    end
-    h5.DisplayName = '$D_{y,ff}$';
+
+    h4.DisplayName = '$F_X$';
+
+    h5.DisplayName = '$F_Y$';
     
     leg = legend([h1(1,1), h2(1,1), h3(1,1), h4], 'FontSize', 10);
     legy = legend(h5, 'FontSize', 12);
