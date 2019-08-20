@@ -6,9 +6,24 @@ Git is availible via mingw(64bit). mingw (minimal gnu for windows) provides a bu
 
 The software parts (of ~afm-cs~) described in this document assume you are on the ~tmech~ git  branch.
 
+If you are going to do development on this repo, you will want to clone the repo from github or change the remote to something you control.
+It is also recommonded to start a new branch.
+
+Labview vis can be compared with
+#+BEGIN_SRC
+git difftool -t labview path/to/vi-to-compare.vi
+#+END_SRC
+
+This invokes the labview diff tool from git. This is a wrapper script located at (mingw path) ~/home/arnold/local/bin/LVCompareWrapper.sh~
+
+The labview tool doesn't work very (there is tons of stuff it won't/can't show you), which makes using labview under version control a huge pain. The standard branch/merge workflow is basically broken with labview. Don't say nobody warned you...
+
+There is another wrapper script located at (mingw path) ~/home/arnold/local/bin/LVMergeWrapper.sh~. I think it needs some TLC to work properly. The main challenge is converting the paths that git provides into paths that the labview tool will accept.
+
 ** Editing this file
-The HTML version of this file is generated from afm-notes.org. A .org file is plaintext with markup, and is best edited with emacs. 
+The HTML version of this file is generated from ~afm-operation-notes/afm-notes.org~. A ~.org~ file is plaintext with markup, and is best edited with emacs. 
 To open emacs, open mingw (64 bit version) and enter ~emacs &~ at the command prompt.
+
 ** Compiling c libraries.
 If you ever need to re-compile the labview dlls I've written, it is crucial that you use the 32bit version of msys64, because (as of 2019), labview is a 32bit application. You also need the windows path to include various bits from the mingw. This was properly configured when I left things.
 
