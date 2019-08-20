@@ -1,0 +1,995 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2019-08-20 Tue 15:38 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Notes on using the AFM</title>
+<meta name="generator" content="Org mode" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2019 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<script type="text/javascript" src="/home/arnold/rabraker.com/theme/static/MathJax/MathJax.js?config=TeX-AMS-MML_SVG-full"></script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Notes on using the AFM</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgcf7a51e">1. Preliminaries</a>
+<ul>
+<li><a href="#org7bc3a73">1.1. Git</a></li>
+<li><a href="#org01288e8">1.2. Editing this file</a></li>
+<li><a href="#org18738bc">1.3. Compiling c libraries.</a></li>
+<li><a href="#orgca5718e">1.4. Computer password</a></li>
+</ul>
+</li>
+<li><a href="#orgee15be4">2. Power on  </a></li>
+<li><a href="#orgcb61bb1">3. Shutdown </a></li>
+<li><a href="#org3222547">4. Agilent equipment</a></li>
+<li><a href="#org0318499">5. Cabling</a>
+<ul>
+<li><a href="#org3973975">5.1. Agilent only Cabling</a></li>
+<li><a href="#orgf25a327">5.2. Agilent to CRIO Cabling</a></li>
+<li><a href="#org6140cf4">5.3. Piezo stage cabling</a></li>
+<li><a href="#org878e615">5.4. CRIO</a></li>
+<li><a href="#orga8eda83">5.5. Desktop Connections</a></li>
+</ul>
+</li>
+<li><a href="#org7d229c1">6. Software</a></li>
+<li><a href="#org37d5aeb">7. Installing the cantilever </a>
+<ul>
+<li><a href="#org64dbf89">7.1. Aligning the laser and Cantilever</a></li>
+</ul>
+</li>
+<li><a href="#org20e9f75">8. Cleaning the sample</a>
+<ul>
+<li><a href="#orgabd8c5e">8.1. Gratings </a></li>
+<li><a href="#org56cc80e">8.2. Mica</a></li>
+</ul>
+</li>
+<li><a href="#org31a03f2">9. Preparing Mica </a></li>
+<li><a href="#org372ed30">10. Your first image</a>
+<ul>
+<li><a href="#org059af3e">10.1. Software</a></li>
+<li><a href="#orgf42c3a1">10.2. Measure the Z-axis FRF</a></li>
+<li><a href="#org363e6ae">10.3. Scanning concepts</a></li>
+<li><a href="#org8290579">10.4. Raster Scanning</a>
+<ul>
+<li><a href="#orga268311">10.4.1. Finding the imaging area</a></li>
+</ul>
+</li>
+<li><a href="#org4f42551">10.5. CS Scanning</a></li>
+<li><a href="#org882cd99">10.6. Post-processing.</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-orgcf7a51e" class="outline-2">
+<h2 id="orgcf7a51e"><span class="section-number-2">1</span> Preliminaries</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org7bc3a73" class="outline-3">
+<h3 id="org7bc3a73"><span class="section-number-3">1.1</span> Git</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Git is availible via mingw(64bit). mingw (minimal gnu for windows) provides a bunch of linux utilities, including gcc, git and a ton of other useful stuff.
+</p>
+</div>
+</div>
+<div id="outline-container-org01288e8" class="outline-3">
+<h3 id="org01288e8"><span class="section-number-3">1.2</span> Editing this file</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+The HTML version of this file is generated from afm-notes.org. A .org file is plaintext with markup, and is best edited with emacs. 
+To open emacs, open mingw (64 bit version) and enter <code>emacs &amp;</code> at the command prompt.
+</p>
+</div>
+</div>
+<div id="outline-container-org18738bc" class="outline-3">
+<h3 id="org18738bc"><span class="section-number-3">1.3</span> Compiling c libraries.</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+If you ever need to re-compile the labview dlls I've written, it is crucial that you use the 32bit version of msys64, because (as of 2019), labview is a 32bit application. You also need the windows path to include various bits from the mingw. This was properly configured when I left things.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgca5718e" class="outline-3">
+<h3 id="orgca5718e"><span class="section-number-3">1.4</span> Computer password</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+With a touch of irony, the username and password of the desktop are:
+</p>
+
+<p>
+username: arnold
+password: franklin
+</p>
+
+<p>
+The labview site license number is M21X98212
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgee15be4" class="outline-2">
+<h2 id="orgee15be4"><span class="section-number-2">2</span> Power on  <a id="org5512cdb"></a></h2>
+<div class="outline-text-2" id="text-2">
+<p>
+To power on the equipment, I follow these steps:
+</p>
+<ol class="org-ol">
+<li>The CRIO is generally always powered on. These steps assume that is the case.</li>
+<li>Power on the control box. The switch is on the back side.</li>
+<li>Power on the C300, including the external fan (if it is still unplugged from the C300 circuit board). The switch is on the back side.</li>
+<li>Start the Agilent PicoView software. This must be done <b>after</b> step 1.</li>
+<li>Engage tip with the sample. Or fully retract the AFM head if you need to change the cantilever.</li>
+</ol>
+
+<p>
+You can operate the stepper motor (which controls the course tip-sample separation) in the AFM in two ways.
+</p>
+<ol class="org-ol">
+<li>Through the PicoView software. This is useful for small adjustments.</li>
+<li><p>
+Through the laser box. This is the "open" switch in Fig.~<a href="#org52495ed">1</a>. Push the switch up to retract the scanner, and down to move the scaner down. Intuitive, right? I generally use my toe for this, like a sewing machine. Keep in mind, when using the switch to move the scanner down, that <b>there are zero safety measures to keep you from crashing the cantilever into the sample</b>. This will result in <b>catastrophic damage</b> to the sample, and possibly the scanner.
+</p>
+
+<p>
+In order to use the OPEN switch, the control box must be turned on, and the <b>PicoView software must be started.</b>
+</p></li>
+</ol>
+
+
+<div id="org52495ed" class="figure">
+<p><img src="laser-box.jpeg" alt="laser-box.jpeg" width="400px" />
+</p>
+<p><span class="figure-number">Figure 1: </span>The laser box.</p>
+</div>
+
+<p>
+The order of power-on is not critical, except for a couple facts:
+</p>
+<ol class="org-ol">
+<li>When the c300 is power on, this will cause the piezo stage to move about 40 microns. You do <b>not</b> want the tip engaged with the sample when this happens. Therefore, ensure the XY-stage is powered on <b>before</b> you do the fine engagement.</li>
+<li>You must start PicoView <b>after</b> the control box is turned on. If you start it first, PicoView won't connect properly to the control box (or at least, I never figured out how to make that happen).</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-orgcb61bb1" class="outline-2">
+<h2 id="orgcb61bb1"><span class="section-number-2">3</span> Shutdown <a id="org15afec6"></a></h2>
+<div class="outline-text-2" id="text-3">
+<ol class="org-ol">
+<li>Retract the tip away from the surface, using either the OPEN switch on the laser box, or the open button in PicoView. Doesn't need to be very far, a few clicks will do it.</li>
+<li>Exit PicoView</li>
+<li>Turn off the control box</li>
+<li>Turn off the C300.</li>
+</ol>
+
+<p>
+Again, there is room for innovation here. The crucial thing is to retract the tip far far way, before the C300 is powered off.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3222547" class="outline-2">
+<h2 id="org3222547"><span class="section-number-2">4</span> Agilent equipment</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+There are four major pieces
+</p>
+<ol class="org-ol">
+<li>The control box. This is the giant thing that looks like a tower computer</li>
+<li>The laser box. This is a small cubish box with two led readouts on the front</li>
+<li>The breakout box. This is the rectangular box with a bunch of BNC connectors on the top.</li>
+<li>The actual AFM.</li>
+</ol>
+</div>
+</div>
+
+
+
+<div id="outline-container-org0318499" class="outline-2">
+<h2 id="org0318499"><span class="section-number-2">5</span> Cabling</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+An overview of how all the system components are hooked up is shown in Fig. <a href="#org1afa0ff">2</a>. More details on each hook-up are in the following subsections.
+</p>
+
+
+<div id="org1afa0ff" class="figure">
+<p><img src="cabling.svg" class="org-svg" alt="Sorry, your browser does not support SVG."  \>
+</p>
+<p><span class="figure-number">Figure 2: </span>The cabling connections between all the components.</p>
+</div>
+</div>
+
+<div id="outline-container-org3973975" class="outline-3">
+<h3 id="org3973975"><span class="section-number-3">5.1</span> Agilent only Cabling</h3>
+<div class="outline-text-3" id="text-5-1">
+<p>
+The are two styles of AMP cables the connect the control box to the AFM. One is large in diameter, the other is small. These connect all four major pieces in the following order
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">------------ &lt;---&gt;j1-------------j3&lt;---&gt;j5-----------j6&lt;---&gt; ------------
+|control box|       |breakout box|        |laser box|        |AFM proper|
+------------ &lt;---&gt;j2-------------j4       -----------        ------------
+                                 |                           |
+                                 |---------------------------| j7
+</pre>
+</div>
+
+
+
+<p>
+In the above diagram, the top row of connection labels (j1,j3,j5,j6) correspond to the large AMP cables.
+The bottom row (j2,j4,j7) correspond to the small AMP cables. The connections correspond to the following labels on the boxes themselves:
+</p>
+
+<ul class="org-ul">
+<li>Large AMP:
+<ul class="org-ul">
+<li>j1: "controller"</li>
+<li>j3: "microscope"</li>
+<li>j5: "controller"
+-j6: "microscope"</li>
+</ul></li>
+<li>Small AMP:
+<ul class="org-ul">
+<li>j2: unlabeled. but to the front, and the connection closest to j1</li>
+<li>j4: unlabeled, directly behind j2</li>
+</ul></li>
+</ul>
+
+<p>
+Note that only the large AMP cample is connected to the laser box.
+</p>
+</div>
+</div>
+<div id="outline-container-orgf25a327" class="outline-3">
+<h3 id="orgf25a327"><span class="section-number-3">5.2</span> Agilent to CRIO Cabling</h3>
+<div class="outline-text-3" id="text-5-2">
+<p>
+The agilent hardware is connected to the CRIO with two BNC cables. The sensor (z-axis deflection) is connected to the breakout box, as shown in Fig. <a href="#org636bd16">3</a>. The other end of this should be connected to the third ADC input (AI2) of the CRIO. Note the switch on the breakout box. You want this pointed towards the OUT BNC. See also the Agilent doc in the green binder.
+</p>
+
+
+<div id="org636bd16" class="figure">
+<p><img src="breakout-box.jpeg" alt="breakout-box.jpeg" width="400px" />
+</p>
+<p><span class="figure-number">Figure 3: </span>The breakout box, showing the z-axis error signal BNC</p>
+</div>
+
+<p>
+The z-axis control goes into the the agilent control box (NOT the breakout box), as shown in Fig <a href="#org28c9821">4</a>. The other end of this cable should be connected to the third DAC output (AO2).
+</p>
+
+
+<div id="org28c9821" class="figure">
+<p><img src="control-box.jpeg" alt="control-box.jpeg" width="400px" />
+</p>
+<p><span class="figure-number">Figure 4: </span>The Agilent control box, showing the z-axis low voltage control BNC.</p>
+</div>
+
+<p>
+The desktop computer should be connected to the Agilent control box via the USB cable seen in Fig. <a href="#org28c9821">4</a>
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org6140cf4" class="outline-3">
+<h3 id="org6140cf4"><span class="section-number-3">5.3</span> Piezo stage cabling</h3>
+<div class="outline-text-3" id="text-5-3">
+<p>
+Fig. <a href="#orgf3f493d">5</a> shows the cable connectings to the C300 power amplifer. Channel 1 is the X-axis, channel-2 is the Y-axis. The DB15 connectors are the high-voltage supply and sensor lines that connect (and hardwire to) the nPoint stage. The BNC connectors hook up to the CRIO. Each BNC is labeled "IN" and "MINITOR". The "IN" line is actuation, the "MONITOR" line is the position sensor. 
+</p>
+
+<div id="orgf3f493d" class="figure">
+<p><img src="c300-cables-both.jpeg" alt="c300-cables-both.jpeg" width="400px" />
+</p>
+<p><span class="figure-number">Figure 5: </span>The c300 cabling.</p>
+</div>
+
+<p>
+The connection to the CRIO are:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">Channel 1: In --&gt; AO0
+Channel 1: Monitor --&gt; AI0
+Channel 2: In --&gt; AO1
+Channel 2: Monitor --&gt; AI1
+</pre>
+</div>
+
+<p>
+If for some reason you want to look at the current, the DB15 connector is the thing that gets uplugged and re-routed.
+</p>
+
+<p>
+If you read Jeff's thesis, he talks about a voltage scaling board. This is not needed when using the CRIO, because the CRIO ADC/DAC modules accept \(\pm\) 10 volts, where as he was using a DSP card with voltage levels around 2 volts.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org878e615" class="outline-3">
+<h3 id="org878e615"><span class="section-number-3">5.4</span> CRIO</h3>
+<div class="outline-text-3" id="text-5-4">
+<p>
+The CRIO talks to the desktop over ethernet. It has two modules: an ADC and a DAC. The ADC (AI*) is the NI 9223 and the DAC (AO*) is the NI 9263. The cables are coax, with a BNC on one end and stripped and tinned leads on the other. The 9223 and 9263 have screw terminals. These are be un-reliable. <b>If things seem wonky, definitely check these connections.</b> And if given the opportunity, definitely replace these with a version that has proper BNC connections.
+</p>
+
+<p>
+As mentioned elsewhere, the fundamental connections are:
+</p>
+<div class="org-src-container">
+<pre class="src src-text">Channel 1: In --&gt; AO0
+Channel 1: Monitor --&gt; AI0
+Channel 2: In --&gt; AO1
+Channel 2: Monitor --&gt; AI1
+Z-control : --&gt; AO2
+Z-error : --&gt; AI2
+Z-friction: --&gt; AI3
+</pre>
+</div>
+
+<p>
+The friction signal does not need to be hooked up to do imaging, or anything else. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga8eda83" class="outline-3">
+<h3 id="orga8eda83"><span class="section-number-3">5.5</span> Desktop Connections</h3>
+<div class="outline-text-3" id="text-5-5">
+<p>
+The desktop computer is connected to three pieces of hardware:
+</p>
+<ol class="org-ol">
+<li>The agilent control box via a USB cable.</li>
+<li>The Videology camera on the AFM body, via a USB cable. This connection is shown on the camera side in Fig. <a href="#org812b634">6</a></li>
+<li>The CRIO, via an ethernet cable. There are two network cards in the desktop. This cable should be plugged directly (as a patch cable) between one of these NICs and the CRIO. The other network card is plugged into the LAN.</li>
+</ol>
+
+<p>
+In principle, the nPoint C300 can also be plugged into the desktop via a USB cable. This allows you to use the use the nPoint PID controller. nPoint never provided me with software that would run on windows 7, so this is not currently hooked up.
+</p>
+
+
+<div id="org812b634" class="figure">
+<p><img src="camera-cable.jpeg" alt="camera-cable.jpeg" width="300px" />
+</p>
+<p><span class="figure-number">Figure 6: </span>The AFM video camera and cable.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7d229c1" class="outline-2">
+<h2 id="org7d229c1"><span class="section-number-2">6</span> Software</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+Aside from labview and matlab, there are two crucial pieces of software you need: PicoView and the Videology drivers and viewer. Both of these are saved in folder on the desktops desktop named XXX. It is really important not to lose this software. For the time being, you can still get PicoView from Keysight (who bought Agilent). But the video drivers took me forever to find (they came from some medical device website&#x2026;). 
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org37d5aeb" class="outline-2">
+<h2 id="org37d5aeb"><span class="section-number-2">7</span> Installing the cantilever <a id="org00cb3fe"></a></h2>
+<div class="outline-text-2" id="text-7">
+<p>
+First <b>read the Agilent manual</b>. A really bright light is helpful. I big magnifier ring might help too if you have bad eyes. Lots of patience is also helpful. And some luck. For reference, at the end of my studies, this process (from removing the cantilever to getting another image) could take anywhere between 15 minutes to hours.
+</p>
+
+<ul class="org-ul">
+<li>Before you remove the scanner to replace the tip, you need to retract the scanner (see Section <a href="#org15afec6">3</a> above) really, really far. You want to see about a 3/8" gap between the sample and probe. This is to avoid crashing the tip into the sample when you remove the scanner.</li>
+
+<li>The scanner itself has a black aluminum holder. When replacing the cantilever, the scanner should be placed into this holder upside down, as shown in Fig. <a href="#orgea31cad">7</a>.</li>
+</ul>
+
+
+<div id="orgea31cad" class="figure">
+<p><img src="scanner-and-holder.jpeg" alt="scanner-and-holder.jpeg" width="400px" />
+</p>
+<p><span class="figure-number">Figure 7: </span>The scanner, holder, and cantilever jig.</p>
+</div>
+
+<ul class="org-ul">
+<li><p>
+The cantilever holder is the small metal ring at the very end. It is fixed to the scanner magnetically, and can be removed by grabbing the sides of the cantilever hold and just pulling it off. Then place the cantilever holder into the cantilever jig, as shown in Fig. <a href="#orgbc79083">8</a>. The handle on the jig slides back and forth. When it is slid all the way down, tension on the cantilever itself is released.
+</p>
+
+<p>
+I use an Xacto knife to slide the old cantilever forward and remove it with tweazers. I've never been able to succfully put the cantilever back in the box and use it again. So if you plan to throw it out, you don't have to be overlly careful removing the old one.
+</p></li>
+</ul>
+
+
+<div id="orgbc79083" class="figure">
+<p><img src="cantilever-jig-01.jpeg" alt="cantilever-jig-01.jpeg" width="400px" />
+</p>
+<p><span class="figure-number">Figure 8: </span>The cantilever holder in place on the cantilever jig.</p>
+</div>
+
+
+<ul class="org-ul">
+<li><p>
+I use tweazers to transfer the new cantilever from its storage box to the holder. You want to grab the  cantilever on the sides. It's a very delicate operation. Squeeze too hard and it will zing away. Avoid tipping the cantilever foward, so as not to damage the tip itself.
+</p>
+
+<p>
+Once you (gently!) drop the cantilever in the holder, use the sharp tip of the Xacto knife to slide the cantilever into position. Ensure that you keep the blade soley on the fat part of the cantilever body.
+</p></li>
+</ul>
+
+
+<ul class="org-ul">
+<li>You want the cantilever aligned side to side in the holder groove. This is difficult to see in the photo.</li>
+</ul>
+
+
+<ul class="org-ul">
+<li>You want the cantilever to be as straight in the holder as you can manage. To help acheive this, you can release some of the tension in the jig so that the holder is partially clamping the cantilever.</li>
+</ul>
+
+
+<ul class="org-ul">
+<li>There is a very faint etch (or mark) on the post of the cantilever jig in Fig <a href="#orgbc79083">8</a>. You generally want the end of the fat part of the cantilever body approximately lined up with that mark. Here approximately means within 1/64". If you move the cantilever towards the mark, it will appear farther down in the video feed. This position will also (approximately) line up the horizontal mark on the cantilever body itself to the end of the tension brass fork.</li>
+</ul>
+</div>
+
+
+<div id="outline-container-org64dbf89" class="outline-3">
+<h3 id="org64dbf89"><span class="section-number-3">7.1</span> Aligning the laser and Cantilever</h3>
+<div class="outline-text-3" id="text-7-1">
+<p>
+<b>The first thing is to read the Agilent manual.</b>
+</p>
+
+<p>
+If the laser is not aligned properly, the <b>cantilever can break, which will damage the grating</b>. You can see this in the video feed. If you can see the cantilever deflect at all during the course engagement (with the stepper motor), the cantilever is improperly aligned, and likely has been damaged. If the cantilever does break, you need to remove the scanner, then remove the sample, and clean it (see Section <a href="#org6a13a83">8.1</a>). 
+</p>
+
+<p>
+Generally (in my experience) when the laser is not aligned correctly, the laser spot is usually too far up the shaft of the cantilever. This is impossible to see in the video feed, so you must infer this condition. 
+</p>
+
+<div id="org761bed7" class="figure">
+<p><img src="afm-scanner.jpeg" alt="afm-scanner.jpeg" width="400px" />
+</p>
+<p><span class="figure-number">Figure 9: </span>The scanner, in the AFM.</p>
+</div>
+
+<p>
+Here is one method (the only one I found) to detect poor laser alignment:
+</p>
+<ul class="org-ul">
+<li>Align the laser to what you think is correct. This means that the total voltage sum should be maximized and the detector is mostly aligned (ie, the laser spot is near the center of the PicoView display).</li>
+
+<li>Move the <b>laser</b> (not the detector) a small amount left and right. This is the left-most black knurled knob in Fig. <a href="#org761bed7">9</a>.
+<ul class="org-ul">
+<li>If the laser is aligned <b>correctly</b>: 
+the voltage intensity should be very "notchy". In other words, twisting the laser left-right knob by a very small amount in either direction (left or right) will cause the voltage reading to drop off to nearly zero. By "a small amount", I mean less than an 1/8 of a turn.</li>
+
+<li>If the laser is algined <b>incorectly</b>:
+If this is the case, try to move the laser spot down (down in the video feed), with the rear knob. You may have to keep adjusting the left-right position as you bring the laser down.</li>
+</ul></li>
+
+<li><b>Ideally, you want the laser at the very, very tip of the cantilever</b></li>
+
+<li><p>
+Another way to tell if the laser is poorly aligned is take a frequency response of the mode near 215 Hz. Doing this requires that the laser is aligned sufficiently well that you see zero bending when the cantilever is engaged with the sample. 
+</p>
+
+<p>
+A poorly aligned laser seems to lead to the following:
+</p>
+<ol class="org-ol">
+<li>A low DC-gain. Normally, this should be at least 5dB. If it is below 0, something is off.</li>
+<li>A dip in FRF before the pole at 215 hz, as though a zero proceeded the pole.</li>
+<li>waveforms (pre-demodulation) that are either at the wrong frequency, or appear to be composed of multiple frequencies.</li>
+</ol></li>
+</ul>
+
+<p>
+Point 3 may also happen when the cantilever is very worn. I'm not sure. Sometimes, the waveform will have a triangular appearence. This can usually be corrected by adjusting the offset voltage in the system-id software. When the laser is mis-aligned or the tip is worn, what I see sometimes is a waveform that looks more like the one shown in Fig. <a href="#org8337832">10</a>
+</p>
+
+
+<div id="org8337832" class="figure">
+<p><img src=" funky_sin.svg" class="org-svg" width="200px" alt="Sorry, your browser does not support SVG."  \>
+</p>
+<p><span class="figure-number">Figure 10: </span>A funky sinusoid. If you see something like this while identifying the Z axis, something is amiss.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org20e9f75" class="outline-2">
+<h2 id="org20e9f75"><span class="section-number-2">8</span> Cleaning the sample</h2>
+<div class="outline-text-2" id="text-8">
+</div>
+<div id="outline-container-orgabd8c5e" class="outline-3">
+<h3 id="orgabd8c5e"><span class="section-number-3">8.1</span> Gratings <a id="org6a13a83"></a></h3>
+<div class="outline-text-3" id="text-8-1">
+<p>
+A cheap way to clean a grating is to put a big dab of NuSkin on the grating. You want to just drip it onto the grating, and avoid touching the grating with the bristles of the NuSkin applicator brush.
+Let it thoroughly dry (I usually let it go over night). Then starting at the edges, use the Xacto knife and tweazers to peel the NuSkin off. Be very carful not to touch the center portion of the grating with these tools because that will damage or ruin the grating.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org56cc80e" class="outline-3">
+<h3 id="org56cc80e"><span class="section-number-3">8.2</span> Mica</h3>
+<div class="outline-text-3" id="text-8-2">
+<p>
+There is no real point to cleaning mica. Rather, you just want to re-cleave it. See Section <a href="#org9c5ded5">9</a>. 
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org31a03f2" class="outline-2">
+<h2 id="org31a03f2"><span class="section-number-2">9</span> Preparing Mica <a id="org9c5ded5"></a></h2>
+<div class="outline-text-2" id="text-9">
+<p>
+The surface of freshly cleaved mica is atomically flat. This means that you can race the probe across the mica surface and see basically no deflection, aside from sample tilt.
+</p>
+
+<p>
+To use a mica sample, it needs to be fixed to a sample holder (which is one of the little circular steel disks). To do that, I use clear finger nail polish. It only takes a very small dab, because once the mica is pressed down, most of it will squeeze out. It is important to gently press the mica disk into place to minimize tilt. 
+</p>
+
+<p>
+Once the finger nail polish has thoroughly dried, the mica must be cleaved. This is a rather delicate process. The technique I use is to take the Xacto knife and try to basically peel a layer of the mica off the top. It can take some fiddling to get right.  
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org372ed30" class="outline-2">
+<h2 id="org372ed30"><span class="section-number-2">10</span> Your first image</h2>
+<div class="outline-text-2" id="text-10">
+<p>
+This section assumes that the AFM is powered on (see <a href="#org5512cdb">2</a>), a cantilever is installed and properly aligned (see Sec. <a href="#org00cb3fe">7</a>).
+</p>
+
+
+<p>
+The XY-stage should be turned on and the cantilever should be engaged with the sample, via PicoView. For best results, you should let the AFM warm up, which basically means letting it just sit there for 20 minutes or so. While you do this, ensure that the PicoView Z-axis control loop is active. When the AFM is sufficently warmed up turning the PicoView control loop off, and the deflection signal should drift very, very slowly. When the AFM is insufficiently warmed up, the deflection signal will creep upward relatively fast, e.g., going past 1 volt in less than a minute. The more of this drift is gone from the system, the better the results, especially for CS scanning.
+</p>
+</div>
+
+<div id="outline-container-org059af3e" class="outline-3">
+<h3 id="org059af3e"><span class="section-number-3">10.1</span> Software</h3>
+<div class="outline-text-3" id="text-10-1">
+<p>
+Open LabView. You want to open the afm<sub>imaging</sub><sub>control.lvproj</sub>. It is located in 
+C:\Users\arnold\Documents\afm-cs\labview
+</p>
+
+<p>
+There are two entry point VIs:
+</p>
+<ul class="org-ul">
+<li>auto-sys-id/play<sub>auto</sub><sub>id.vi</sub>. This vi will measure a FRF of the z-axis bending mode, and fit a second order transfer function.
+If you want to take PSDs or other FRF measurements, you need to load the systemID.lvproj project from</li>
+</ul>
+<p>
+<code>C:\Users\arnold\Documents\labview\sysID\systemID.lvproj</code>. 
+</p>
+
+<ul class="org-ul">
+<li>play-general-scan.vi. This vi will do either raster or CS, potentially in batches, depending on the input files you load.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgf42c3a1" class="outline-3">
+<h3 id="orgf42c3a1"><span class="section-number-3">10.2</span> Measure the Z-axis FRF</h3>
+<div class="outline-text-3" id="text-10-2">
+<p>
+Once afm<sub>imaging</sub><sub>control.lvproj</sub> is opened, open play<sub>auto</sub><sub>id.vi</sub>, which is located in the 'auto-sys-id' folder in the project file.
+</p>
+
+<p>
+There several settings:
+</p>
+<ul class="org-ul">
+<li>Amplitude (volts): I find 0.1 to usually work well.</li>
+<li>u-max: default of 1 volt is good</li>
+<li>offset: 0.1 volt usually works well. If the outgoing sin waves look funky, try tweaking this first, especially if it looks like part of the waveform is clipped off, then try decreasing the offset.</li>
+<li>Input File: <code>Z:\afm-cs\sysID\z-axis_sines_info_quick_firstRes.json</code>, will identify the first bending mode resonance of the Z-axis. This file is generated by the matlab script:</li>
+</ul>
+<p>
+<code>C:\Users\arnold\Documents\afm-cs\matlab-code\build_z_axis_swept_meta_data_intsamps_zaxis.m</code>
+</p>
+
+<ul class="org-ul">
+<li>Output File: The default is C:\Users\arnold\Documents\afm-cs\labview\first<sub>res</sub><sub>fit</sub><sub>current.json</sub>, Whatever this is set to, you need to load this file when running the scan in the next step.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org363e6ae" class="outline-3">
+<h3 id="org363e6ae"><span class="section-number-3">10.3</span> Scanning concepts</h3>
+<div class="outline-text-3" id="text-10-3">
+<p>
+Both raster and CS scanning happen with the same labview VI, play-general-scan.vi. This VI can take a batch of scans, ie. multiple raster and CS scans in one go, while the cRIO FPGA maintains closed-loop control.
+</p>
+
+<p>
+Each scan is defined by an input file. These input files are created by two matlab scripts:
+</p>
+
+<ul class="org-ul">
+<li><p>
+<code>C:\Users\arnold\Documents\afm-cs\matlab-code\generate_raster_traj_fourier.m</code>,
+which will generate the input files for raster scanning. By default, this script will use a truncated fourier series for the triangle wave.
+By default, this will generate an input file for a 5-micron by 5-micron image, which will be saved to
+</p>
+
+<p>
+<code>Z:\afm-cs\imaging\raster\5microns\parents-loop</code>
+</p></li>
+
+<li><p>
+<code>C:\Users\arnold\Documents\afm-cs\matlab-code\generate_mu_path_grating.m</code>, will generate the CS scanning input files.
+</p>
+
+<p>
+<code>Z:\afm-cs\imaging\cs-imaging\5microns\parents-loop\</code>
+</p></li>
+</ul>
+
+<p>
+When a scan is taken, a folder with todays date will be created, and the output data will be written into the folder. The output file name will be derived from the input filename, with a number e.g., '01' appended. If you take multiple scans in a row with the same input file (say stopping the scan, then restarting), the number appended will be automatically incremented (this generally works, but the incrementing is a bit buggy, though files are never overwritten). This behaivor can be changed by setting the 'overwrite' toggle to true.
+</p>
+
+<p>
+In addition, an input file for the XY-axis controller is needed. This file is only loaded once at the start of the imaging run. It can be set in the <code>xy-axis-tweaks</code> tab of <code>play-general-scan.vi</code>. Currently, the default will load <code>Z:\afm-cs\step-exps\LinControls-const-sig_5micron_xyff_DyDx.json</code>, which will implement the loop shaping controller described in the TMECH paper.
+</p>
+
+<p>
+The fpga code and <code>play-general-scan.vi</code> can switch between the loop shaping controller and the state space controller. 
+</p>
+
+<p>
+These controller input files are generated via the matlab scripts :
+</p>
+<ol class="org-ol">
+<li><code>C:\Users\arnold\Documents\afm-cs\matlab-code\build_controllers_with_xyFF_DxDy.m</code>, for the loop shaping controller.</li>
+<li><code>C:\Users\arnold\Documents\afm-cs\matlab-code\build_state_space_x_controller.m</code>, for the state space based controller.</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-org8290579" class="outline-3">
+<h3 id="org8290579"><span class="section-number-3">10.4</span> Raster Scanning</h3>
+<div class="outline-text-3" id="text-10-4">
+<ol class="org-ol">
+<li>Select an input file. This goes into the array of input files. The subfolder (like 'parents-loop') the input file lives in should be copied into <code>parent-subfolder-name</code>. This is ugly and could easily be done automatically!</li>
+
+<li>Set the <code>z-axis FRF-fit path</code> path box to the path of the fit you obtained above.</li>
+
+<li><p>
+Set the <code>state-machine-params</code> and <code>z_axis_params</code>. The UI here is not very good. This is a bit ugly, because some of these params are derived from the input file, and some you set manually (though the defaults should be good.) This is another place of low hanging fruit for software improvement.
+The fields: <code>numEntities</code>, <code>prescan_samples</code>, <code>TF_params</code> are derived from the input files.
+</p>
+
+<p>
+The defaults that you need to worry about should be:
+</p>
+<ul class="org-ul">
+<li>collect<sub>all</sub>: true. This collects data during each state of the state machine, (aside from zero), rather than just during the scanning.</li>
+<li>TOL: 0.0259 (volts) The z-axis transitions from lowering the tip to scanning when the <code>|deflection - setpoint_scan|&lt;TOL</code>.</li>
+<li>zup<sub>err</sub><sub>threshold</sub>: 0.051 (volts) The z-axis transitions from tip-up when <code>|deflection - setpoint_up|&lt;zup_err_threshold</code>.</li>
+<li>xy<sub>error</sub><sub>threshold</sub>: 0.01 (volts)</li>
+<li>xy<sub>settled</sub><sub>samples</sub><sub>threshold</sub>: 20. When the x and y error are less than <code>xy_error_threshold</code> for more than <code>xy_settled_samples_threshold</code>, the  state machine stops tracking the setpoint.</li>
+
+<li><code>Kiz_down</code>: 0.045 usually works well. z axis integrator gain during tip descent.</li>
+<li><code>Ki_scan</code>: 0.07 usually works. z axis integrator gain during scanning.</li>
+<li>setpoint<sub>scan</sub>: -0.3 volts. Setpoint of z axis while scanning.</li>
+<li>setpoint<sub>up</sub>: -0.8 volts. target setpoint during tip retraction. If this is too negative complete detachment occurs.</li>
+<li>uz<sub>safe</sub>: 0.3 volts. maximum variation in voltage to allow during a scan.</li>
+<li>z<sub>u</sub><sub>max</sub>: 2.0 volts. absolute maximum z-axis control voltage to allow before aborting (for fear of instability).</li>
+<li>do<sub>Dz</sub>: turn on the z-axis axis bending mode inversion. Without this, you need to back the integral gains way down.</li>
+<li>PID<sub>while</sub><sub>xy</sub><sub>move</sub>: defualt false, leave the z-axis control loop closed while executing the XY-move.</li>
+</ul></li>
+</ol>
+
+
+<p>
+To see the visualization while the scan is happening, open the <code>process-scan-data.vi</code> in a separate monitor. The graphs in this VI will update while <code>play-general-scan.vi</code> is running.
+</p>
+
+<p>
+<b>At this point you should be able to click the run button (white arrow).</b>
+</p>
+
+<p>
+Wait until you see the <code>state0-count</code> start rapidly incrementing. Hit the <code>trigger-0</code> toggle. The scan should commence. You should see the heatmap in <code>process-scan-data.vi</code> begin to update.
+</p>
+</div>
+
+<div id="outline-container-orga268311" class="outline-4">
+<h4 id="orga268311"><span class="section-number-4">10.4.1</span> Finding the imaging area</h4>
+<div class="outline-text-4" id="text-10-4-1">
+<p>
+You can move the sample back and forth with the knobs on the stage, in order to find different areas of the grating. Make absolutely sure that the cantilever is <b>completely</b> disengaged (via PicoView) when doing this. The video helps somewhat, but it's quality has degraded over time. I don't know whats up with that. The best advice I can give is to try to center the grating on the post. Try to make it square with the afm. 
+</p>
+
+<p>
+Then, move the stage around with the knobs. You should still be able to see large arrows pointing inward. Those indicate the boundaries of the grating proper. The area with holes 500 nm (that are shown in my thesis) are in the very middle of the grating. To find these, I basically look at the schematic of the grating that is in the green booklet, take a fast scan (say 64 lines at 5 hz), try to guess where I'm scanning over on the grating, and make small adjustments untill I find the area I want. This is extremely tedious and time consuming, and requires a lot of patience.
+</p>
+
+<p>
+If you can figure out how to restore the quality of the video feed, your life will be way better. In that case, you should be able to make out the center area, and stick it under the cantilever.  
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4f42551" class="outline-3">
+<h3 id="org4f42551"><span class="section-number-3">10.5</span> CS Scanning</h3>
+<div class="outline-text-3" id="text-10-5">
+<p>
+Everything is the same. Just select a different input file, and switch tabs in the <code>process-scan-data.vi</code>. This only shows the time series data, no reconstructions.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org882cd99" class="outline-3">
+<h3 id="org882cd99"><span class="section-number-3">10.6</span> Post-processing.</h3>
+<div class="outline-text-3" id="text-10-6">
+<p>
+For an example of post-processing, see <code>C:\Users\arnold\Documents\afm-cs\matlab-code\tmech-plots\process_data_6_5_2019.m</code>. You need to look until line 190 or so to see how things work. Everyhing after that is analysis and creating the published figures.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Created: 2019-08-20 Tue 15:38</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
