@@ -79,14 +79,14 @@ classdef MuPathTraj < handle
       self.volts_per_sample = self.x_rate_mic_per_sec * AFM.mic2volt_xy * self.Ts;
       % self.build_xr_yr_volt_starts();
       self.build_mu_path_traj_s(ax)
-      N_paths = length(self.XR_pix_starts);
+      self.N_paths = length(self.mu_path_traj_s);
       
       self.sub_sample_perc = 100 * sum(self.pix_mask(:)) / self.npix^2;
       
       if self.pre_pad_samples > 0
          [xoffset, yoffset] = self.compute_prescan_offset();
          self.xpre_offset = xoffset;
-         self.ypre_offset = yoffset
+         self.ypre_offset = yoffset;
       end
     end
     
@@ -137,7 +137,7 @@ classdef MuPathTraj < handle
               );
     
      opts.FileName = json_fname;
-     savejson('', data, opts)
+     savejson('', data, opts);
 
     end
        
@@ -188,10 +188,26 @@ classdef MuPathTraj < handle
 
         [xrp, yrp] = self.adjust_pre_pad(xt(1), yt(1));
         
-        xr_pre = linspace(xrp, xt(1), self.pre_pad_samples);
+        xr_pre = xrp + (0:self.pre_pad_samples-1)*self.volts_per_sample;
+        %xr_pre = linspace(xrp, xt(1), self.pre_pad_samples);
         yr_pre = xr_pre*0 + yrp;
         met_idx_pre = xr_pre*0 + self.met_idx_pad - 1;
-        
+        xt_ = (xt - xt(1)) + xr_pre(end) + self.volts_per_sample;
+        if k==1
+           x = [xr_pre(:); xt_(:)];
+           t = (0:length(x)-1)'*AFM.Ts;
+           x0 = SSTools.getXss(self.Hyr)*x(1);
+           
+           y = lsim(self.Hyr, x, t, x0);
+           y_scan = y(length(xr_pre):end);
+           
+           dy = y_scan(end) - y_scan(1);
+           assert(dy > self.mu_length_volts)
+           assert(abs((dy - self.mu_length_volts)/self.pix2volts) < 5)
+           % Something off with the calcs somewhere, this grows a bit beyond
+           % what we calculated.
+           assert((y(end) - xt(end))/self.pix2volts > -2);
+        end
         % the setpoint has a meta-idx=0;
         vec_k = [[xr_pre(1), xr_pre(:)'];
                  [yr_pre(1), yr_pre(:)'];
@@ -199,7 +215,7 @@ classdef MuPathTraj < handle
 
         
         met_idx(end) = -1;
-        vec_k = [vec_k, [xt(:)'; yt(:)'; met_idx(:)']];  %#ok<AGROW>
+        vec_k = [vec_k, [xt_(:)'; yt(:)'; met_idx(:)']];  %#ok<AGROW>
 
         vec = [vec; reshape(vec_k, [], 1)];              %#ok<AGROW>
       end
@@ -273,7 +289,7 @@ classdef MuPathTraj < handle
           xt = x1s + (0:N_per_mupath-1)' * self.volts_per_sample;
           yt = ones(N_per_mupath, 1) * y1s;
           
-          met_idx = ones(N_per_mupath,1)*scan_count;
+          met_idx = ones(N_per_mupath, 1)*scan_count;
           
           self.mu_path_traj_s{scan_count} = MuPathC(xt, yt, met_idx);
           

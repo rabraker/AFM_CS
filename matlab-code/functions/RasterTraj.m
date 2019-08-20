@@ -23,8 +23,10 @@ classdef RasterTraj
       opts = inputParser();
       opts.addParameter('x_offset_mic', 0)
       opts.addParameter('y_offset_mic', 0)
-      
+      opts.addParameter('y_traj_gen', @self.y_traj_gen)
       opts.parse(varargin{:});
+      
+      y_TG = opts.Results.y_traj_gen;
       self.x_offset_mic = opts.Results.x_offset_mic;
       self.y_offset_mic = opts.Results.y_offset_mic;
       
@@ -48,8 +50,9 @@ classdef RasterTraj
       
       x_rasterdata.Data = x_rasterdata.Data + self.x_offset_mic;
       
-      y_rasterdata = timeseries(linspace(0, y_height, length(x_rasterdata.Time))',...
-          x_rasterdata.Time);
+      %y_rasterdata = timeseries(linspace(0, y_height, length(x_rasterdata.Time))',...
+          %x_rasterdata.Time);
+      y_rasterdata = y_TG(y_height, self.points_per_line*2);
       y_rasterdata.Data = y_rasterdata.Data + self.y_offset_mic;
       
       self.x_traj_volts = x_rasterdata;
@@ -58,7 +61,11 @@ classdef RasterTraj
       self.y_traj_volts.Data = self.y_traj_volts.Data * AFM.mic2volt_xy;
       self.x_traj_volts.Data = self.x_traj_volts.Data * AFM.mic2volt_xy;
     end
-    
+    function y_rasterdata = y_traj_gen(~, y_height, N)
+        t = (0:N-1)'*AFM.Ts;
+        y = linspace(0, y_height, N)';
+        y_rasterdata = timeseries(y, t);
+    end
     function [u_ff, u_des] = fourier_truncate(self, n_harmonics, Hyr, w_max)
         
         uu = self.x_traj_volts;
